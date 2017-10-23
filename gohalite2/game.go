@@ -23,25 +23,21 @@ type Game struct {
 	token_parser		*TokenParser
 }
 
-func (self *Game) GetMe() *Player {
-	return self.Players[self.Pid]
+func NewGame() *Game {
+	game := new(Game)
+	game.token_parser = NewTokenParser()
+	game.Pid = game.token_parser.Int()
+	game.Width = game.token_parser.Int()
+	game.Height = game.token_parser.Int()
+	game.Players = make(map[int]*Player)
+	game.Planets = make(map[int]*Planet)
+	game.Ships = make(map[int]*Ship)
+	game.Parse()
+	return game
 }
 
-func (self *Game) Init(logfilename string, log_enabled bool) {
-
-	self.token_parser = NewTokenParser()
-
-	self.Pid = self.token_parser.Int()
-	self.Width = self.token_parser.Int()
-	self.Height = self.token_parser.Int()
-
-	self.Players = make(map[int]*Player)
-	self.Planets = make(map[int]*Planet)
-	self.Ships = make(map[int]*Ship)
-
-	self.logfile = NewLog(logfilename, log_enabled)
-
-	self.Parse()
+func (self *Game) GetMe() *Player {
+	return self.Players[self.Pid]
 }
 
 func (self *Game) Parse() {
