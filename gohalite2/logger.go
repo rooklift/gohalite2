@@ -7,17 +7,15 @@ import (
 )
 
 type Logfile struct {
-	outfile         *os.File
-	outfilename     string
-	enabled         bool
-	logged_once     map[string]bool
+	outfile			*os.File
+	outfilename		string
+	logged_once		map[string]bool
 }
 
-func NewLog(outfilename string, enabled bool) *Logfile {
+func NewLog(outfilename string) *Logfile {
 	return &Logfile{
 		nil,
 		outfilename,
-		enabled,
 		make(map[string]bool),
 	}
 }
@@ -25,10 +23,6 @@ func NewLog(outfilename string, enabled bool) *Logfile {
 func (self *Logfile) Dump(format_string string, args ...interface{}) {
 
 	if self == nil {
-		return
-	}
-
-	if self.enabled == false {
 		return
 	}
 
@@ -45,13 +39,16 @@ func (self *Logfile) Dump(format_string string, args ...interface{}) {
 		}
 
 		if err != nil {
-			self.enabled = false
 			return
 		}
 	}
 
 	fmt.Fprintf(self.outfile, format_string, args...)
 	fmt.Fprintf(self.outfile, "\r\n")                    // Because I use Windows...
+}
+
+func (self *Game) StartLog(logfilename string) {
+	self.logfile = NewLog(logfilename)
 }
 
 func (self *Game) Log(format_string string, args ...interface{}) {
