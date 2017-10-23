@@ -2,35 +2,29 @@ package gohalite2
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Game struct {
-	PlayerCount			int				// The initial value provided at startup (does this change if a player dies?)
-	Pid					int				// Our own ID
+	Pid					int					// Our own ID
 	Width				int
 	Height				int
 
-	Players				[]*Player
-	Planets				[]*Planet
+	PlayerCount			int					// Does this change if a player dies?
+
+	// These 3 things below can contain references to dead objects.
+	// But the Planet and Player structs themselves do not.
+
+	Players				map[int]*Player
+	Planets				map[int]*Planet
+	Ships				map[int]*Ship
 
 	logfile             *Logfile
 	token_parser		*TokenParser
-	ship_map			map[int]*Ship	// ship id --> ship pointer
-	player_map			map[int]*Player	// player id --> player pointer
 }
 
-func (self *Game) GetShip(id int) (*Ship, bool) {
-	ret, ok := self.ship_map[id]
-	return ret, ok
-}
-
-func (self *Game) GetPlayer(id int) (*Player, bool) {
-	ret, ok := self.player_map[id]
-	return ret, ok
-}
-
-func (self *Game) GetOwnPlayer() *Player {
-	return self.player_map[self.Pid]
+func (self *Game) GetMe() *Player {
+	return self.Players[self.Pid]
 }
 
 func (self *Game) Init(logfilename string, log_enabled bool) {
@@ -41,6 +35,10 @@ func (self *Game) Init(logfilename string, log_enabled bool) {
 	self.Width = self.token_parser.Int()
 	self.Height = self.token_parser.Int()
 
+	self.Players = make(map[int]*Player)
+	self.Planets = make(map[int]*Planet)
+	self.Ships = make(map[int]*Ship)
+
 	self.logfile = NewLog(logfilename, log_enabled)
 
 	self.Parse()
@@ -48,27 +46,52 @@ func (self *Game) Init(logfilename string, log_enabled bool) {
 
 func (self *Game) Parse() {
 
+	// Set all objects to have 0 HP, on the assumption that they are only sent to us if they have
+	// 1 or more HP. Thus this is a default value if we receive no info.
+
+	for _, planet := range(self.Planets) {
+		planet.HP = 0
+	}
+
+	for _, ship := range(self.Ships) {
+		ship.HP = 0
+		ship.ClearOrder()
+	}
+
+	// Player parsing.............................................................................
+
 	self.PlayerCount = self.token_parser.Int()
-
-	self.ship_map = make(map[int]*Ship)
-	self.player_map = make(map[int]*Player)
-
-	self.Players = nil
-	self.Planets = nil
 
 	for p := 0; p < self.PlayerCount; p++ {
 
-		player := new(Player)
+		// Get or create the player in memory...
 
-		player.Id = self.token_parser.Int()
+		pid := self.token_parser.Int()
+		player, ok := self.Players[pid]
+
+		if ok == false {
+			player = new(Player)
+			player.Id = pid
+			self.Players[pid] = player
+		}
 
 		ship_count := self.token_parser.Int()
 
+		player.Ships = nil		// Clear the player's ship slice, it will be recreated now...
+
 		for s := 0; s < ship_count; s++ {
 
-			ship := new(Ship)
+			// Get or create the ship in memory...
 
-			ship.Id = self.token_parser.Int()
+			sid := self.token_parser.Int()
+			ship, ok := self.Ships[sid]
+
+			if ok == false {
+				ship = new(Ship)
+				ship.Id = sid
+				self.Ships[sid] = ship
+			}
+
 			ship.X = self.token_parser.Float()
 			ship.Y = self.token_parser.Float()
 			ship.HP = self.token_parser.Int()
@@ -80,20 +103,24 @@ func (self *Game) Parse() {
 			ship.Cooldown = self.token_parser.Int()
 
 			player.Ships = append(player.Ships, ship)
-			self.ship_map[ship.Id] = ship
 		}
-
-		self.Players = append(self.Players, player)
-		self.player_map[player.Id] = player
 	}
+
+	// Planet parsing.............................................................................
 
 	planet_count := self.token_parser.Int()
 
 	for p := 0; p < planet_count; p++ {
 
-		planet := new(Planet)
+		plid := self.token_parser.Int()
 
-		planet.Id = self.token_parser.Int()
+		planet, ok := self.Planets[plid]
+		if ok == false {
+			planet = new(Planet)
+			planet.Id = plid
+			self.Planets[plid] = planet
+		}
+
 		planet.X = self.token_parser.Float()
 		planet.Y = self.token_parser.Float()
 		planet.HP = self.token_parser.Int()
@@ -108,27 +135,29 @@ func (self *Game) Parse() {
 			planet.Owner = -1
 		}
 
-		docked_ship_count := self.token_parser.Int()
-
 		// Docked ships are given to us as their IDs...
 
-		for s := 0; s < docked_ship_count; s++ {
-			planet.DockedShips = append(planet.DockedShips, self.token_parser.Int())
-		}
+		planet.DockedShips = nil	// Clear the planet's ship slice, it will be recreated now...
 
-		self.Planets = append(self.Planets, planet)
+		docked_ship_count := self.token_parser.Int()
+
+		for s := 0; s < docked_ship_count; s++ {
+			sid := self.token_parser.Int()
+			planet.DockedShips = append(planet.DockedShips, self.Ships[sid])
+		}
 	}
 }
 
 func (self *Game) Send() {
-	me, ok := self.GetPlayer(self.Pid)
-	if !ok {
-		fmt.Printf("\n")
-	}
+	me := self.GetMe()
+
+	var commands []string
+
 	for _, ship := range(me.Ships) {
 		if ship.Order != "" {
-			fmt.Printf("%s", ship.Order)
+			commands = append(commands, ship.Order)
 		}
 	}
+	fmt.Printf(strings.Join(commands, " "))
 	fmt.Printf("\n")
 }

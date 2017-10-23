@@ -10,5 +10,5 @@ type Planet struct {
 	CurrentProduction	int
 	Owned				int			// Is this really a bool?
 	Owner				int			// Protocol will send 0 if not owned at all, but we "correct" this to -1
-	DockedShips			[]int
+	DockedShips			[]*Ship
 }

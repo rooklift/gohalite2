@@ -19,17 +19,21 @@ type Ship struct {
 }
 
 func (self *Ship) Thrust(speed, angle int) {
-	self.Order = fmt.Sprintf("t %d %d %d\n", self.Id, speed, angle)
+	if self == nil {return}
+	self.Order = fmt.Sprintf("t %d %d %d", self.Id, speed, angle)
 }
 
 func (self *Ship) Dock(planet int) {
-	self.Order = fmt.Sprintf("d %d %d\n", self.Id, planet)
+	if self == nil {return}
+	self.Order = fmt.Sprintf("d %d %d", self.Id, planet)
 }
 
 func (self *Ship) Undock(planet int) {
-	self.Order = fmt.Sprintf("u %d\n", self.Id)
+	if self == nil {return}
+	self.Order = fmt.Sprintf("u %d", self.Id)
 }
 
-func (self *Ship) Noop() {
+func (self *Ship) ClearOrder() {
+	if self == nil {return}
 	self.Order = ""
 }
