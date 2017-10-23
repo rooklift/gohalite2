@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 )
 
 type Logfile struct {
@@ -62,9 +61,4 @@ func (self *Game) Log(format_string string, args ...interface{}) {
 func (self *Game) LogState() {
 	b, _ := json.MarshalIndent(self, "", "  ")
 	self.Log(string(b))
-}
-
-func (self *Game) LogStartup(version string) {
-	self.Log("--------------------------------------------------------------------------------")
-	self.Log(version + " starting up at " + time.Now().Format("2006-01-02T15:04:05Z"))
 }
