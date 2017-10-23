@@ -29,6 +29,10 @@ func (self *Game) GetPlayer(id int) (*Player, bool) {
 	return ret, ok
 }
 
+func (self *Game) GetOwnPlayer() *Player {
+	return self.player_map[self.Pid]
+}
+
 func (self *Game) Init(logfilename string, log_enabled bool) {
 
 	self.token_parser = NewTokenParser()
