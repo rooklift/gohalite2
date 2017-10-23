@@ -65,6 +65,18 @@ type Ship struct {
 	Order				string
 }
 
+func (self *Ship) Thrust(speed, angle int) {
+	self.Order = fmt.Sprintf("t %d %d %d", self.Id, speed, angle)
+}
+
+func (self *Ship) Dock(planet int) {
+	self.Order = fmt.Sprintf("d %d %d", self.Id, planet)
+}
+
+func (self *Ship) Undock(planet int) {
+	self.Order = fmt.Sprintf("u %d", self.Id)
+}
+
 type Player struct {
 	Pid					int
 	Ships				[]*Ship
@@ -94,16 +106,9 @@ type World struct {
 	Height				int
 }
 
-func (self *Ship) Thrust(speed, angle int) {
-	self.Order = fmt.Sprintf("t %d %d %d", self.Id, speed, angle)
-}
-
-func (self *Ship) Dock(planet int) {
-	self.Order = fmt.Sprintf("d %d %d", self.Id, planet)
-}
-
-func (self *Ship) Undock(planet int) {
-	self.Order = fmt.Sprintf("u %d", self.Id)
+func (self *World) GetShip(id int) (*Ship, bool) {
+	ret, ok := self.ShipMap[id]
+	return ret, ok
 }
 
 func (self *World) Init() {
@@ -128,6 +133,7 @@ func (self *World) Parse() {
 
 	self.ShipMap = make(map[int]*Ship)
 	self.Players = nil
+	self.Planets = nil
 
 	for p := 0; p < self.PlayerCount; p++ {
 
