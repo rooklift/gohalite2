@@ -72,8 +72,8 @@ func (self *Game) Parse() {
 			ship.X = self.token_parser.Float()
 			ship.Y = self.token_parser.Float()
 			ship.HP = self.token_parser.Int()
-			ship.Speedx = self.token_parser.Float()
-			ship.Speedy = self.token_parser.Float()
+			self.token_parser.Float()							// Skip deprecated "speedx"
+			self.token_parser.Float()							// Skip deprecated "speedy"
 			ship.Docked = self.token_parser.Int()
 			ship.DockedPlanet = self.token_parser.Int()
 			ship.DockingProgress = self.token_parser.Int()
@@ -100,7 +100,7 @@ func (self *Game) Parse() {
 		planet.Radius = self.token_parser.Float()
 		planet.DockingSpots = self.token_parser.Int()
 		planet.CurrentProduction = self.token_parser.Int()
-		planet.RemainingProduction = self.token_parser.Int()
+		self.token_parser.Int()									// Skip deprecated "remaining production"
 		planet.Owned = self.token_parser.Int()					// This should probably be converted to bool
 		planet.Owner = self.token_parser.Int()
 

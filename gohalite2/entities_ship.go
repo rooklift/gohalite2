@@ -11,8 +11,6 @@ type Ship struct {
 	X					float64
 	Y					float64
 	HP					int
-	Speedx				float64
-	Speedy				float64
 	Docked				int			// Is this really a bool?
 	DockedPlanet		int
 	DockingProgress		int
