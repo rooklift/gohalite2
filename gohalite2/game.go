@@ -15,9 +15,9 @@ type Game struct {
 	// These 3 things below can contain references to dead objects.
 	// But the Planet and Player structs themselves do not.
 
-	Players				map[int]*Player
-	Planets				map[int]*Planet
-	Ships				map[int]*Ship
+	player_map			map[int]*Player
+	planet_map			map[int]*Planet
+	ship_map			map[int]*Ship
 
 	logfile             *Logfile
 	token_parser		*TokenParser
@@ -29,15 +29,26 @@ func NewGame() *Game {
 	game.Pid = game.token_parser.Int()
 	game.Width = game.token_parser.Int()
 	game.Height = game.token_parser.Int()
-	game.Players = make(map[int]*Player)
-	game.Planets = make(map[int]*Planet)
-	game.Ships = make(map[int]*Ship)
+	game.player_map = make(map[int]*Player)
+	game.planet_map = make(map[int]*Planet)
+	game.ship_map = make(map[int]*Ship)
 	game.Parse()
 	return game
 }
 
 func (self *Game) GetMe() *Player {
-	return self.Players[self.Pid]
+	return self.player_map[self.Pid]
+}
+
+func (self *Game) GetPlanets() []*Planet {
+	var ret []*Planet
+	for key, _ := range self.planet_map {
+		planet := self.planet_map[key]
+		if planet.HP > 0 {
+			ret = append(ret, planet)
+		}
+	}
+	return ret
 }
 
 func (self *Game) Parse() {
@@ -45,11 +56,11 @@ func (self *Game) Parse() {
 	// Set all objects to have 0 HP, on the assumption that they are only sent to us if they have
 	// 1 or more HP. Thus this is a default value if we receive no info.
 
-	for _, planet := range(self.Planets) {
+	for _, planet := range(self.planet_map) {
 		planet.HP = 0
 	}
 
-	for _, ship := range(self.Ships) {
+	for _, ship := range(self.ship_map) {
 		ship.HP = 0
 		ship.ClearOrder()
 	}
@@ -63,12 +74,12 @@ func (self *Game) Parse() {
 		// Get or create the player in memory...
 
 		pid := self.token_parser.Int()
-		player, ok := self.Players[pid]
+		player, ok := self.player_map[pid]
 
 		if ok == false {
 			player = new(Player)
 			player.Id = pid
-			self.Players[pid] = player
+			self.player_map[pid] = player
 		}
 
 		ship_count := self.token_parser.Int()
@@ -80,12 +91,12 @@ func (self *Game) Parse() {
 			// Get or create the ship in memory...
 
 			sid := self.token_parser.Int()
-			ship, ok := self.Ships[sid]
+			ship, ok := self.ship_map[sid]
 
 			if ok == false {
 				ship = new(Ship)
 				ship.Id = sid
-				self.Ships[sid] = ship
+				self.ship_map[sid] = ship
 			}
 
 			ship.X = self.token_parser.Float()
@@ -110,11 +121,11 @@ func (self *Game) Parse() {
 
 		plid := self.token_parser.Int()
 
-		planet, ok := self.Planets[plid]
+		planet, ok := self.planet_map[plid]
 		if ok == false {
 			planet = new(Planet)
 			planet.Id = plid
-			self.Planets[plid] = planet
+			self.planet_map[plid] = planet
 		}
 
 		planet.X = self.token_parser.Float()
@@ -139,7 +150,7 @@ func (self *Game) Parse() {
 
 		for s := 0; s < docked_ship_count; s++ {
 			sid := self.token_parser.Int()
-			planet.DockedShips = append(planet.DockedShips, self.Ships[sid])
+			planet.DockedShips = append(planet.DockedShips, self.ship_map[sid])
 		}
 	}
 }

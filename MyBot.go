@@ -32,6 +32,9 @@ func main() {
 }
 
 func ai(game *hal.Game) {
+
+	// planets := game.GetPlanets()
+
 	me := game.GetMe()
 	for _, ship := range me.Ships {
 		if ship.Id == 0 {
