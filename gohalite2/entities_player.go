@@ -1,6 +1,6 @@
 package gohalite2
 
 type Player struct {
-	Pid					int
+	Id					int
 	Ships				[]*Ship
 }
