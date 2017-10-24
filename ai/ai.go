@@ -10,10 +10,29 @@ type ShipAI struct {
 	overmind		*Overmind
 	game			*hal.Game
 	id				int
+	target_type		int					// NONE (zero) / SHIP / PLANET
+	target_id		int
 }
 
 func (self *ShipAI) State() hal.Ship {
 	return self.game.GetShip(self.id)
+}
+
+func (self *ShipAI) ValidateTarget() {
+
+	game := self.game
+
+	if self.target_type == hal.SHIP {
+		target := game.GetShip(self.target_id)
+		if target.HP <= 0 {
+			self.target_type = hal.NONE
+		}
+	} else if self.target_type == hal.PLANET {
+		target := game.GetPlanet(self.target_id)
+		if target.HP <= 0 {
+			self.target_type = hal.NONE
+		}
+	}
 }
 
 // --------------------------------------------
@@ -73,6 +92,12 @@ func (self *Overmind) UpdateShipAIs() {
 			i--
 			game.Log("Turn %d: ship %d destroyed", game.Turn(), ship_ai.id)
 		}
+	}
+
+	// Clear dead targets...
+
+	for _, ship_ai := range self.shipAIs {
+		ship_ai.ValidateTarget()
 	}
 }
 
