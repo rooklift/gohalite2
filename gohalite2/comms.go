@@ -146,10 +146,10 @@ func (self *Game) Parse() {
 		planet.DockingSpots = self.token_parser.Int()
 		planet.CurrentProduction = self.token_parser.Int()
 		self.token_parser.Int()									// Skip deprecated "remaining production"
-		planet.Owned = self.token_parser.Int()					// This should probably be converted to bool
+		planet.Owned = self.token_parser.Bool()
 		planet.Owner = self.token_parser.Int()
 
-		if planet.Owned == 0 {
+		if planet.Owned == false {
 			planet.Owner = -1
 		}
 

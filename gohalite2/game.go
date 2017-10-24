@@ -14,7 +14,7 @@ type Game struct {
 
 	PlayerMap			map[int]*Player
 	PlanetMap			map[int]*Planet
-	ShipMap			map[int]*Ship
+	ShipMap				map[int]*Ship
 
 	logfile             *Logfile
 	token_parser		*TokenParser
