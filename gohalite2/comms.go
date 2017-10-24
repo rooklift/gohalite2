@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // ---------------------------------------
@@ -65,11 +66,11 @@ func (self *Game) Parse() {
 	// Set all objects to have 0 HP, on the assumption that they are only sent to us if they have
 	// 1 or more HP. Thus this is a default value if we receive no info.
 
-	for _, planet := range(self.planet_map) {
+	for _, planet := range(self.PlanetMap) {
 		planet.HP = 0
 	}
 
-	for _, ship := range(self.ship_map) {
+	for _, ship := range(self.ShipMap) {
 		ship.HP = 0
 		ship.ClearOrder()
 	}
@@ -83,12 +84,12 @@ func (self *Game) Parse() {
 		// Get or create the player in memory...
 
 		pid := self.token_parser.Int()
-		player, ok := self.player_map[pid]
+		player, ok := self.PlayerMap[pid]
 
 		if ok == false {
 			player = new(Player)
 			player.Id = pid
-			self.player_map[pid] = player
+			self.PlayerMap[pid] = player
 		}
 
 		ship_count := self.token_parser.Int()
@@ -100,13 +101,13 @@ func (self *Game) Parse() {
 			// Get or create the ship in memory...
 
 			sid := self.token_parser.Int()
-			ship, ok := self.ship_map[sid]
+			ship, ok := self.ShipMap[sid]
 
 			if ok == false {
 				ship = new(Ship)
 				ship.Id = sid
 				ship.Birth = max(1, self.Turn)					// If turn is 0 we are in init stage.
-				self.ship_map[sid] = ship
+				self.ShipMap[sid] = ship
 			}
 
 			ship.X = self.token_parser.Float()
@@ -131,11 +132,11 @@ func (self *Game) Parse() {
 
 		plid := self.token_parser.Int()
 
-		planet, ok := self.planet_map[plid]
+		planet, ok := self.PlanetMap[plid]
 		if ok == false {
 			planet = new(Planet)
 			planet.Id = plid
-			self.planet_map[plid] = planet
+			self.PlanetMap[plid] = planet
 		}
 
 		planet.X = self.token_parser.Float()
@@ -160,7 +161,23 @@ func (self *Game) Parse() {
 
 		for s := 0; s < docked_ship_count; s++ {
 			sid := self.token_parser.Int()
-			planet.DockedShips = append(planet.DockedShips, self.ship_map[sid])
+			planet.DockedShips = append(planet.DockedShips, self.ShipMap[sid])
 		}
 	}
+}
+
+// ---------------------------------------
+
+func (self *Game) Send() {
+	me := self.GetMe()
+
+	var commands []string
+
+	for _, ship := range(me.Ships) {
+		if ship.Order != "" {
+			commands = append(commands, ship.Order)
+		}
+	}
+	fmt.Printf(strings.Join(commands, " "))
+	fmt.Printf("\n")
 }
