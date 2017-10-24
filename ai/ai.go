@@ -7,7 +7,7 @@ import (
 // --------------------------------------------
 
 type ShipAI struct {
-	mainAI			*AI
+	overmind		*Overmind
 	game			*hal.Game
 	id				int
 }
@@ -19,7 +19,7 @@ func (self *ShipAI) State() hal.Ship {
 // --------------------------------------------
 
 type PlanetAI struct {
-	mainAI			*AI
+	overmind		*Overmind
 	game			*hal.Game
 	id				int
 }
@@ -30,24 +30,24 @@ func (self *PlanetAI) State() hal.Planet {
 
 // --------------------------------------------
 
-type AI struct {
+type Overmind struct {
 	game			*hal.Game
 	shipAIs			[]*ShipAI
 	planetAIs		[]*PlanetAI
 }
 
-func NewAI(game *hal.Game) *AI {
-	ret := new(AI)
+func NewOvermind(game *hal.Game) *Overmind {
+	ret := new(Overmind)
 	ret.game = game
 	return ret
 }
 
-func (self *AI) Step() {
+func (self *Overmind) Step() {
 	self.UpdateShipAIs()
 	self.UpdatePlanetAIs()
 }
 
-func (self *AI) UpdateShipAIs() {
+func (self *Overmind) UpdateShipAIs() {
 
 	game := self.game
 
@@ -57,7 +57,7 @@ func (self *AI) UpdateShipAIs() {
 
 	for _, sid := range my_new_ships {
 		ship_ai := new(ShipAI)
-		ship_ai.mainAI = self
+		ship_ai.overmind = self
 		ship_ai.game = game
 		ship_ai.id = sid
 		self.shipAIs = append(self.shipAIs, ship_ai)
@@ -76,7 +76,7 @@ func (self *AI) UpdateShipAIs() {
 	}
 }
 
-func (self *AI) UpdatePlanetAIs() {
+func (self *Overmind) UpdatePlanetAIs() {
 
 	game := self.game
 
@@ -84,7 +84,7 @@ func (self *AI) UpdatePlanetAIs() {
 
 		for _, planet := range game.AllPlanets() {
 			planet_ai := new(PlanetAI)
-			planet_ai.mainAI = self
+			planet_ai.overmind = self
 			planet_ai.game = game
 			planet_ai.id = planet.Id
 			self.planetAIs = append(self.planetAIs, planet_ai)

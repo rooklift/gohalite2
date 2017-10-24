@@ -22,11 +22,11 @@ func Run() {
 
 	fmt.Printf("%s %d\n", NAME, VERSION)
 
-	ai := NewAI(game)
+	overmind := NewOvermind(game)
 
 	for {
 		game.Parse()
-		ai.Step()
+		overmind.Step()
 		game.Send()
 	}
 }
