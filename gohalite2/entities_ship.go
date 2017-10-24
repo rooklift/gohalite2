@@ -14,7 +14,6 @@ type Ship struct {
 	Docked				int			// Is this really a bool?
 	DockedPlanet		int
 	DockingProgress		int
-	Cooldown			int
 
 	Order				string
 	Birth				int			// Turn this ship was first seen
