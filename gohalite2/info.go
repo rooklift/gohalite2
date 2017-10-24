@@ -25,4 +25,3 @@ func (self *Game) PlanetsOwnedBy(pid int) []Planet {
 func (self *Game) MyPlanets() []Planet {
 	return self.PlanetsOwnedBy(self.pid)
 }
-
