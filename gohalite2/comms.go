@@ -176,6 +176,10 @@ func (self *Game) ClearOrder(sid int) {
 	delete(self.orders, sid)
 }
 
+func (self *Game) CurrentOrder(sid int) string {
+	return self.orders[sid]
+}
+
 func (self *Game) Send() {
 	var commands []string
 	for _, s := range self.orders {

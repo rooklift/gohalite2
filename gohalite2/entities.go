@@ -26,31 +26,31 @@ type Planet struct {
 	DockedShips						[]int
 }
 
-func (self *Planet) GetX() float64 {
-	return self.X
+func (p Planet) GetX() float64 {
+	return p.X
 }
 
-func (self *Planet) GetY() float64 {
-	return self.Y
+func (p Planet) GetY() float64 {
+	return p.Y
 }
 
-func (self *Planet) GetRadius() float64 {
-	return self.Radius
+func (p Planet) GetRadius() float64 {
+	return p.Radius
 }
 
-func (self *Planet) Alive() bool {
-	return self.HP > 0
+func (p Planet) Alive() bool {
+	return p.HP > 0
 }
 
-func (self *Planet) CentreDistance(other Entity) float64 {
-	dx := self.X - other.GetX()
-	dy := self.Y - other.GetY()
+func (p Planet) CentreDistance(other Entity) float64 {
+	dx := p.X - other.GetX()
+	dy := p.Y - other.GetY()
 	return math.Sqrt(dx * dx + dy * dy)
 }
 
-func (self *Planet) SurfaceDistance(other Entity) float64 {
-	centre_distance := self.CentreDistance(other)
-	return (centre_distance - self.Radius) - other.GetRadius()
+func (p Planet) SurfaceDistance(other Entity) float64 {
+	centre_distance := p.CentreDistance(other)
+	return (centre_distance - p.Radius) - other.GetRadius()
 }
 
 type Ship struct {
@@ -66,36 +66,68 @@ type Ship struct {
 	Birth				int			// Turn this ship was first seen
 }
 
-func (self *Ship) GetX() float64 {
-	return self.X
+func (s Ship) GetX() float64 {
+	return s.X
 }
 
-func (self *Ship) GetY() float64 {
-	return self.Y
+func (s Ship) GetY() float64 {
+	return s.Y
 }
 
-func (self *Ship) GetRadius() float64 {
+func (s Ship) GetRadius() float64 {
 	return SHIP_RADIUS
 }
 
-func (self *Ship) Alive() bool {
-	return self.HP > 0
+func (s Ship) Alive() bool {
+	return s.HP > 0
 }
 
-func (self *Ship) CentreDistance(other Entity) float64 {
-	dx := self.X - other.GetX()
-	dy := self.Y - other.GetY()
+func (s Ship) CentreDistance(other Entity) float64 {
+	dx := s.X - other.GetX()
+	dy := s.Y - other.GetY()
 	return math.Sqrt(dx * dx + dy * dy)
 }
 
-func (self *Ship) SurfaceDistance(other Entity) float64 {
-	centre_distance := self.CentreDistance(other)
+func (s Ship) SurfaceDistance(other Entity) float64 {
+	centre_distance := s.CentreDistance(other)
 	return (centre_distance - SHIP_RADIUS) - other.GetRadius()
 }
 
-func (self *Ship) CanDock(p *Planet) bool {
-	if self.Alive() && p.Alive() && len(p.DockedShips) < p.DockingSpots {
-		return self.CentreDistance(p) <= p.Radius + DOCKING_RADIUS
+func (s Ship) CanDock(p Planet) bool {
+	if s.Alive() && p.Alive() && len(p.DockedShips) < p.DockingSpots {
+		return s.CentreDistance(p) <= p.Radius + DOCKING_RADIUS
 	}
 	return false
+}
+
+type Point struct {
+	X								float64
+	Y								float64
+}
+
+func (p Point) GetX() float64 {
+	return p.X
+}
+
+func (p Point) GetY() float64 {
+	return p.Y
+}
+
+func (p Point) GetRadius() float64 {
+	return 0
+}
+
+func (p Point) Alive() bool {
+	return true
+}
+
+func (p Point) CentreDistance(other Entity) float64 {
+	dx := p.X - other.GetX()
+	dy := p.Y - other.GetY()
+	return math.Sqrt(dx * dx + dy * dy)
+}
+
+func (p Point) SurfaceDistance(other Entity) float64 {
+	centre_distance := p.CentreDistance(other)
+	return centre_distance - other.GetRadius()
 }

@@ -31,9 +31,23 @@ func (self *ShipAI) ValidateTarget() {
 		target := game.GetPlanet(self.target_id)
 		if target.HP <= 0 {
 			self.target_type = hal.NONE
+		} else if target.Owner == game.Pid() && len(target.DockedShips) == target.DockingSpots {
+			self.target_type = hal.NONE
 		}
 	}
 }
+
+func (self *ShipAI) DockIfPossible() {
+	game := self.game
+	if self.State().DockedStatus == hal.UNDOCKED {
+		closest_planet := game.ClosestPlanet(self.State().X, self.State().Y)
+		if self.State().CanDock(closest_planet) {
+			game.Dock(self.id, closest_planet.Id)
+		}
+	}
+}
+
+
 
 // --------------------------------------------
 
@@ -89,7 +103,7 @@ func (self *Overmind) UpdateShipAIs() {
 		}
 	}
 
-	// Clear dead targets...
+	// Clear dead / totally conquered targets...
 
 	for _, ship_ai := range self.shipAIs {
 		ship_ai.ValidateTarget()
@@ -129,4 +143,10 @@ func (self *Overmind) UpdatePlanetAIs() {
 func (self *Overmind) Step() {
 	self.UpdateShipAIs()
 	self.UpdatePlanetAIs()
+
+	for _, ship_ai := range self.shipAIs {
+		ship_ai.DockIfPossible()
+	}
+
+
 }
