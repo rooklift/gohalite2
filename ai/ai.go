@@ -67,6 +67,21 @@ func (self *ShipAI) CurrentOrder() string {
 	return self.game.CurrentOrder(self.id)
 }
 
+func (self *ShipAI) Navigate(x, y float64) {
+
+	game := self.game
+
+	var obstacles []hal.Entity
+
+	all_planets := game.AllPlanets()
+
+	for _, planet := range all_planets {
+		obstacles = append(obstacles, planet)
+	}
+
+	// FIXME: in progress (TODO)
+}
+
 // --------------------------------------------
 
 type PlanetAI struct {
@@ -168,6 +183,16 @@ func (self *Overmind) Step() {
 	for _, ship_ai := range self.shipAIs {
 		if ship_ai.CurrentOrder() == "" {
 			ship_ai.DockIfPossible()
+		}
+	}
+
+	for _, ship_ai := range self.shipAIs {
+		if ship_ai.Ship().Id % 3 == 0 {
+			ship_ai.Thrust(7, 270)
+		} else if ship_ai.Ship().Id % 3 == 1 {
+			ship_ai.Thrust(7, 90)
+		} else {
+			ship_ai.Thrust(7, 0)
 		}
 	}
 }

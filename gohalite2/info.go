@@ -4,7 +4,7 @@ func (self *Game) AllPlanets() []Planet {
 	var ret []Planet
 	for key, _ := range self.planetMap {
 		planet := *self.planetMap[key]
-		if planet.HP > 0 {
+		if planet.Alive() {
 			ret = append(ret, planet)
 		}
 	}
@@ -15,7 +15,7 @@ func (self *Game) PlanetsOwnedBy(pid int) []Planet {
 	var ret []Planet
 	for key, _ := range self.planetMap {
 		planet := *self.planetMap[key]
-		if planet.HP > 0 && planet.Owned && planet.Owner == pid {
+		if planet.Alive() && planet.Owned && planet.Owner == pid {
 			ret = append(ret, planet)
 		}
 	}
