@@ -74,3 +74,4 @@ func (self *Game) ClosestPlanet(x, y float64) Planet {
 
 	return ret
 }
+

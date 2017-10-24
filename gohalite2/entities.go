@@ -53,6 +53,10 @@ func (p Planet) SurfaceDistance(other Entity) float64 {
 	return (centre_distance - p.Radius) - other.GetRadius()
 }
 
+func (p Planet) IsFull() bool {
+	return len(p.DockedShips) >= p.DockingSpots
+}
+
 type Ship struct {
 	Id					int
 	Owner				int
