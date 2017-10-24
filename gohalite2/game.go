@@ -1,20 +1,21 @@
 package gohalite2
 
 type Game struct {
-	Inited				bool
-	Turn				int
-	Pid					int					// Our own ID
-	Width				int
-	Height				int
+	inited				bool
+	turn				int
+	pid					int					// Our own ID
+	width				int
+	height				int
 
-	PlayerCount			int					// Does this change if a player dies?
+	players				int					// Stored only once at startup. Never changes.
 
 	// These 3 things below can contain references to dead objects.
 	// But the Planet and Player structs themselves do not.
 
-	PlayerMap			map[int]*Player
-	PlanetMap			map[int]*Planet
-	ShipMap				map[int]*Ship
+	planetMap			map[int]*Planet
+	shipMap				map[int]*Ship
+
+	orders				map[int]string
 
 	logfile             *Logfile
 	token_parser		*TokenParser
@@ -23,13 +24,16 @@ type Game struct {
 func NewGame() *Game {
 	game := new(Game)
 	game.token_parser = NewTokenParser()
-	game.Pid = game.token_parser.Int()
-	game.Width = game.token_parser.Int()
-	game.Height = game.token_parser.Int()
-	game.PlayerMap = make(map[int]*Player)
-	game.PlanetMap = make(map[int]*Planet)
-	game.ShipMap = make(map[int]*Ship)
+	game.pid = game.token_parser.Int()
+	game.width = game.token_parser.Int()
+	game.height = game.token_parser.Int()
+	game.planetMap = make(map[int]*Planet)
+	game.shipMap = make(map[int]*Ship)
 	game.Parse()
-	game.Inited = true
+	game.inited = true
 	return game
+}
+
+func (self *Game) Pid() int {
+	return self.pid
 }
