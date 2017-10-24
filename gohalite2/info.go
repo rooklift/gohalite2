@@ -25,3 +25,19 @@ func (self *Game) PlanetsOwnedBy(pid int) []Planet {
 func (self *Game) MyPlanets() []Planet {
 	return self.PlanetsOwnedBy(self.pid)
 }
+
+func (self *Game) MyNewShipIDs() []int {
+	var ret []int
+	for key, _ := range self.shipMap {
+		ship := *self.shipMap[key]
+		if ship.Birth == self.turn && ship.Owner == self.pid {
+			ret = append(ret, ship.Id)
+		}
+	}
+	return ret
+}
+
+func (self *Game) GetShip(id int) Ship {
+	ship := *self.shipMap[id]
+	return ship
+}

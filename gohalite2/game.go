@@ -37,3 +37,7 @@ func NewGame() *Game {
 func (self *Game) Pid() int {
 	return self.pid
 }
+
+func (self *Game) Turn() int {
+	return self.turn
+}
