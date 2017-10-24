@@ -1,7 +1,6 @@
 package gohalite2
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 )
@@ -53,9 +52,4 @@ func (self *Game) StartLog(logfilename string) {
 
 func (self *Game) Log(format_string string, args ...interface{}) {
 	self.logfile.Dump(format_string, args...)
-}
-
-func (self *Game) LogState() {
-	b, _ := json.MarshalIndent(self, "", "  ")
-	self.Log(string(b))
 }

@@ -20,8 +20,6 @@ func main() {
 	game.Log("--------------------------------------------------------------------------------")
 	game.Log("%s %d starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
 
-	game.LogState()
-
 	fmt.Printf("%s %d\n", NAME, VERSION)
 
 	for {
@@ -33,12 +31,6 @@ func main() {
 
 func ai(game *hal.Game) {
 
-	// planets := game.GetPlanets()
+	// Idea: if 2 players, how about skipping the planet-getting stage and going for direct assassination?
 
-	me := game.GetMe()
-	for _, ship := range me.Ships {
-		if ship.Id == 0 {
-			ship.Thrust(7, 30)
-		}
-	}
 }

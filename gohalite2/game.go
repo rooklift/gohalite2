@@ -6,6 +6,8 @@ import (
 )
 
 type Game struct {
+	Inited				bool
+	Turn				int
 	Pid					int					// Our own ID
 	Width				int
 	Height				int
@@ -33,6 +35,7 @@ func NewGame() *Game {
 	game.planet_map = make(map[int]*Planet)
 	game.ship_map = make(map[int]*Ship)
 	game.Parse()
+	game.Inited = true
 	return game
 }
 
@@ -52,6 +55,10 @@ func (self *Game) GetPlanets() []*Planet {
 }
 
 func (self *Game) Parse() {
+
+	if self.Inited {
+		self.Turn++
+	}
 
 	// Set all objects to have 0 HP, on the assumption that they are only sent to us if they have
 	// 1 or more HP. Thus this is a default value if we receive no info.
@@ -96,6 +103,7 @@ func (self *Game) Parse() {
 			if ok == false {
 				ship = new(Ship)
 				ship.Id = sid
+				ship.Birth = max(1, self.Turn)					// If turn is 0 we are in init stage.
 				self.ship_map[sid] = ship
 			}
 

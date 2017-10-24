@@ -15,7 +15,9 @@ type Ship struct {
 	DockedPlanet		int
 	DockingProgress		int
 	Cooldown			int
+
 	Order				string
+	Birth				int			// Turn this ship was first seen
 }
 
 func (self *Ship) Thrust(speed, angle int) {
