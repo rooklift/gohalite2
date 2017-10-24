@@ -92,3 +92,10 @@ func (self *Ship) SurfaceDistance(other Entity) float64 {
 	centre_distance := self.CentreDistance(other)
 	return (centre_distance - SHIP_RADIUS) - other.GetRadius()
 }
+
+func (self *Ship) CanDock(p *Planet) bool {
+	if self.Alive() && p.Alive() && len(p.DockedShips) < p.DockingSpots {
+		return self.CentreDistance(p) <= p.Radius + DOCKING_RADIUS
+	}
+	return false
+}

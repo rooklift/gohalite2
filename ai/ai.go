@@ -61,11 +61,6 @@ func NewOvermind(game *hal.Game) *Overmind {
 	return ret
 }
 
-func (self *Overmind) Step() {
-	self.UpdateShipAIs()
-	self.UpdatePlanetAIs()
-}
-
 func (self *Overmind) UpdateShipAIs() {
 
 	game := self.game
@@ -105,8 +100,9 @@ func (self *Overmind) UpdatePlanetAIs() {
 
 	game := self.game
 
-	if game.Turn() == 1 {
+	// Create AIs on turn 1...
 
+	if game.Turn() == 1 {
 		for _, planet := range game.AllPlanets() {
 			planet_ai := new(PlanetAI)
 			planet_ai.overmind = self
@@ -126,4 +122,11 @@ func (self *Overmind) UpdatePlanetAIs() {
 			game.Log("Turn %d: planet %d destroyed", game.Turn(), planet_ai.id)
 		}
 	}
+}
+
+// --------------------------------------------
+
+func (self *Overmind) Step() {
+	self.UpdateShipAIs()
+	self.UpdatePlanetAIs()
 }
