@@ -41,3 +41,16 @@ func (self *Game) GetShip(id int) Ship {
 	ship := *self.shipMap[id]
 	return ship
 }
+
+func (self *Game) GetPlanet(id int) Planet {
+
+	planet := *self.planetMap[id]
+
+	// Replace the docked ships slice with a copy...
+
+	source_slice := planet.DockedShips
+	planet.DockedShips = make([]int, len(source_slice))
+	copy(planet.DockedShips, source_slice)
+
+	return planet
+}
