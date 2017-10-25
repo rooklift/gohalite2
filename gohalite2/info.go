@@ -3,7 +3,7 @@ package gohalite2
 func (self *Game) AllPlanets() []Planet {
 	var ret []Planet
 	for plid, _ := range self.planetMap {
-		planet := self.GetPlanet(plid)				// Returns a planet with a new ship slice
+		planet := self.GetPlanet(plid)
 		if planet.Alive() {
 			ret = append(ret, planet)
 		}
@@ -14,7 +14,7 @@ func (self *Game) AllPlanets() []Planet {
 func (self *Game) PlanetsOwnedBy(pid int) []Planet {
 	var ret []Planet
 	for plid, _ := range self.planetMap {
-		planet := self.GetPlanet(plid)				// Returns a planet with a new ship slice
+		planet := self.GetPlanet(plid)
 		if planet.Alive() && planet.Owned && planet.Owner == pid {
 			ret = append(ret, planet)
 		}
@@ -43,15 +43,7 @@ func (self *Game) GetShip(sid int) Ship {
 }
 
 func (self *Game) GetPlanet(plid int) Planet {
-
 	planet := self.planetMap[plid]
-
-	// Replace the docked ships slice with a copy...
-
-	source_slice := planet.DockedShips
-	planet.DockedShips = make([]int, len(source_slice))
-	copy(planet.DockedShips, source_slice)
-
 	return planet
 }
 
@@ -65,7 +57,7 @@ func (self *Game) ClosestPlanet(x, y float64) Planet {
 	var best_dist float64 = 9999999
 	var ret Planet
 
-	for _, planet := range self.AllPlanets() {		// Each planet has a new ship slice
+	for _, planet := range self.AllPlanets() {
 		dist := point.SurfaceDistance(planet)
 		if dist < best_dist {
 			ret = planet

@@ -66,14 +66,22 @@ func (self *Game) Parse() {
 	}
 
 	// Set all objects to have 0 HP, on the assumption that they are only sent to us if they have
-	// 1 or more HP. (Is this true?) Thus this is a default value if we receive no info.
+	// 1 or more HP. (Is this true?) Thus this is a default value if we receive no info (they are dead).
 
-	for _, planet := range(self.planetMap) {
+	for plid, planet := range self.planetMap {
 		planet.HP = 0
+		self.planetMap[plid] = planet
 	}
 
-	for _, ship := range(self.shipMap) {
+	for sid, ship := range self.shipMap {
 		ship.HP = 0
+		self.shipMap[sid] = ship
+	}
+
+	// Clear the dock maps. We will recreate them during parsing.
+
+	for plid, _ := range self.dockMap {
+		self.dockMap[plid] = nil
 	}
 
 	// Player parsing.............................................................................
@@ -142,14 +150,17 @@ func (self *Game) Parse() {
 			planet.Owner = -1
 		}
 
-		// Docked ships are given to us as their IDs...
+		planet.DockedShips = self.token_parser.Int()
 
-		planet.DockedShips = nil	// Clear the planet's ship slice, it will be recreated now...
+		// The dockMap is kept separately so that the Planet struct has no mutable fields.
+		// i.e. the Planet struct itself does not get the following data:
 
-		docked_ship_count := self.token_parser.Int()
+		for s := 0; s < planet.DockedShips; s++ {
 
-		for s := 0; s < docked_ship_count; s++ {
-			planet.DockedShips = append(planet.DockedShips, self.token_parser.Int())
+			// This relies on the fact that we've already been given info about the ships...
+
+			sid := self.token_parser.Int()
+			self.dockMap[plid] = append(self.dockMap[plid], self.GetShip(sid))
 		}
 
 		self.planetMap[plid] = planet

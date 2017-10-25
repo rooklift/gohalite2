@@ -23,7 +23,7 @@ type Planet struct {
 	CurrentProduction				int
 	Owned							bool
 	Owner							int			// Protocol will send 0 if not owned at all, but we "correct" this to -1
-	DockedShips						[]int
+	DockedShips						int			// The ships themselves can be accessed via game.dockMap[]
 }
 
 func (p Planet) GetX() float64 {
@@ -54,7 +54,7 @@ func (p Planet) SurfaceDistance(other Entity) float64 {
 }
 
 func (p Planet) IsFull() bool {
-	return len(p.DockedShips) >= p.DockingSpots
+	return p.DockedShips >= p.DockingSpots
 }
 
 type Ship struct {
@@ -98,7 +98,7 @@ func (s Ship) SurfaceDistance(other Entity) float64 {
 }
 
 func (s Ship) CanDock(p Planet) bool {
-	if s.Alive() && p.Alive() && len(p.DockedShips) < p.DockingSpots {
+	if s.Alive() && p.Alive() && p.IsFull() == false {
 		return s.CentreDistance(p) <= p.Radius + DOCKING_RADIUS
 	}
 	return false
