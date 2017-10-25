@@ -22,10 +22,10 @@ func dist(x1, y1, x2, y2 float64) float64 {
 
 func intersect_segment_circle(startx, starty, endx, endy, circlex, circley, radius float64) bool {
 
-	// Based on the Python version
+	// Based on the Python version, I have no idea how this works.
 
 	const (
-		FUDGE = 0.5
+		FUDGE = SHIP_RADIUS		// We almost certainly want this.
 	)
 
 	dx := endx - startx
@@ -36,14 +36,15 @@ func intersect_segment_circle(startx, starty, endx, endy, circlex, circley, radi
 	b := -2 * (startx * startx - startx * endx - startx * circlex + endx * circlex +
 			  starty * starty - starty * endy - starty * circley + endy * circley)
 
+	// This is in the Python code, but is unused:
 	// c := (startx - circlex) * (startx - circlex) + (starty - circley) * (starty - circley)
 
 	if a == 0.0 {
 		return dist(startx, starty, circlex, circley) <= radius + FUDGE
 	}
 
-	// Time along segment when closest to the circle (vertex of the quadratic)
 	t := min_float(-b / (2 * a), 1.0)
+
 	if t < 0 {
 		return false
 	}
@@ -52,4 +53,28 @@ func intersect_segment_circle(startx, starty, endx, endy, circlex, circley, radi
 	closest_y := starty + dy * t
 
 	return dist(closest_x, closest_y, circlex, circley) <= radius + FUDGE
+}
+
+func projection(x1, y1, distance float64, degrees int) (x2, y2 float64) {
+
+	// Given a coordinate, a distance and an angle, find a new coordinate.
+
+	if distance == 0 {
+		return x1, y1
+	}
+
+	radians := deg_to_rad(float64(degrees))
+
+	x2 = distance * math.Cos(radians) + x1
+	y2 = distance * math.Sin(radians) + y1
+
+	return x2, y2
+}
+
+func deg_to_rad(d float64) float64 {
+	return d / 180 * math.Pi
+}
+
+func rad_to_deg(r float64) float64 {
+	return r / math.Pi * 180
 }
