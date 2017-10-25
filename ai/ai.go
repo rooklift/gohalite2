@@ -1,6 +1,8 @@
 package ai
 
 import (
+	"math/rand"
+
 	hal "../gohalite2"
 )
 
@@ -12,6 +14,7 @@ type ShipAI struct {
 	id				int
 	target_type		int					// NONE (zero) / SHIP / PLANET
 	target_id		int
+	course			int
 }
 
 func (self *ShipAI) Ship() hal.Ship {
@@ -45,6 +48,7 @@ func (self *ShipAI) DockIfPossible() {
 	if self.Ship().DockedStatus == hal.UNDOCKED {
 		closest_planet := self.ClosestPlanet()
 		if self.Ship().CanDock(closest_planet) {
+			self.game.Log("Docking ship %d", self.id)
 			self.Dock(closest_planet.Id)
 		}
 	}
@@ -70,19 +74,17 @@ func (self *ShipAI) CurrentOrder() string {
 	return self.game.CurrentOrder(self.id)
 }
 
-func (self *ShipAI) Navigate(x, y float64) {
+func (self *ShipAI) Act() {
 
-	game := self.game
-
-	var obstacles []hal.Entity
-
-	all_planets := game.AllPlanets()
-
-	for _, planet := range all_planets {
-		obstacles = append(obstacles, planet)
+	if self.target_type == hal.NONE || self.Ship().DockedStatus != hal.UNDOCKED {
+		return
 	}
 
-	// FIXME: in progress (TODO)
+	if self.game.AngleCollisionID(self.Ship().X, self.Ship().Y, 7, self.course) != -1 {
+		self.Thrust(3, self.course)
+	} else {
+		self.Thrust(7, self.course)
+	}
 }
 
 // --------------------------------------------
@@ -172,6 +174,8 @@ func (self *Overmind) UpdatePlanetAIs() {
 
 func (self *Overmind) Step() {
 
+	game := self.game
+
 	// Fix the AI slices by adding / deleting AIs...
 
 	self.UpdateShipAIs()
@@ -183,9 +187,46 @@ func (self *Overmind) Step() {
 		ship_ai.ValidateTarget()
 	}
 
+	// Dock whenever possible...
+
 	for _, ship_ai := range self.shipAIs {
 		if ship_ai.CurrentOrder() == "" {
 			ship_ai.DockIfPossible()
+		}
+	}
+
+	for _, ship_ai := range self.shipAIs {
+
+		if ship_ai.CurrentOrder() == "" && ship_ai.target_type == hal.NONE {
+
+			for n := 0; n < 10; n++ {
+
+				degrees := rand.Intn(360)
+
+				plid := game.AngleCollisionID(ship_ai.Ship().X, ship_ai.Ship().Y, 9999, degrees)
+
+				if plid == -1 {
+					continue
+				}
+
+				planet := game.GetPlanet(plid)
+
+				if planet.Owner != game.Pid() || planet.IsFull() == false {
+
+					ship_ai.target_id = plid
+					ship_ai.target_type = hal.PLANET
+					ship_ai.course = degrees
+					break
+				}
+			}
+		}
+	}
+
+	// Each ship now acts based on its assigned target...
+
+	for _, ship_ai := range self.shipAIs {
+		if ship_ai.CurrentOrder() == "" {
+			ship_ai.Act()
 		}
 	}
 }

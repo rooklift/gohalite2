@@ -1,13 +1,13 @@
 package gohalite2
 
-func (self *Game) AngleCollisionID(startx, starty float64, degrees int) int {
+func (self *Game) AngleCollisionID(startx, starty, distance float64, degrees int) int {
 
 	// Returns ID of the first planet we would collide with, or -1 if no hits
 
 	var collision_planets []Planet
 	all_planets := self.AllPlanets()
 
-	endx, endy := projection(startx, starty, 1000, degrees)
+	endx, endy := projection(startx, starty, distance, degrees)
 
 	for _, planet := range all_planets {
 
