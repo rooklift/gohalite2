@@ -22,12 +22,13 @@ func (self *Game) AngleCollisionID(startx, starty, distance float64, degrees int
 		return -1
 	}
 
-	closest_distance := 999999.9
 	closest_planet := Planet{}
+	closest_distance := 999999.9
 
 	for _, c := range collision_planets {
 		if dist(startx, starty, c.X, c.Y) < closest_distance {
 			closest_planet = c
+			closest_distance = dist(startx, starty, c.X, c.Y)
 		}
 	}
 
