@@ -37,10 +37,13 @@ func (self *ShipAI) ValidateTarget() {
 	}
 }
 
+func (self *ShipAI) ClosestPlanet() hal.Planet {
+	return self.game.ClosestPlanet(self.Ship().X, self.Ship().Y)
+}
+
 func (self *ShipAI) DockIfPossible() {
-	game := self.game
 	if self.Ship().DockedStatus == hal.UNDOCKED {
-		closest_planet := game.ClosestPlanet(self.Ship().X, self.Ship().Y)
+		closest_planet := self.ClosestPlanet()
 		if self.Ship().CanDock(closest_planet) {
 			self.Dock(closest_planet.Id)
 		}
