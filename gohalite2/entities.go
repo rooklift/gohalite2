@@ -98,7 +98,7 @@ func (s Ship) SurfaceDistance(other Entity) float64 {
 }
 
 func (s Ship) CanDock(p Planet) bool {
-	if s.Alive() && p.Alive() && p.IsFull() == false {
+	if s.Alive() && p.Alive() && p.IsFull() == false && (p.Owned == false || p.Owner == s.Owner) {
 		return s.CentreDistance(p) <= p.Radius + DOCKING_RADIUS
 	}
 	return false
