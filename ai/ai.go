@@ -188,14 +188,4 @@ func (self *Overmind) Step() {
 			ship_ai.DockIfPossible()
 		}
 	}
-
-	for _, ship_ai := range self.shipAIs {
-		if ship_ai.Ship().Id % 3 == 0 {
-			ship_ai.Thrust(7, 270)
-		} else if ship_ai.Ship().Id % 3 == 1 {
-			ship_ai.Thrust(7, 90)
-		} else {
-			ship_ai.Thrust(7, 0)
-		}
-	}
 }

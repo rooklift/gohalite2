@@ -80,9 +80,7 @@ func (self *Game) Parse() {
 
 	// Clear the dock maps. We will recreate them during parsing.
 
-	for plid, _ := range self.dockMap {
-		self.dockMap[plid] = nil
-	}
+	self.dockMap = make(map[int][]Ship)
 
 	// Player parsing.............................................................................
 
