@@ -7,7 +7,8 @@ type Game struct {
 	width				int
 	height				int
 
-	players				int					// Stored only once at startup. Never changes.
+	initialPlayers		int					// Stored only once at startup. Never changes.
+	currentPlayers		int
 
 	planetMap			map[int]Planet		// Planet ID --> Planet			(can contain dead objects)
 	shipMap				map[int]Ship		// Ship ID --> Ship				(can contain dead objects)
@@ -33,10 +34,9 @@ func NewGame() *Game {
 	return game
 }
 
-func (self *Game) Pid() int {
-	return self.pid
-}
-
-func (self *Game) Turn() int {
-	return self.turn
-}
+func (self *Game) Turn() int { return self.turn }
+func (self *Game) Pid() int { return self.pid }
+func (self *Game) Width() int { return self.width }
+func (self *Game) Height() int { return self.height }
+func (self *Game) InitialPlayers() int { return self.initialPlayers }
+func (self *Game) CurrentPlayers() int { return self.currentPlayers }

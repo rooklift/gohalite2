@@ -53,3 +53,12 @@ func (self *Game) StartLog(logfilename string) {
 func (self *Game) Log(format_string string, args ...interface{}) {
 	self.logfile.Dump(format_string, args...)
 }
+
+func (g *Game) LogOnce(format_string string, args ...interface{}) bool {
+	if g.logfile.logged_once[format_string] == false {
+		g.logfile.logged_once[format_string] = true         // Note that it's format_string that is checked / saved
+		g.logfile.Dump(format_string, args...)
+		return true
+	}
+	return false
+}

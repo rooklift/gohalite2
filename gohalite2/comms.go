@@ -86,15 +86,21 @@ func (self *Game) Parse() {
 
 	player_count := self.token_parser.Int()
 
-	if self.players == 0 {
-		self.players = player_count								// Only update this internally at init stage.
+	if self.initialPlayers == 0 {
+		self.initialPlayers = player_count						// Only save this at init stage.
 	}
+
+	players_with_ships := 0
 
 	for p := 0; p < player_count; p++ {
 
 		pid := self.token_parser.Int()
 
 		ship_count := self.token_parser.Int()
+
+		if ship_count > 0 {
+			players_with_ships++
+		}
 
 		for s := 0; s < ship_count; s++ {
 
@@ -163,6 +169,8 @@ func (self *Game) Parse() {
 
 		self.planetMap[plid] = planet
 	}
+
+	self.currentPlayers = players_with_ships
 }
 
 // ---------------------------------------
