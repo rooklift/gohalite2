@@ -92,17 +92,13 @@ func (self *Game) Parse() {
 
 		for s := 0; s < ship_count; s++ {
 
-			// Get or create the ship in memory...
-
 			sid := self.token_parser.Int()
 			ship, ok := self.shipMap[sid]
 
 			if ok == false {
-				ship = new(Ship)
 				ship.Id = sid
 				ship.Owner = pid
 				ship.Birth = max(1, self.turn)					// If turn is 0 we are in init stage.
-				self.shipMap[sid] = ship
 			}
 
 			ship.X = self.token_parser.Float()
@@ -114,6 +110,8 @@ func (self *Game) Parse() {
 			ship.DockedPlanet = self.token_parser.Int()
 			ship.DockingProgress = self.token_parser.Int()
 			self.token_parser.Int()								// Skip deprecated "cooldown"
+
+			self.shipMap[sid] = ship
 		}
 	}
 
@@ -124,12 +122,10 @@ func (self *Game) Parse() {
 	for p := 0; p < planet_count; p++ {
 
 		plid := self.token_parser.Int()
-
 		planet, ok := self.planetMap[plid]
+
 		if ok == false {
-			planet = new(Planet)
 			planet.Id = plid
-			self.planetMap[plid] = planet
 		}
 
 		planet.X = self.token_parser.Float()
@@ -155,6 +151,8 @@ func (self *Game) Parse() {
 		for s := 0; s < docked_ship_count; s++ {
 			planet.DockedShips = append(planet.DockedShips, self.token_parser.Int())
 		}
+
+		self.planetMap[plid] = planet
 	}
 }
 

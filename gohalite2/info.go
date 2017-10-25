@@ -29,7 +29,7 @@ func (self *Game) MyPlanets() []Planet {
 func (self *Game) MyNewShipIDs() []int {
 	var ret []int
 	for sid, _ := range self.shipMap {
-		ship := *self.shipMap[sid]
+		ship := self.shipMap[sid]
 		if ship.Birth == self.turn && ship.Owner == self.pid {
 			ret = append(ret, ship.Id)
 		}
@@ -38,13 +38,13 @@ func (self *Game) MyNewShipIDs() []int {
 }
 
 func (self *Game) GetShip(sid int) Ship {
-	ship := *self.shipMap[sid]
+	ship := self.shipMap[sid]
 	return ship
 }
 
 func (self *Game) GetPlanet(plid int) Planet {
 
-	planet := *self.planetMap[plid]
+	planet := self.planetMap[plid]
 
 	// Replace the docked ships slice with a copy...
 

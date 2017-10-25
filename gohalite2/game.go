@@ -9,11 +9,9 @@ type Game struct {
 
 	players				int					// Stored only once at startup. Never changes.
 
-	// These 3 things below can contain references to dead objects.
-	// But the Planet and Player structs themselves do not.
-
-	planetMap			map[int]*Planet
-	shipMap				map[int]*Ship
+	planetMap			map[int]Planet		// Planet ID --> Planet			(can contain dead objects)
+	shipMap				map[int]Ship		// Ship ID --> Ship				(can contain dead objects)
+	dockMap				map[int][]Ship		// Planet ID --> Ship slice
 
 	orders				map[int]string
 
@@ -27,8 +25,9 @@ func NewGame() *Game {
 	game.pid = game.token_parser.Int()
 	game.width = game.token_parser.Int()
 	game.height = game.token_parser.Int()
-	game.planetMap = make(map[int]*Planet)
-	game.shipMap = make(map[int]*Ship)
+	game.planetMap = make(map[int]Planet)
+	game.shipMap = make(map[int]Ship)
+	game.dockMap = make(map[int][]Ship)
 	game.Parse()
 	game.inited = true
 	return game
