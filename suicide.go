@@ -17,7 +17,14 @@ func main() {
 		my_ships := game.MyShips()
 
 		for _, ship := range my_ships {
-			game.Thrust(ship.Id, 7, 7)
+
+			if ship.Id % 3 == 1 {
+				game.Thrust(ship.Id, 7, 90)
+			}
+
+			if ship.Id % 3 == 2 {
+				game.Thrust(ship.Id, 7, 270)
+			}
 		}
 
 		game.Send()
