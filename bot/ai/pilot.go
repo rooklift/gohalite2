@@ -25,6 +25,13 @@ func (self *Pilot) ValidateTarget() {
 		target := game.GetShip(self.target_id)
 		if target.Alive() == false {
 			self.target_type = hal.NONE
+			closest_planet := self.ClosestPlanet()
+			if hal.Dist(self.Ship().X, self.Ship().Y, closest_planet.X, closest_planet.Y) < 15 {
+				if closest_planet.IsFull() == false || closest_planet.Owner != game.Pid() {
+					self.target_type = hal.PLANET
+					self.target_id = closest_planet.Id
+				}
+			}
 		}
 	} else if self.target_type == hal.PLANET {
 		target := game.GetPlanet(self.target_id)
@@ -138,6 +145,18 @@ func (self *Pilot) ChaseTarget() {
 				self.Thrust(speed, degrees)
 			}
 		}
+
+	} else if self.target_type == hal.SHIP {
+
+		other_ship := game.GetShip(self.target_id)
+
+		speed, degrees, err := game.Approach(self.Ship(), other_ship, 3.0)
+
+		if err != nil {
+			self.target_type = hal.NONE
+		} else {
+			self.Thrust(speed, degrees)
+		}
 	}
 }
 
@@ -169,7 +188,13 @@ func (self *Pilot) EngagePlanet() {
 
 	// So it's hostile...
 
-	speed, degrees, err := game.Navigate(self.Ship().X, self.Ship().Y, planet.X, planet.Y)
+	docked_targets := game.ShipsDockedAt(planet)
+
+	enemy_ship := docked_targets[rand.Intn(len(docked_targets))]
+	self.target_type = hal.SHIP
+	self.target_id = enemy_ship.Id
+
+	speed, degrees, err := game.Approach(self.Ship(), enemy_ship, 3.0)
 
 	if err != nil {
 		return

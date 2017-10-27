@@ -96,11 +96,11 @@ func (self *Game) ClosestPlanet(x, y float64) Planet {
 	return ret
 }
 
-func (self *Game) ShipsDockedAt(plid int) []Ship {
+func (self *Game) ShipsDockedAt(pl Planet) []Ship {
 
 	var ret []Ship
 
-	for _, Ship := range self.dockMap[plid] {
+	for _, Ship := range self.dockMap[pl.Id] {
 		ret = append(ret, Ship)
 	}
 
