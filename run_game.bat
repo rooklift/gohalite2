@@ -1,4 +1,3 @@
 
 go build mybot.go
-halite.exe -i "replays" "MyBot.exe" "suicide.exe" ".\starterbot\MyBot.exe" ".\starterbot\MyBot.exe"
-
+halite.exe -i "replays" ".\bot\MyBot.exe" "node .\otherbots\DanielVF_v5\MyBot.js" ".\bot\MyBot.exe" "node .\otherbots\DanielVF_v5\MyBot.js"
