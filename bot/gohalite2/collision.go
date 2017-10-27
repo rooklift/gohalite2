@@ -30,20 +30,20 @@ func (self *Game) AngleCollisionID(ship Ship, distance float64, degrees int) int
 	closest_distance := 999999.9
 
 	for _, c := range collision_planets {
-		if Dist(ship.X, ship.Y, c.X, c.Y) < closest_distance {
+		if ship.Dist(c) < closest_distance {
 			closest_planet = c
-			closest_distance = Dist(ship.X, ship.Y, c.X, c.Y)
+			closest_distance = ship.Dist(c)
 		}
 	}
 
 	return closest_planet.Id
 }
 
-func (self *Game) Navigate(ship Ship, target Entity) (int, int, error) {
-	return self.NavigateRecursive(ship, target, 10)
+func (self *Game) GetCourse(ship Ship, target Entity) (int, int, error) {
+	return self.GetCourseRecursive(ship, target, 10)
 }
 
-func (self *Game) NavigateRecursive(ship Ship, target Entity, depth int) (int, int, error) {		// speed, angle, error
+func (self *Game) GetCourseRecursive(ship Ship, target Entity, depth int) (int, int, error) {		// speed, angle, error
 
 	// Navigate around planets (only).
 
@@ -76,19 +76,19 @@ func (self *Game) NavigateRecursive(ship Ship, target Entity, depth int) (int, i
 
 		planet := self.GetPlanet(colliding_planet_id)
 		waypointx, waypointy := Projection(planet.X, planet.Y, planet.Radius + SAFETY_MARGIN, degrees + 90)
-		return self.NavigateRecursive(ship, Point{waypointx, waypointy}, depth - 1)
+		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, depth - 1)
 
 	}
 
 	return 0, 0, fmt.Errorf("NavigateRecursive(): exceeded max depth")
 }
 
-func (self *Game) Approach(ship Ship, target Entity, margin float64) (int, int, error) {
+func (self *Game) GetApproach(ship Ship, target Entity, margin float64) (int, int, error) {
 
 	// Navigate so that the ship's centre comes near the target's edge. Target
 	// can be a Planet or a Ship (or a Point).
 
-	current_dist := Dist(ship.X, ship.Y, target.GetX(), target.GetY())
+	current_dist := ship.Dist(target)
 
 	if current_dist < target.GetRadius() + margin {
 		return 0, 0, nil
@@ -99,5 +99,5 @@ func (self *Game) Approach(ship Ship, target Entity, margin float64) (int, int, 
 	needed_distance := current_dist - target.GetRadius() - margin
 	target_point_x, target_point_y := Projection(ship.X, ship.Y, needed_distance, direct_angle)
 
-	return self.Navigate(ship, Point{target_point_x, target_point_y})
+	return self.GetCourse(ship, Point{target_point_x, target_point_y})
 }

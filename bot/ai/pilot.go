@@ -134,7 +134,7 @@ func (self *Pilot) ChaseTarget() {
 
 		planet := game.GetPlanet(self.TargetId)
 
-		speed, degrees, err := game.Approach(self.Ship, planet, 6.0)
+		speed, degrees, err := game.GetApproach(self.Ship, planet, 6.0)
 
 		if err != nil {
 			self.TargetType = hal.NONE
@@ -150,7 +150,7 @@ func (self *Pilot) ChaseTarget() {
 
 		other_ship := game.GetShip(self.TargetId)
 
-		speed, degrees, err := game.Approach(self.Ship, other_ship, 3.0)
+		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 3.0)
 
 		if err != nil {
 			self.TargetType = hal.NONE
@@ -194,7 +194,7 @@ func (self *Pilot) EngagePlanet() {
 	self.TargetType = hal.SHIP
 	self.TargetId = enemy_ship.Id
 
-	speed, degrees, err := game.Approach(self.Ship, enemy_ship, 3.0)
+	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 3.0)
 
 	if err != nil {
 		return
@@ -218,7 +218,7 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 		return
 	}
 
-	speed, degrees, err := game.Approach(self.Ship, planet, 3.5)
+	speed, degrees, err := game.GetApproach(self.Ship, planet, 3.5)
 
 	if err != nil {
 		game.Log("Pilot %d: FinalPlanetApproachForDock(): %v", self.Id, err)
