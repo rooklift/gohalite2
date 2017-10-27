@@ -46,10 +46,6 @@ func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius
 
 	// Based on the Python version, I have no idea how this works.
 
-	const (
-		FUDGE = SHIP_RADIUS		// We almost certainly want this.
-	)
-
 	dx := endx - startx
 	dy := endy - starty
 
@@ -58,11 +54,8 @@ func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius
 	b := -2 * (startx * startx - startx * endx - startx * circlex + endx * circlex +
 			  starty * starty - starty * endy - starty * circley + endy * circley)
 
-	// This is in the Python code, but is unused:
-	// c := (startx - circlex) * (startx - circlex) + (starty - circley) * (starty - circley)
-
 	if a == 0.0 {
-		return Dist(startx, starty, circlex, circley) <= radius + FUDGE
+		return Dist(startx, starty, circlex, circley) <= radius
 	}
 
 	t := MinFloat(-b / (2 * a), 1.0)
@@ -74,7 +67,7 @@ func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius
 	closest_x := startx + dx * t
 	closest_y := starty + dy * t
 
-	return Dist(closest_x, closest_y, circlex, circley) <= radius + FUDGE
+	return Dist(closest_x, closest_y, circlex, circley) <= radius
 }
 
 func Projection(x1, y1, distance float64, degrees int) (x2, y2 float64) {

@@ -15,7 +15,7 @@ func (self *Game) AngleCollisionID(startx, starty, distance float64, degrees int
 
 	for _, planet := range all_planets {
 
-		collides := IntersectSegmentCircle(startx, starty, endx, endy, planet.X, planet.Y, planet.Radius)
+		collides := IntersectSegmentCircle(startx, starty, endx, endy, planet.X, planet.Y, planet.Radius + SHIP_RADIUS)
 
 		if collides {
 			collision_planets = append(collision_planets, planet)
@@ -46,9 +46,6 @@ func (self *Game) Navigate(x1, y1, x2, y2 float64) (int, int, error) {
 func (self *Game) NavigateRecursive(x1, y1, x2, y2 float64, depth int) (int, int, error) {		// speed, angle, error
 
 	// Navigate around planets (only).
-
-	// It's up to the caller to stop before we hit the target.
-	// Otherwise, we get as close as we can, possibly colliding.
 
 	const (
 		SAFETY_MARGIN = 2
