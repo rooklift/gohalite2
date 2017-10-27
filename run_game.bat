@@ -1,1 +1,1 @@
-halite.exe -i "replays" ".\bot\MyBot.exe" "node .\otherbots\DanielVF_v5\MyBot.js" ".\bot\MyBot.exe" "node .\otherbots\DanielVF_v5\MyBot.js"
+halite.exe -i "replays" ".\bot\MyBot.exe" ".\bot\MyBot.exe" ".\bot\MyBot.exe" ".\bot\MyBot.exe"

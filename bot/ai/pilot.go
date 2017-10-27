@@ -40,15 +40,6 @@ func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.game.ClosestPlanet(self.Ship().X, self.Ship().Y)
 }
 
-func (self *Pilot) DockIfPossible() {
-	if self.Ship().DockedStatus == hal.UNDOCKED {
-		closest_planet := self.ClosestPlanet()
-		if self.Ship().CanDock(closest_planet) {
-			self.Dock(closest_planet.Id)
-		}
-	}
-}
-
 func (self *Pilot) Thrust(speed, angle int) {
 	self.game.Thrust(self.id, speed, angle)
 }
@@ -70,56 +61,76 @@ func (self *Pilot) CurrentOrder() string {
 }
 
 func (self *Pilot) Act() {
-	game := self.game
 
-	self.ValidateTarget()		// Clear dead / totally conquered targets...
+	// Clear dead / totally conquered targets...
 
-	// Dock whenever possible...
+	self.ValidateTarget()
+
+	// Helpers can lock in an order by actually setting it.
 
 	if self.CurrentOrder() == "" {
 		self.DockIfPossible()
 	}
 
-	// Choose target and course...
-
-	if self.CurrentOrder() == "" && self.target_type == hal.NONE {
-
-		all_planets := game.AllPlanets()
-
-		for n := 0; n < 5; n++ {
-
-			i := rand.Intn(len(all_planets))
-			planet := all_planets[i]
-
-			if planet.Owner != game.Pid() || planet.IsFull() == false {
-				self.target_id = planet.Id
-				self.target_type = hal.PLANET
-				break
-			}
-		}
+	if self.CurrentOrder() == "" {
+		self.ChooseTarget()
 	}
 
-	// Move...
-
 	if self.CurrentOrder() == "" {
+		self.EngageTarget()
+	}
+}
 
-		if self.target_type == hal.NONE || self.Ship().DockedStatus != hal.UNDOCKED {
-			return
+func (self *Pilot) DockIfPossible() {
+	if self.Ship().DockedStatus == hal.UNDOCKED {
+		closest_planet := self.ClosestPlanet()
+		if self.Ship().CanDock(closest_planet) {
+			self.Dock(closest_planet.Id)
 		}
+	}
+}
 
-		if self.target_type == hal.PLANET {
+func (self *Pilot) ChooseTarget() {
+	game := self.game
 
-			planet := game.GetPlanet(self.target_id)
+	if self.target_type != hal.NONE {		// We already have a target.
+		return
+	}
 
-			speed, degrees, err := game.Navigate(self.Ship().X, self.Ship().Y, planet.X, planet.Y)
+	all_planets := game.AllPlanets()
 
-			if err != nil {
-				self.target_type = hal.NONE
+	for n := 0; n < 5; n++ {
+
+		i := rand.Intn(len(all_planets))
+		planet := all_planets[i]
+
+		if planet.Owner != game.Pid() || planet.IsFull() == false {
+			self.target_id = planet.Id
+			self.target_type = hal.PLANET
+			break
+		}
+	}
+}
+
+func (self *Pilot) EngageTarget() {
+	game := self.game
+
+	if self.target_type == hal.NONE || self.Ship().DockedStatus != hal.UNDOCKED {
+		return
+	}
+
+	if self.target_type == hal.PLANET {
+
+		planet := game.GetPlanet(self.target_id)
+
+		speed, degrees, err := game.Approach(self.Ship(), planet, 6.0)
+
+		if err != nil {
+			self.target_type = hal.NONE
+		} else {
+			if speed < 4 {
+				// We could go faster and reach docking range, or do something else.
 			} else {
-				if hal.Dist(self.Ship().X, self.Ship().Y, planet.X, planet.Y) < planet.Radius + 8 {
-					speed = 4
-				}
-
 				self.Thrust(speed, degrees)
 			}
 		}

@@ -82,3 +82,21 @@ func (self *Game) NavigateRecursive(x1, y1, x2, y2 float64, depth int) (int, int
 	return 0, 0, fmt.Errorf("NavigateRecursive(): exceeded max depth")
 }
 
+func (self *Game) Approach(ship Ship, target Entity, margin float64) (int, int, error) {
+
+	// Navigate so that the ship's centre comes near the target's edge. Target
+	// can be a Planet or a Ship (or a Point).
+
+	current_dist := Dist(ship.X, ship.Y, target.GetX(), target.GetY())
+
+	if current_dist < target.GetRadius() + margin {
+		return 0, 0, nil
+	}
+
+	direct_angle := Angle(ship.X, ship.Y, target.GetX(), target.GetY())
+
+	needed_distance := current_dist - target.GetRadius() - margin
+	target_point_x, target_point_y := Projection(ship.X, ship.Y, needed_distance, direct_angle)
+
+	return self.Navigate(ship.X, ship.Y, target_point_x, target_point_y)
+}
