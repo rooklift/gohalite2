@@ -60,7 +60,7 @@ func (self *Game) NavigateRecursive(x1, y1, x2, y2 float64, depth int) (int, int
 		return 0, 0, nil
 	}
 
-	degrees := Angle(x1, y1, x2, y1)
+	degrees := Angle(x1, y1, x2, y2)
 
 	colliding_planet_id := self.AngleCollisionID(x1, y1, distance, degrees)
 

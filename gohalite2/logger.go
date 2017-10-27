@@ -19,7 +19,7 @@ func NewLog(outfilename string) *Logfile {
 	}
 }
 
-func (self *Logfile) Dump(format_string string, args ...interface{}) {
+func (self *Logfile) Log(format_string string, args ...interface{}) {
 
 	if self == nil {
 		return
@@ -46,19 +46,25 @@ func (self *Logfile) Dump(format_string string, args ...interface{}) {
 	fmt.Fprintf(self.outfile, "\r\n")                    // Because I use Windows...
 }
 
+func (self *Logfile) LogOnce(format_string string, args ...interface{}) bool {
+	if self.logged_once[format_string] == false {
+		self.logged_once[format_string] = true         // Note that it's format_string that is checked / saved
+		self.Log(format_string, args...)
+		return true
+	}
+	return false
+}
+
+// ---------------------------------------------------------------
+
 func (self *Game) StartLog(logfilename string) {
 	self.logfile = NewLog(logfilename)
 }
 
 func (self *Game) Log(format_string string, args ...interface{}) {
-	self.logfile.Dump(format_string, args...)
+	self.logfile.Log(format_string, args...)
 }
 
 func (self *Game) LogOnce(format_string string, args ...interface{}) bool {
-	if self.logfile.logged_once[format_string] == false {
-		self.logfile.logged_once[format_string] = true         // Note that it's format_string that is checked / saved
-		self.logfile.Dump(format_string, args...)
-		return true
-	}
-	return false
+	return self.logfile.LogOnce(format_string, args...)
 }
