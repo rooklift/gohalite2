@@ -52,7 +52,7 @@ func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius
 	a := dx * dx + dy * dy
 
 	b := -2 * (startx * startx - startx * endx - startx * circlex + endx * circlex +
-			  starty * starty - starty * endy - starty * circley + endy * circley)
+	           starty * starty - starty * endy - starty * circley + endy * circley)
 
 	if a == 0.0 {
 		return Dist(startx, starty, circlex, circley) <= radius
