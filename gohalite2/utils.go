@@ -4,7 +4,25 @@ import (
 	"math"
 )
 
+func deg_to_rad(d float64) float64 {
+	return d / 180 * math.Pi
+}
+
+func rad_to_deg(r float64) float64 {
+	return r / math.Pi * 180
+}
+
 func max(a, b int) int {
+	if a > b { return a }
+	return b
+}
+
+func min(a, b int) int {
+	if a < b { return a }
+	return b
+}
+
+func max_float(a, b float64) float64 {
 	if a > b { return a }
 	return b
 }
@@ -12,6 +30,10 @@ func max(a, b int) int {
 func min_float(a, b float64) float64 {
 	if a < b { return a }
 	return b
+}
+
+func round(n float64) int {
+	return int(math.Floor(n + 0.5))
 }
 
 func dist(x1, y1, x2, y2 float64) float64 {
@@ -71,10 +93,16 @@ func projection(x1, y1, distance float64, degrees int) (x2, y2 float64) {
 	return x2, y2
 }
 
-func deg_to_rad(d float64) float64 {
-	return d / 180 * math.Pi
-}
+func angle(x1, y1, x2, y2 float64) int {
 
-func rad_to_deg(r float64) float64 {
-	return r / math.Pi * 180
+	rad := math.Atan2(y2 - y1, x2 - x1)
+	deg := rad_to_deg(rad)
+
+	deg_int := round(deg)
+
+	for deg_int < 0 {
+		deg_int += 360
+	}
+
+	return deg_int % 360
 }
