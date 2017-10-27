@@ -7,19 +7,19 @@ import (
 // --------------------------------------------
 
 type Overmind struct {
-	game			*hal.Game
-	pilots			[]*Pilot
+	Game			*hal.Game
+	Pilots			[]*Pilot
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
-	ret.game = game
+	ret.Game = game
 	return ret
 }
 
 func (self *Overmind) UpdatePilots() {
 
-	game := self.game
+	game := self.Game
 
 	// Add new AIs for new ships...
 
@@ -27,18 +27,24 @@ func (self *Overmind) UpdatePilots() {
 
 	for _, sid := range my_new_ships {
 		pilot := new(Pilot)
-		pilot.overmind = self
-		pilot.game = game
-		pilot.id = sid
-		self.pilots = append(self.pilots, pilot)
+		pilot.Overmind = self
+		pilot.Game = game
+		pilot.Id = sid								// This has to be set so pilot.Update() can work.
+		self.Pilots = append(self.Pilots, pilot)
+	}
+
+	// Update the Ships embedded in each Pilot... (yeah that makes sense)
+
+	for _, pilot := range self.Pilots {
+		pilot.Update()
 	}
 
 	// Delete AIs with dead ships from the slice...
 
-	for i := 0; i < len(self.pilots); i++ {
-		pilot := self.pilots[i]
-		if pilot.Ship().Alive() == false {
-			self.pilots = append(self.pilots[:i], self.pilots[i+1:]...)
+	for i := 0; i < len(self.Pilots); i++ {
+		pilot := self.Pilots[i]
+		if pilot.Alive() == false {
+			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
 		}
 	}
@@ -48,9 +54,9 @@ func (self *Overmind) UpdatePilots() {
 
 func (self *Overmind) Step() {
 
-	self.UpdatePilots()		// Fix the AI slices by adding / deleting AIs...
+	self.UpdatePilots()
 
-	for _, pilot := range self.pilots {
+	for _, pilot := range self.Pilots {
 		pilot.Act()
 	}
 }
