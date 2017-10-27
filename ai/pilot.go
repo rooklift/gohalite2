@@ -9,7 +9,7 @@ type Pilot struct {
 	overmind		*Overmind
 	game			*hal.Game
 	id				int					// Ship ID
-	target_type		int					// NONE (zero) / SHIP / PLANET
+	target_type		hal.EntityType
 	target_id		int
 }
 

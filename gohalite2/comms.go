@@ -32,6 +32,10 @@ func (self *TokenParser) Int() int {
 	return ret
 }
 
+func (self *TokenParser) DockedStatus() DockedStatus {
+	return DockedStatus(self.Int())
+}
+
 func (self *TokenParser) Float() float64 {
 	self.scanner.Scan()
 	ret, err := strconv.ParseFloat(self.scanner.Text(), 64)
@@ -118,7 +122,7 @@ func (self *Game) Parse() {
 			ship.HP = self.token_parser.Int()
 			self.token_parser.Float()							// Skip deprecated "speedx"
 			self.token_parser.Float()							// Skip deprecated "speedy"
-			ship.DockedStatus = self.token_parser.Int()
+			ship.DockedStatus = self.token_parser.DockedStatus()
 			ship.DockedPlanet = self.token_parser.Int()
 			ship.DockingProgress = self.token_parser.Int()
 			self.token_parser.Int()								// Skip deprecated "cooldown"

@@ -11,6 +11,7 @@ type Entity interface {
 	Alive()							bool
 	CentreDistance(other Entity)	float64
 	SurfaceDistance(other Entity)	float64
+	Type()							EntityType
 }
 
 type Planet struct {
@@ -57,13 +58,17 @@ func (p Planet) IsFull() bool {
 	return p.DockedShips >= p.DockingSpots
 }
 
+func (p Planet) Type() EntityType {
+	return PLANET
+}
+
 type Ship struct {
 	Id					int
 	Owner				int
 	X					float64
 	Y					float64
 	HP					int
-	DockedStatus		int			// Enum
+	DockedStatus		DockedStatus
 	DockedPlanet		int
 	DockingProgress		int
 
@@ -104,6 +109,10 @@ func (s Ship) CanDock(p Planet) bool {
 	return false
 }
 
+func (s Ship) Type() EntityType {
+	return SHIP
+}
+
 type Point struct {
 	X								float64
 	Y								float64
@@ -134,4 +143,8 @@ func (p Point) CentreDistance(other Entity) float64 {
 func (p Point) SurfaceDistance(other Entity) float64 {
 	centre_distance := p.CentreDistance(other)
 	return centre_distance - other.GetRadius()
+}
+
+func (p Point) Type() EntityType {
+	return POINT
 }

@@ -6,15 +6,20 @@ const (
 	MAX_SPEED = 7
 )
 
-const (						// Enum: Docking status
-	UNDOCKED int = iota
+type DockedStatus int
+
+const (
+	UNDOCKED DockedStatus = iota
 	DOCKING
 	DOCKED
 	UNDOCKING
 )
 
-const (						// Enum: Ship target type
-	NONE int = iota
+type EntityType int
+
+const (
+	NONE EntityType = iota
 	SHIP
 	PLANET
+	POINT
 )
