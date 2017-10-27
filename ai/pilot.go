@@ -11,7 +11,6 @@ type Pilot struct {
 	id				int					// Ship ID
 	target_type		int					// NONE (zero) / SHIP / PLANET
 	target_id		int
-	course			int
 }
 
 func (self *Pilot) Ship() hal.Ship {
@@ -85,23 +84,16 @@ func (self *Pilot) Act() {
 
 	if self.CurrentOrder() == "" && self.target_type == hal.NONE {
 
-		for n := 0; n < 10; n++ {
+		all_planets := game.AllPlanets()
 
-			degrees := rand.Intn(360)
+		for n := 0; n < 5; n++ {
 
-			plid := game.AngleCollisionID(self.Ship().X, self.Ship().Y, 9999, degrees)
-
-			if plid == -1 {
-				continue
-			}
-
-			planet := game.GetPlanet(plid)
+			i := rand.Intn(len(all_planets))
+			planet := all_planets[i]
 
 			if planet.Owner != game.Pid() || planet.IsFull() == false {
-
-				self.target_id = plid
+				self.target_id = planet.Id
 				self.target_type = hal.PLANET
-				self.course = degrees
 				break
 			}
 		}
@@ -115,10 +107,21 @@ func (self *Pilot) Act() {
 			return
 		}
 
-		if self.game.AngleCollisionID(self.Ship().X, self.Ship().Y, 7, self.course) != -1 {
-			self.Thrust(3, self.course)
-		} else {
-			self.Thrust(7, self.course)
+		if self.target_type == hal.PLANET {
+
+			planet := game.GetPlanet(self.target_id)
+
+			speed, degrees, err := game.Navigate(self.Ship().X, self.Ship().Y, planet.X, planet.Y)
+
+			if err != nil {
+				self.target_type = hal.NONE
+			} else {
+				if hal.Dist(self.Ship().X, self.Ship().Y, planet.X, planet.Y) < planet.Radius + 8 {
+					speed = 4
+				}
+
+				self.Thrust(speed, degrees)
+			}
 		}
 	}
 }

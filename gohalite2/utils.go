@@ -4,45 +4,45 @@ import (
 	"math"
 )
 
-func deg_to_rad(d float64) float64 {
+func DegToRad(d float64) float64 {
 	return d / 180 * math.Pi
 }
 
-func rad_to_deg(r float64) float64 {
+func RadToDeg(r float64) float64 {
 	return r / math.Pi * 180
 }
 
-func max(a, b int) int {
+func Max(a, b int) int {
 	if a > b { return a }
 	return b
 }
 
-func min(a, b int) int {
+func Min(a, b int) int {
 	if a < b { return a }
 	return b
 }
 
-func max_float(a, b float64) float64 {
+func MaxFloat(a, b float64) float64 {
 	if a > b { return a }
 	return b
 }
 
-func min_float(a, b float64) float64 {
+func MinFloat(a, b float64) float64 {
 	if a < b { return a }
 	return b
 }
 
-func round(n float64) int {
+func Round(n float64) int {
 	return int(math.Floor(n + 0.5))
 }
 
-func dist(x1, y1, x2, y2 float64) float64 {
+func Dist(x1, y1, x2, y2 float64) float64 {
 	dx := x2 - x1
 	dy := y2 - y1
 	return math.Sqrt(dx * dx + dy * dy)
 }
 
-func intersect_segment_circle(startx, starty, endx, endy, circlex, circley, radius float64) bool {
+func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius float64) bool {
 
 	// Based on the Python version, I have no idea how this works.
 
@@ -62,10 +62,10 @@ func intersect_segment_circle(startx, starty, endx, endy, circlex, circley, radi
 	// c := (startx - circlex) * (startx - circlex) + (starty - circley) * (starty - circley)
 
 	if a == 0.0 {
-		return dist(startx, starty, circlex, circley) <= radius + FUDGE
+		return Dist(startx, starty, circlex, circley) <= radius + FUDGE
 	}
 
-	t := min_float(-b / (2 * a), 1.0)
+	t := MinFloat(-b / (2 * a), 1.0)
 
 	if t < 0 {
 		return false
@@ -74,10 +74,10 @@ func intersect_segment_circle(startx, starty, endx, endy, circlex, circley, radi
 	closest_x := startx + dx * t
 	closest_y := starty + dy * t
 
-	return dist(closest_x, closest_y, circlex, circley) <= radius + FUDGE
+	return Dist(closest_x, closest_y, circlex, circley) <= radius + FUDGE
 }
 
-func projection(x1, y1, distance float64, degrees int) (x2, y2 float64) {
+func Projection(x1, y1, distance float64, degrees int) (x2, y2 float64) {
 
 	// Given a coordinate, a distance and an angle, find a new coordinate.
 
@@ -85,7 +85,7 @@ func projection(x1, y1, distance float64, degrees int) (x2, y2 float64) {
 		return x1, y1
 	}
 
-	radians := deg_to_rad(float64(degrees))
+	radians := DegToRad(float64(degrees))
 
 	x2 = distance * math.Cos(radians) + x1
 	y2 = distance * math.Sin(radians) + y1
@@ -93,12 +93,12 @@ func projection(x1, y1, distance float64, degrees int) (x2, y2 float64) {
 	return x2, y2
 }
 
-func angle(x1, y1, x2, y2 float64) int {
+func Angle(x1, y1, x2, y2 float64) int {
 
 	rad := math.Atan2(y2 - y1, x2 - x1)
-	deg := rad_to_deg(rad)
+	deg := RadToDeg(rad)
 
-	deg_int := round(deg)
+	deg_int := Round(deg)
 
 	for deg_int < 0 {
 		deg_int += 360
