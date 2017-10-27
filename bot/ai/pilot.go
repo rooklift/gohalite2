@@ -54,7 +54,7 @@ func (self *Pilot) ValidateTarget() {
 		if target.Alive() == false {
 			self.TargetType = hal.NONE
 			closest_planet := self.ClosestPlanet()
-			if hal.Dist(self.X, self.Y, closest_planet.X, closest_planet.Y) < 50 {
+			if self.Dist(closest_planet) < 50 {
 				if closest_planet.IsFull() == false || closest_planet.Owner != game.Pid() {
 					self.TargetType = hal.PLANET
 					self.TargetId = closest_planet.Id

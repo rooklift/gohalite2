@@ -9,8 +9,8 @@ type Entity interface {
 	GetY()							float64
 	GetRadius()						float64
 	Alive()							bool
-	CentreDistance(other Entity)	float64
-	SurfaceDistance(other Entity)	float64
+	Dist(other Entity)				float64
+	SurfaceDist(other Entity)		float64
 	Type()							EntityType
 }
 
@@ -43,23 +43,23 @@ func (p Planet) Alive() bool {
 	return p.HP > 0
 }
 
-func (p Planet) CentreDistance(other Entity) float64 {
+func (p Planet) Dist(other Entity) float64 {
 	dx := p.X - other.GetX()
 	dy := p.Y - other.GetY()
 	return math.Sqrt(dx * dx + dy * dy)
 }
 
-func (p Planet) SurfaceDistance(other Entity) float64 {
-	centre_distance := p.CentreDistance(other)
+func (p Planet) SurfaceDist(other Entity) float64 {
+	centre_distance := p.Dist(other)
 	return (centre_distance - p.Radius) - other.GetRadius()
-}
-
-func (p Planet) IsFull() bool {
-	return p.DockedShips >= p.DockingSpots
 }
 
 func (p Planet) Type() EntityType {
 	return PLANET
+}
+
+func (p Planet) IsFull() bool {
+	return p.DockedShips >= p.DockingSpots
 }
 
 type Ship struct {
@@ -91,20 +91,20 @@ func (s Ship) Alive() bool {
 	return s.HP > 0
 }
 
-func (s Ship) CentreDistance(other Entity) float64 {
+func (s Ship) Dist(other Entity) float64 {
 	dx := s.X - other.GetX()
 	dy := s.Y - other.GetY()
 	return math.Sqrt(dx * dx + dy * dy)
 }
 
-func (s Ship) SurfaceDistance(other Entity) float64 {
-	centre_distance := s.CentreDistance(other)
+func (s Ship) SurfaceDist(other Entity) float64 {
+	centre_distance := s.Dist(other)
 	return (centre_distance - SHIP_RADIUS) - other.GetRadius()
 }
 
 func (s Ship) CanDock(p Planet) bool {
 	if s.Alive() && p.Alive() && p.IsFull() == false && (p.Owned == false || p.Owner == s.Owner) {
-		return s.CentreDistance(p) <= p.Radius + DOCKING_RADIUS
+		return s.Dist(p) <= p.Radius + DOCKING_RADIUS
 	}
 	return false
 }
@@ -134,14 +134,14 @@ func (p Point) Alive() bool {
 	return true
 }
 
-func (p Point) CentreDistance(other Entity) float64 {
+func (p Point) Dist(other Entity) float64 {
 	dx := p.X - other.GetX()
 	dy := p.Y - other.GetY()
 	return math.Sqrt(dx * dx + dy * dy)
 }
 
-func (p Point) SurfaceDistance(other Entity) float64 {
-	centre_distance := p.CentreDistance(other)
+func (p Point) SurfaceDist(other Entity) float64 {
+	centre_distance := p.Dist(other)
 	return centre_distance - other.GetRadius()
 }
 

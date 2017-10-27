@@ -86,7 +86,7 @@ func (self *Game) ClosestPlanet(x, y float64) Planet {
 	var ret Planet
 
 	for _, planet := range self.AllPlanets() {
-		dist := point.SurfaceDistance(planet)
+		dist := point.SurfaceDist(planet)
 		if dist < best_dist {
 			best_dist = dist
 			ret = planet
