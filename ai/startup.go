@@ -9,7 +9,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = 5
+	VERSION = "5 final"
 )
 
 func Run() {
@@ -18,9 +18,9 @@ func Run() {
 
 	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
 	game.Log("--------------------------------------------------------------------------------")
-	game.Log("%s %d starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
+	game.Log("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
 
-	fmt.Printf("%s %d\n", NAME, VERSION)
+	fmt.Printf("%s %s\n", NAME, VERSION)
 
 	overmind := NewOvermind(game)
 
