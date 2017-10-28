@@ -26,23 +26,23 @@ func (self *Pilot) ClosestPlanet() hal.Planet {
 }
 
 func (self *Pilot) CurrentOrder() string {
-	return self.Game.CurrentOrder(self.Id)
+	return self.Game.CurrentOrder(self.Ship)
 }
 
 func (self *Pilot) Thrust(speed, angle int) {
-	self.Game.Thrust(self.Id, speed, angle)
+	self.Game.Thrust(self.Ship, speed, angle)
 }
 
 func (self *Pilot) Dock(planet hal.Planet) {
-	self.Game.Dock(self.Id, planet.Id)
+	self.Game.Dock(self.Ship, planet)
 }
 
 func (self *Pilot) Undock() {
-	self.Game.Undock(self.Id)
+	self.Game.Undock(self.Ship)
 }
 
 func (self *Pilot) ClearOrder() {
-	self.Game.ClearOrder(self.Id)
+	self.Game.ClearOrder(self.Ship)
 }
 
 func (self *Pilot) ValidateTarget() {

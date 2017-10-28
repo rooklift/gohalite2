@@ -179,24 +179,24 @@ func (self *Game) Parse() {
 
 // ---------------------------------------
 
-func (self *Game) Thrust(sid, speed, angle int) {
-	self.orders[sid] = fmt.Sprintf("t %d %d %d", sid, speed, angle)
+func (self *Game) Thrust(ship Ship, speed, angle int) {
+	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, angle)
 }
 
-func (self *Game) Dock(sid, planet int) {
-	self.orders[sid] = fmt.Sprintf("d %d %d", sid, planet)
+func (self *Game) Dock(ship Ship, planet Planet) {
+	self.orders[ship.Id] = fmt.Sprintf("d %d %d", ship.Id, planet.Id)
 }
 
-func (self *Game) Undock(sid int) {
-	self.orders[sid] = fmt.Sprintf("u %d", sid)
+func (self *Game) Undock(ship Ship) {
+	self.orders[ship.Id] = fmt.Sprintf("u %d", ship.Id)
 }
 
-func (self *Game) ClearOrder(sid int) {
-	delete(self.orders, sid)
+func (self *Game) ClearOrder(ship Ship) {
+	delete(self.orders, ship.Id)
 }
 
-func (self *Game) CurrentOrder(sid int) string {
-	return self.orders[sid]
+func (self *Game) CurrentOrder(ship Ship) string {
+	return self.orders[ship.Id]
 }
 
 func (self *Game) Send() {
