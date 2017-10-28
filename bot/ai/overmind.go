@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"sort"
 	hal "../gohalite2"
 )
 
@@ -30,11 +31,14 @@ func (self *Overmind) FirstTurn() {
 
 	self.UpdatePilots()
 
-	apbd := self.Game.AllPlanetsByDistance(self.Pilots[0])
+	closest_three := self.Game.AllPlanetsByDistance(self.Pilots[0])[:3]
+
+	sort.Sort(hal.PlanetsByY(closest_three))
+	sort.Sort(PilotsByY(self.Pilots))
 
 	for index, pilot := range self.Pilots {
 		pilot.TargetType = hal.PLANET
-		pilot.TargetId = apbd[index].Id
+		pilot.TargetId = closest_three[index].Id
 	}
 
 	for _, pilot := range self.Pilots {

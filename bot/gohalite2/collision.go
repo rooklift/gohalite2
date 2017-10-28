@@ -73,7 +73,7 @@ func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid []
 
 	// Navigate so that the ship's centre is definitely within <margin> of the target's edge.
 	// We add 0.51 in the calculation below to compensate for approximate navigation.
-	// i.e. the GetCourseRecursive will put us within 0.5 of our requested point.
+	// i.e. the GetCourseRecursive() call will put us within 0.5 of our requested point.
 
 	travel_distance := ship.Dist(target) + 0.51 - target.GetRadius() - margin
 	target_point_x, target_point_y := Projection(ship.X, ship.Y, travel_distance, ship.Angle(target))

@@ -4,44 +4,6 @@ import (
 	"math"
 )
 
-func DegToRad(d float64) float64 {
-	return d / 180 * math.Pi
-}
-
-func RadToDeg(r float64) float64 {
-	return r / math.Pi * 180
-}
-
-func Max(a, b int) int {
-	if a > b { return a }
-	return b
-}
-
-func Min(a, b int) int {
-	if a < b { return a }
-	return b
-}
-
-func MaxFloat(a, b float64) float64 {
-	if a > b { return a }
-	return b
-}
-
-func MinFloat(a, b float64) float64 {
-	if a < b { return a }
-	return b
-}
-
-func Round(n float64) int {
-	return int(math.Floor(n + 0.5))
-}
-
-func Dist(x1, y1, x2, y2 float64) float64 {
-	dx := x2 - x1
-	dy := y2 - y1
-	return math.Sqrt(dx * dx + dy * dy)
-}
-
 func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius float64) bool {
 
 	// Based on the Python version, I have no idea how this works.
@@ -98,4 +60,42 @@ func Angle(x1, y1, x2, y2 float64) int {
 	}
 
 	return deg_int % 360
+}
+
+func DegToRad(d float64) float64 {
+	return d / 180 * math.Pi
+}
+
+func RadToDeg(r float64) float64 {
+	return r / math.Pi * 180
+}
+
+func Max(a, b int) int {
+	if a > b { return a }
+	return b
+}
+
+func Min(a, b int) int {
+	if a < b { return a }
+	return b
+}
+
+func MaxFloat(a, b float64) float64 {
+	if a > b { return a }
+	return b
+}
+
+func MinFloat(a, b float64) float64 {
+	if a < b { return a }
+	return b
+}
+
+func Round(n float64) int {
+	return int(math.Floor(n + 0.5))
+}
+
+func Dist(x1, y1, x2, y2 float64) float64 {
+	dx := x2 - x1
+	dy := y2 - y1
+	return math.Sqrt(dx * dx + dy * dy)
 }

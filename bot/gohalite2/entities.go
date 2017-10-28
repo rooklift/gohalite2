@@ -14,8 +14,8 @@ type Entity interface {
 	GetRadius()						float64
 	Angle(other Entity)				int
 	Dist(other Entity)				float64
-	ApproachDist(other Entity)		float64			// Distance from my CENTRE to target's EDGE
-	Collides(other Entity)			bool
+	ApproachDist(other Entity)		float64							// ApproachDist(): distance from my CENTRE to target's EDGE
+	Collides(other Entity)			bool							// Collides(): only useful if one of the entities is hypothetical
 	Alive()							bool
 	String()						string
 }
