@@ -4,24 +4,9 @@ import (
 	"fmt"
 )
 
-func (self *Game) CheckEntityCollision(ship Ship, distance float64, degrees int, other Entity) bool {
-
-	// Would we hit some specific entity?
-
+func (self *Game) CheckEntityCollision(ship Ship, distance float64, degrees int, other Entity) bool {	// Would we hit some specific entity?
 	endx, endy := Projection(ship.X, ship.Y, distance, degrees)
-
-	if IntersectSegmentCircle(ship.X, ship.Y, endx, endy, other.GetX(), other.GetY(), other.GetRadius() + SHIP_RADIUS) {
-		return true
-	}
-
-	// Sanity check... does the ship at its final position collide with the other thing?
-	// I thought this might be bugged, but maybe not.
-
-	if virtual_ship := ship.Projection(distance, degrees); virtual_ship.Collides(other) {
-		self.Log("CheckEntityCollision() will return false but should return true.")
-	}
-
-	return false
+	return IntersectSegmentCircle(ship.X, ship.Y, endx, endy, other.GetX(), other.GetY(), other.GetRadius() + SHIP_RADIUS)
 }
 
 func (self *Game) FirstCollision(ship Ship, distance float64, degrees int, possibles []Entity) (Entity, bool) {
@@ -86,19 +71,11 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, d
 
 func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid []Entity) (int, int, error) {
 
-	// Navigate so that the ship's centre comes near the target's edge. Target
-	// can be a Planet or a Ship (or a Point).
+	// Navigate so that the ship's centre is definitely within <margin> of the target's edge.
+	// We add 0.51 in the calculation below to compensate for approximate navigation.
+	// i.e. the GetCourseRecursive will put us within 0.5 of our requested point.
 
-	current_dist := ship.Dist(target)
-
-	if current_dist < target.GetRadius() + margin {
-		return 0, 0, nil
-	}
-
-	direct_angle := Angle(ship.X, ship.Y, target.GetX(), target.GetY())
-
-	needed_distance := current_dist - target.GetRadius() - margin
-	target_point_x, target_point_y := Projection(ship.X, ship.Y, needed_distance, direct_angle)
-
+	travel_distance := ship.Dist(target) + 0.51 - target.GetRadius() - margin
+	target_point_x, target_point_y := Projection(ship.X, ship.Y, travel_distance, ship.Angle(target))
 	return self.GetCourse(ship, Point{target_point_x, target_point_y}, avoid)
 }

@@ -111,7 +111,7 @@ func (self *Game) ClosestPlanet(e Entity) Planet {
 	var ret Planet
 
 	for _, planet := range self.AllPlanets() {
-		dist := e.SurfaceDist(planet)
+		dist := e.ApproachDist(planet)
 		if dist < best_dist {
 			best_dist = dist
 			ret = planet

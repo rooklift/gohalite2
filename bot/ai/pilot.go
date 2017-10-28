@@ -137,12 +137,12 @@ func (self *Pilot) ChaseTarget() {
 
 		planet := game.GetPlanet(self.TargetId)
 
-		if self.SurfaceDist(planet) < 4 {
+		if self.ApproachDist(planet) < 4 {
 			self.EngagePlanet()
 			return
 		}
 
-		speed, degrees, err := game.GetApproach(self.Ship, planet, 3.49, game.AllImmobile())
+		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, game.AllImmobile())
 
 		if err != nil {
 			self.Log("ChaseTarget(): %v", err)
@@ -155,13 +155,16 @@ func (self *Pilot) ChaseTarget() {
 
 		other_ship := game.GetShip(self.TargetId)
 
-		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 3.0, game.AllImmobile())
+		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 4.5, game.AllImmobile())		// GetApproach uses centre-to-edge distances, so 4.5
 
 		if err != nil {
 			self.Log("ChaseTarget(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
 			self.Thrust(speed, degrees)
+			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
+				self.Log("ChaseTarget(): not moving but not in range!")
+			}
 		}
 	}
 }
@@ -200,7 +203,7 @@ func (self *Pilot) EngagePlanet() {
 	self.TargetType = hal.SHIP
 	self.TargetId = enemy_ship.Id
 
-	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 3.0, game.AllImmobile())
+	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, game.AllImmobile())			// GetApproach uses centre-to-edge distances, so 4.5
 
 	if err != nil {
 		self.Log("EngagePlanet(): %v", err)
@@ -225,7 +228,7 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 		return
 	}
 
-	speed, degrees, err := game.GetApproach(self.Ship, planet, 3.5, game.AllImmobile())
+	speed, degrees, err := game.GetApproach(self.Ship, planet, 4, game.AllImmobile())
 
 	if err != nil {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)

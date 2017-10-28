@@ -2,7 +2,6 @@ package gohalite2
 
 import (
 	"fmt"
-	"math"
 )
 
 // ------------------------------------------------------
@@ -13,25 +12,28 @@ type Entity interface {
 	GetX()							float64
 	GetY()							float64
 	GetRadius()						float64
+	Angle(other Entity)				int
 	Dist(other Entity)				float64
-	SurfaceDist(other Entity)		float64
+	ApproachDist(other Entity)		float64			// Distance from my CENTRE to target's EDGE
 	Collides(other Entity)			bool
 	Alive()							bool
 	String()						string
 }
 
 func EntitiesDist(a, b Entity) float64 {
-	dx := a.GetX() - b.GetX()
-	dy := a.GetY() - b.GetY()
-	return math.Sqrt(dx * dx + dy * dy)
+	return Dist(a.GetX(), a.GetY(), b.GetX(), b.GetY())
 }
 
-func EntitiesSurfaceDist(a, b Entity) float64 {
-	return EntitiesDist(a, b) - a.GetRadius() - b.GetRadius()
+func EntitiesApproachDist(a, b Entity) float64 {
+	return EntitiesDist(a, b) - b.GetRadius()
 }
 
 func EntitiesCollide(a, b Entity) bool {
 	return EntitiesDist(a, b) <= a.GetRadius() + b.GetRadius()
+}
+
+func EntitiesAngle(a, b Entity) int {
+	return Angle(a.GetX(), a.GetY(), b.GetX(), b.GetY())
 }
 
 // ------------------------------------------------------
@@ -70,7 +72,7 @@ type Ship struct {
 
 func (s Ship) CanDock(p Planet) bool {
 	if s.Alive() && p.Alive() && p.IsFull() == false && (p.Owned == false || p.Owner == s.Owner) {
-		return s.Dist(p) <= p.Radius + DOCKING_RADIUS
+		return s.ApproachDist(p) < DOCKING_RADIUS
 	}
 	return false
 }
@@ -112,20 +114,24 @@ func (e Ship) GetRadius() float64 { return SHIP_RADIUS }
 func (e Point) GetRadius() float64 { return 0 }
 func (e Planet) GetRadius() float64 { return e.Radius }
 
+func (e Ship) Angle(other Entity) int { return EntitiesAngle(e, other) }
+func (e Point) Angle(other Entity) int { return EntitiesAngle(e, other) }
+func (e Planet) Angle(other Entity) int { return EntitiesAngle(e, other) }
+
 func (e Ship) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 func (e Point) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 func (e Planet) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 
-func (e Ship) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(e, other) }
-func (e Point) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(e, other) }
-func (e Planet) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(e, other) }
+func (e Ship) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
+func (e Point) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
+func (e Planet) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
 
 func (e Ship) Collides(other Entity) bool { return EntitiesCollide(e, other) }
 func (e Point) Collides(other Entity) bool { return EntitiesCollide(e, other) }
 func (e Planet) Collides(other Entity) bool { return EntitiesCollide(e, other) }
 
 func (e Ship) Alive() bool { return e.HP > 0 }
-func (e Point) Alive() bool { return false }
+func (e Point) Alive() bool { return true }
 func (e Planet) Alive() bool { return e.HP > 0 }
 
 func (e Ship) String() string { return fmt.Sprintf("Ship %d [%d,%d]", e.Id, int(e.X), int(e.Y)) }

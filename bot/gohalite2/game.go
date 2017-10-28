@@ -20,8 +20,6 @@ type Game struct {
 	token_parser		*TokenParser
 }
 
-var backend_dev_log = NewLog("backend_dev_log.txt")
-
 func NewGame() *Game {
 	game := new(Game)
 	game.turn = -1
