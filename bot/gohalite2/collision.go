@@ -64,13 +64,13 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, depth int) (int, 
 	colliding_planet_id := self.AngleCollisionID(ship, distance, degrees)
 
 	if colliding_planet_id == -1 {
-		speed = Min(Round(distance), MAX_SPEED)
+		speed := Min(Round(distance), MAX_SPEED)
 		return speed, degrees, nil
 	}
 
 	if target_as_planet, ok := target.(Planet); ok {
 		if target_as_planet.Id == colliding_planet_id {
-			speed = Min(Round(distance), MAX_SPEED)
+			speed := Min(Round(distance), MAX_SPEED)
 			return speed, degrees, nil
 		}
 	}
