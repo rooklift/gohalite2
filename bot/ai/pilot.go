@@ -22,7 +22,7 @@ func (self *Pilot) Update() {
 }
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
-	return self.Game.ClosestPlanet(self.X, self.Y)
+	return self.Game.ClosestPlanet(self)
 }
 
 func (self *Pilot) CurrentOrder() string {

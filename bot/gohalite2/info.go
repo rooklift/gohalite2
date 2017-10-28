@@ -75,18 +75,13 @@ func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 	return ret
 }
 
-func (self *Game) ClosestPlanet(x, y float64) Planet {
-
-	point := Point{
-		X: x,
-		Y: y,
-	}
+func (self *Game) ClosestPlanet(e Entity) Planet {
 
 	var best_dist float64 = 9999999
 	var ret Planet
 
 	for _, planet := range self.AllPlanets() {
-		dist := point.SurfaceDist(planet)
+		dist := e.SurfaceDist(planet)
 		if dist < best_dist {
 			best_dist = dist
 			ret = planet
