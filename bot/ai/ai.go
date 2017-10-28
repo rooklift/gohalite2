@@ -9,7 +9,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "7 dev"
+	VERSION = "7 final"
 )
 
 func Run() {
@@ -23,6 +23,10 @@ func Run() {
 	fmt.Printf("%s %s\n", NAME, VERSION)
 
 	overmind := NewOvermind(game)
+
+	game.Parse()
+	overmind.FirstTurn()
+	game.Send()
 
 	for {
 		game.Parse()

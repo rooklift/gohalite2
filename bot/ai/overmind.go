@@ -26,6 +26,22 @@ func (self *Overmind) Step() {
 	}
 }
 
+func (self *Overmind) FirstTurn() {
+
+	self.UpdatePilots()
+
+	apbd := self.Game.AllPlanetsByDistance(self.Pilots[0])
+
+	for index, pilot := range self.Pilots {
+		pilot.TargetType = hal.PLANET
+		pilot.TargetId = apbd[index].Id
+	}
+
+	for _, pilot := range self.Pilots {
+		pilot.Act()
+	}
+}
+
 func (self *Overmind) UpdatePilots() {
 
 	game := self.Game
@@ -58,4 +74,3 @@ func (self *Overmind) UpdatePilots() {
 		}
 	}
 }
-

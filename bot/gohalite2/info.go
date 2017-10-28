@@ -1,7 +1,26 @@
 package gohalite2
 
+// ----------------------------------------------
+
+func (self *Game) GetShip(sid int) Ship {
+	return self.shipMap[sid]
+}
+
 func (self *Game) GetPlanet(plid int) Planet {
 	return self.planetMap[plid]
+}
+
+// ----------------------------------------------
+
+func (self *Game) AllShips() []Ship {
+	var ret []Ship
+	for sid, _ := range self.shipMap {
+		ship := self.GetShip(sid)
+		if ship.Alive() {
+			ret = append(ret, ship)
+		}
+	}
+	return ret
 }
 
 func (self *Game) AllPlanets() []Planet {
@@ -30,33 +49,14 @@ func (self *Game) AllImmobile() []Entity {		// Returns all planets and all docke
 	return ret
 }
 
+// ----------------------------------------------
+
 func (self *Game) PlanetsOwnedBy(pid int) []Planet {
 	var ret []Planet
 	for plid, _ := range self.planetMap {
 		planet := self.GetPlanet(plid)
 		if planet.Alive() && planet.Owned && planet.Owner == pid {
 			ret = append(ret, planet)
-		}
-	}
-	return ret
-}
-
-func (self *Game) MyPlanets() []Planet {
-	return self.PlanetsOwnedBy(self.pid)
-}
-
-// ----------------------------------------------
-
-func (self *Game) GetShip(sid int) Ship {
-	return self.shipMap[sid]
-}
-
-func (self *Game) AllShips() []Ship {
-	var ret []Ship
-	for sid, _ := range self.shipMap {
-		ship := self.GetShip(sid)
-		if ship.Alive() {
-			ret = append(ret, ship)
 		}
 	}
 	return ret
@@ -71,6 +71,10 @@ func (self *Game) ShipsOwnedBy(pid int) []Ship {
 		}
 	}
 	return ret
+}
+
+func (self *Game) MyPlanets() []Planet {
+	return self.PlanetsOwnedBy(self.pid)
 }
 
 func (self *Game) MyShips() []Ship {
@@ -90,6 +94,17 @@ func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 	return ret
 }
 
+func (self *Game) ShipsDockedAt(pl Planet) []Ship {
+
+	var ret []Ship
+
+	for _, Ship := range self.dockMap[pl.Id] {
+		ret = append(ret, Ship)
+	}
+
+	return ret
+}
+
 func (self *Game) ClosestPlanet(e Entity) Planet {
 
 	var best_dist float64 = 9999999
@@ -101,17 +116,6 @@ func (self *Game) ClosestPlanet(e Entity) Planet {
 			best_dist = dist
 			ret = planet
 		}
-	}
-
-	return ret
-}
-
-func (self *Game) ShipsDockedAt(pl Planet) []Ship {
-
-	var ret []Ship
-
-	for _, Ship := range self.dockMap[pl.Id] {
-		ret = append(ret, Ship)
 	}
 
 	return ret
