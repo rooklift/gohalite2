@@ -46,9 +46,10 @@ func (self *Game) GetCourse(ship Ship, target Entity) (int, int, error) {
 func (self *Game) GetCourseRecursive(ship Ship, target Entity, depth int) (int, int, error) {		// speed, angle, error
 
 	// Navigate around planets (only).
+	// If the target is in fact a planet, we don't navigate round it, but are happy to collide.
 
 	const (
-		SAFETY_MARGIN = 2
+		SAFETY_MARGIN = 2		// For side waypoints only.
 	)
 
 	distance := ship.Dist(target)
@@ -63,13 +64,15 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, depth int) (int, 
 	colliding_planet_id := self.AngleCollisionID(ship, distance, degrees)
 
 	if colliding_planet_id == -1 {
-
-		speed := Round(distance)
-		if speed > MAX_SPEED {
-			speed = MAX_SPEED
-		}
-
+		speed = Min(Round(distance), MAX_SPEED)
 		return speed, degrees, nil
+	}
+
+	if target_as_planet, ok := target.(Planet); ok {
+		if target_as_planet.Id == colliding_planet_id {
+			speed = Min(Round(distance), MAX_SPEED)
+			return speed, degrees, nil
+		}
 	}
 
 	if depth > 0 {
