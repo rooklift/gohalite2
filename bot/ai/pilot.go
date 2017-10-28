@@ -16,7 +16,7 @@ type Pilot struct {
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
-	format_string = fmt.Sprintf("Ship %d [%d,%d]: ", self.Id, hal.Round(self.X), hal.Round(self.Y)) + format_string
+	format_string = fmt.Sprintf("%v: ", self) + format_string
 	self.Game.Log(format_string, args...)
 }
 

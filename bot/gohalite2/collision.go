@@ -14,10 +14,17 @@ func (self *Game) CheckEntityCollision(ship Ship, distance float64, degrees int,
 		return true
 	}
 
+	// Sanity check... does the ship at its final position collide with the other thing?
+	// I thought this might be bugged, but maybe not.
+
+	if virtual_ship := ship.Projection(distance, degrees); virtual_ship.Collides(other) {
+		self.Log("CheckEntityCollision() will return false but should return true.")
+	}
+
 	return false
 }
 
-func (self *Game) Collision(ship Ship, distance float64, degrees int, possibles []Entity) (Entity, bool) {
+func (self *Game) FirstCollision(ship Ship, distance float64, degrees int, possibles []Entity) (Entity, bool) {
 
 	var collisions []Entity
 
@@ -62,7 +69,7 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, d
 
 	degrees := Angle(ship.X, ship.Y, target.GetX(), target.GetY())
 
-	c, does_hit := self.Collision(ship, distance, degrees, avoid)
+	c, does_hit := self.FirstCollision(ship, distance, degrees, avoid)
 
 	if does_hit == false {
 		speed := Min(Round(distance), MAX_SPEED)

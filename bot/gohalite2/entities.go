@@ -1,20 +1,23 @@
 package gohalite2
 
 import (
+	"fmt"
 	"math"
 )
 
 // ------------------------------------------------------
 
 type Entity interface {
+	Type()							EntityType
 	GetId()							int
 	GetX()							float64
 	GetY()							float64
 	GetRadius()						float64
-	Alive()							bool
 	Dist(other Entity)				float64
 	SurfaceDist(other Entity)		float64
-	Type()							EntityType
+	Collides(other Entity)			bool
+	Alive()							bool
+	String()						string
 }
 
 func EntitiesDist(a, b Entity) float64 {
@@ -25,6 +28,10 @@ func EntitiesDist(a, b Entity) float64 {
 
 func EntitiesSurfaceDist(a, b Entity) float64 {
 	return EntitiesDist(a, b) - a.GetRadius() - b.GetRadius()
+}
+
+func EntitiesCollide(a, b Entity) bool {
+	return EntitiesDist(a, b) <= a.GetRadius() + b.GetRadius()
 }
 
 // ------------------------------------------------------
@@ -68,6 +75,12 @@ func (s Ship) CanDock(p Planet) bool {
 	return false
 }
 
+func (s Ship) Projection(distance float64, degrees int) Ship {
+	ret := s
+	ret.X, ret.Y = Projection(s.X, s.Y, distance, degrees)
+	return ret
+}
+
 // ------------------------------------------------------
 
 type Point struct {
@@ -75,36 +88,46 @@ type Point struct {
 	Y								float64
 }
 
+// ------------------------------------------------------
+
 // Interface satisfiers....
 
-func (s Ship) GetId() int { return s.Id }
-func (p Point) GetId() int { return -1 }
-func (p Planet) GetId() int { return p.Id }
+func (e Ship) Type() EntityType { return SHIP }
+func (e Point) Type() EntityType { return POINT }
+func (e Planet) Type() EntityType { return PLANET }
 
-func (s Ship) GetX() float64 { return s.X }
-func (p Point) GetX() float64 { return p.X }
-func (p Planet) GetX() float64 { return p.X }
+func (e Ship) GetId() int { return e.Id }
+func (e Point) GetId() int { return -1 }
+func (e Planet) GetId() int { return e.Id }
 
-func (s Ship) GetY() float64 { return s.Y }
-func (p Point) GetY() float64 { return p.Y }
-func (p Planet) GetY() float64 { return p.Y }
+func (e Ship) GetX() float64 { return e.X }
+func (e Point) GetX() float64 { return e.X }
+func (e Planet) GetX() float64 { return e.X }
 
-func (s Ship) GetRadius() float64 { return SHIP_RADIUS }
-func (p Point) GetRadius() float64 { return 0 }
-func (p Planet) GetRadius() float64 { return p.Radius }
+func (e Ship) GetY() float64 { return e.Y }
+func (e Point) GetY() float64 { return e.Y }
+func (e Planet) GetY() float64 { return e.Y }
 
-func (s Ship) Alive() bool { return s.HP > 0 }
-func (p Point) Alive() bool { return true }
-func (p Planet) Alive() bool { return p.HP > 0 }
+func (e Ship) GetRadius() float64 { return SHIP_RADIUS }
+func (e Point) GetRadius() float64 { return 0 }
+func (e Planet) GetRadius() float64 { return e.Radius }
 
-func (s Ship) Dist(other Entity) float64 { return EntitiesDist(s, other) }
-func (p Point) Dist(other Entity) float64 { return EntitiesDist(p, other) }
-func (p Planet) Dist(other Entity) float64 { return EntitiesDist(p, other) }
+func (e Ship) Dist(other Entity) float64 { return EntitiesDist(e, other) }
+func (e Point) Dist(other Entity) float64 { return EntitiesDist(e, other) }
+func (e Planet) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 
-func (s Ship) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(s, other) }
-func (p Point) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(p, other) }
-func (p Planet) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(p, other) }
+func (e Ship) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(e, other) }
+func (e Point) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(e, other) }
+func (e Planet) SurfaceDist(other Entity) float64 { return EntitiesSurfaceDist(e, other) }
 
-func (s Ship) Type() EntityType { return SHIP }
-func (p Point) Type() EntityType { return POINT }
-func (p Planet) Type() EntityType { return PLANET }
+func (e Ship) Collides(other Entity) bool { return EntitiesCollide(e, other) }
+func (e Point) Collides(other Entity) bool { return EntitiesCollide(e, other) }
+func (e Planet) Collides(other Entity) bool { return EntitiesCollide(e, other) }
+
+func (e Ship) Alive() bool { return e.HP > 0 }
+func (e Point) Alive() bool { return false }
+func (e Planet) Alive() bool { return e.HP > 0 }
+
+func (e Ship) String() string { return fmt.Sprintf("Ship %d [%d,%d]", e.Id, int(e.X), int(e.Y)) }
+func (e Point) String() string { return fmt.Sprintf("Point [%d,%d]", int(e.X), int(e.Y)) }
+func (e Planet) String() string { return fmt.Sprintf("Planet %d [%d,%d]", e.Id, int(e.X), int(e.Y)) }
