@@ -166,7 +166,7 @@ func (self *Pilot) EngagePlanet() {
 	// We are very close to our target planet. Do something about this.
 
 	if self.TargetType != hal.PLANET {
-		game.Log("Pilot %d: EngagePlanet() called but target wasn't a planet.", self.Id)
+		self.Log("EngagePlanet() called but target wasn't a planet.", self.Id)
 		return
 	}
 
@@ -175,7 +175,7 @@ func (self *Pilot) EngagePlanet() {
 	// Is it full and friendly? (This shouldn't be so.)
 
 	if planet.Owned && planet.Owner == game.Pid() && planet.IsFull() {
-		game.Log("Pilot %d: EngagePlanet() called but my planet was full.", self.Id)
+		self.Log("EngagePlanet() called but my planet was full.", self.Id)
 		return
 	}
 
@@ -207,7 +207,7 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 	game := self.Game
 
 	if self.TargetType != hal.PLANET {
-		game.Log("Pilot %d: FinalPlanetApproachForDock() called but target wasn't a planet.", self.Id)
+		self.Log("FinalPlanetApproachForDock() called but target wasn't a planet.", self.Id)
 		return
 	}
 
@@ -221,7 +221,7 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 	speed, degrees, err := game.GetApproach(self.Ship, planet, 3.5)
 
 	if err != nil {
-		game.Log("Pilot %d: FinalPlanetApproachForDock(): %v", self.Id, err)
+		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)
 	}
 
 	self.Thrust(speed, degrees)
