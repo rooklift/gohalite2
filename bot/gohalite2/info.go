@@ -15,6 +15,21 @@ func (self *Game) AllPlanets() []Planet {
 	return ret
 }
 
+func (self *Game) AllImmobile() []Entity {		// Returns all planets and all docked ships
+	var ret []Entity
+	for plid, _ := range self.planetMap {
+		planet := self.GetPlanet(plid)
+		if planet.Alive() {
+			ret = append(ret, planet)
+			all_docked := self.ShipsDockedAt(planet)
+			for _, s := range all_docked {
+				ret = append(ret, s)
+			}
+		}
+	}
+	return ret
+}
+
 func (self *Game) PlanetsOwnedBy(pid int) []Planet {
 	var ret []Planet
 	for plid, _ := range self.planetMap {

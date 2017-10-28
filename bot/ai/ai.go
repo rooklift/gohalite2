@@ -1,62 +1,32 @@
 package ai
 
 import (
+	"fmt"
+	"time"
+
 	hal "../gohalite2"
 )
 
-// --------------------------------------------
+const (
+	NAME = "Fohristiwhirl"
+	VERSION = "7 dev"
+)
 
-type Overmind struct {
-	Game			*hal.Game
-	Pilots			[]*Pilot
-}
+func Run() {
 
-func NewOvermind(game *hal.Game) *Overmind {
-	ret := new(Overmind)
-	ret.Game = game
-	return ret
-}
+	game := hal.NewGame()
 
-func (self *Overmind) UpdatePilots() {
+	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
+	game.LogWithoutTurn("--------------------------------------------------------------------------------")
+	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
 
-	game := self.Game
+	fmt.Printf("%s %s\n", NAME, VERSION)
 
-	// Add new AIs for new ships...
+	overmind := NewOvermind(game)
 
-	my_new_ships := game.MyNewShipIDs()
-
-	for _, sid := range my_new_ships {
-		pilot := new(Pilot)
-		pilot.Overmind = self
-		pilot.Game = game
-		pilot.Id = sid								// This has to be set so pilot.Update() can work.
-		self.Pilots = append(self.Pilots, pilot)
-	}
-
-	// Update the Ships embedded in each Pilot... (yeah that makes sense)
-
-	for _, pilot := range self.Pilots {
-		pilot.Update()
-	}
-
-	// Delete AIs with dead ships from the slice...
-
-	for i := 0; i < len(self.Pilots); i++ {
-		pilot := self.Pilots[i]
-		if pilot.Alive() == false {
-			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
-			i--
-		}
-	}
-}
-
-// --------------------------------------------
-
-func (self *Overmind) Step() {
-
-	self.UpdatePilots()
-
-	for _, pilot := range self.Pilots {
-		pilot.Act()
+	for {
+		game.Parse()
+		overmind.Step()
+		game.Send()
 	}
 }

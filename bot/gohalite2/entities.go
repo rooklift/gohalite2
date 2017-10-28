@@ -7,6 +7,7 @@ import (
 // ------------------------------------------------------
 
 type Entity interface {
+	GetId()							int
 	GetX()							float64
 	GetY()							float64
 	GetRadius()						float64
@@ -75,6 +76,10 @@ type Point struct {
 }
 
 // Interface satisfiers....
+
+func (s Ship) GetId() int { return s.Id }
+func (p Point) GetId() int { return -1 }
+func (p Planet) GetId() int { return p.Id }
 
 func (s Ship) GetX() float64 { return s.X }
 func (p Point) GetX() float64 { return p.X }

@@ -1,7 +1,9 @@
 package ai
 
 import (
+	"fmt"
 	"math/rand"
+
 	hal "../gohalite2"
 )
 
@@ -14,7 +16,8 @@ type Pilot struct {
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
-	self.Game.Log("Ship %d: " + format_string, args...)
+	format_string = fmt.Sprintf("Ship %d [%d,%d]: ", self.Id, hal.Round(self.X), hal.Round(self.Y)) + format_string
+	self.Game.Log(format_string, args...)
 }
 
 func (self *Pilot) Update() {
@@ -134,25 +137,28 @@ func (self *Pilot) ChaseTarget() {
 
 		planet := game.GetPlanet(self.TargetId)
 
-		speed, degrees, err := game.GetApproach(self.Ship, planet, 6.0)
+		if self.SurfaceDist(planet) < 4 {
+			self.EngagePlanet()
+			return
+		}
+
+		speed, degrees, err := game.GetApproach(self.Ship, planet, 3.49, game.AllImmobile())
 
 		if err != nil {
+			self.Log("ChaseTarget(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
-			if speed < 4 {
-				self.EngagePlanet()
-			} else {
-				self.Thrust(speed, degrees)
-			}
+			self.Thrust(speed, degrees)
 		}
 
 	} else if self.TargetType == hal.SHIP {
 
 		other_ship := game.GetShip(self.TargetId)
 
-		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 3.0)
+		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 3.0, game.AllImmobile())
 
 		if err != nil {
+			self.Log("ChaseTarget(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
 			self.Thrust(speed, degrees)
@@ -194,9 +200,10 @@ func (self *Pilot) EngagePlanet() {
 	self.TargetType = hal.SHIP
 	self.TargetId = enemy_ship.Id
 
-	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 3.0)
+	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 3.0, game.AllImmobile())
 
 	if err != nil {
+		self.Log("EngagePlanet(): %v", err)
 		return
 	}
 
@@ -218,7 +225,7 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 		return
 	}
 
-	speed, degrees, err := game.GetApproach(self.Ship, planet, 3.5)
+	speed, degrees, err := game.GetApproach(self.Ship, planet, 3.5, game.AllImmobile())
 
 	if err != nil {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)

@@ -4,52 +4,54 @@ import (
 	"fmt"
 )
 
-func (self *Game) AngleCollisionID(ship Ship, distance float64, degrees int) int {
+func (self *Game) CheckEntityCollision(ship Ship, distance float64, degrees int, other Entity) bool {
 
-	// Returns ID of the first planet we would collide with, or -1 if no hits
-
-	var collision_planets []Planet
-	all_planets := self.AllPlanets()
+	// Would we hit some specific entity?
 
 	endx, endy := Projection(ship.X, ship.Y, distance, degrees)
 
-	for _, planet := range all_planets {
+	if IntersectSegmentCircle(ship.X, ship.Y, endx, endy, other.GetX(), other.GetY(), other.GetRadius() + SHIP_RADIUS) {
+		return true
+	}
 
-		collides := IntersectSegmentCircle(ship.X, ship.Y, endx, endy, planet.X, planet.Y, planet.Radius + SHIP_RADIUS)
+	return false
+}
 
-		if collides {
-			collision_planets = append(collision_planets, planet)
+func (self *Game) Collision(ship Ship, distance float64, degrees int, possibles []Entity) (Entity, bool) {
+
+	var collisions []Entity
+
+	for _, other := range possibles {
+		if self.CheckEntityCollision(ship, distance, degrees, other) {
+			collisions = append(collisions, other)
 		}
 	}
 
-	if len(collision_planets) == 0 {
-		return -1
+	if len(collisions) == 0 {
+		return nil, false
 	}
 
-	closest_planet := Planet{}
-	closest_distance := 999999.9
+	var closest_ent Entity
+	var closest_distance float64 = 999999.9
 
-	for _, c := range collision_planets {
+	for _, c := range collisions {
 		if ship.Dist(c) < closest_distance {
-			closest_planet = c
+			closest_ent = c
 			closest_distance = ship.Dist(c)
 		}
 	}
 
-	return closest_planet.Id
+	return closest_ent, true
 }
 
-func (self *Game) GetCourse(ship Ship, target Entity) (int, int, error) {
-	return self.GetCourseRecursive(ship, target, 10)
+func (self *Game) GetCourse(ship Ship, target Entity, avoid []Entity) (int, int, error) {
+	return self.GetCourseRecursive(ship, target, avoid, 10)
 }
 
-func (self *Game) GetCourseRecursive(ship Ship, target Entity, depth int) (int, int, error) {		// speed, angle, error
-
-	// Navigate around planets (only).
-	// If the target is in fact a planet, we don't navigate round it, but are happy to collide.
+func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, depth int) (int, int, error) {		// speed, angle, error
 
 	const (
-		SAFETY_MARGIN = 2		// For side waypoints only.
+		DODGE_MARGIN = 1.5
 	)
 
 	distance := ship.Dist(target)
@@ -58,35 +60,24 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, depth int) (int, 
 		return 0, 0, nil
 	}
 
-	x1, y1, x2, y2 := ship.X, ship.Y, target.GetX(), target.GetY()
-	degrees := Angle(x1, y1, x2, y2)
+	degrees := Angle(ship.X, ship.Y, target.GetX(), target.GetY())
 
-	colliding_planet_id := self.AngleCollisionID(ship, distance, degrees)
+	c, does_hit := self.Collision(ship, distance, degrees, avoid)
 
-	if colliding_planet_id == -1 {
+	if does_hit == false {
 		speed := Min(Round(distance), MAX_SPEED)
 		return speed, degrees, nil
 	}
 
-	if target_as_planet, ok := target.(Planet); ok {
-		if target_as_planet.Id == colliding_planet_id {
-			speed := Min(Round(distance), MAX_SPEED)
-			return speed, degrees, nil
-		}
-	}
-
 	if depth > 0 {
-
-		planet := self.GetPlanet(colliding_planet_id)
-		waypointx, waypointy := Projection(planet.X, planet.Y, planet.Radius + SAFETY_MARGIN, degrees + 90)
-		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, depth - 1)
-
+		waypointx, waypointy := Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, degrees + 90)
+		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, avoid, depth - 1)
 	}
 
-	return 0, 0, fmt.Errorf("NavigateRecursive(): exceeded max depth")
+	return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
 }
 
-func (self *Game) GetApproach(ship Ship, target Entity, margin float64) (int, int, error) {
+func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid []Entity) (int, int, error) {
 
 	// Navigate so that the ship's centre comes near the target's edge. Target
 	// can be a Planet or a Ship (or a Point).
@@ -102,5 +93,5 @@ func (self *Game) GetApproach(ship Ship, target Entity, margin float64) (int, in
 	needed_distance := current_dist - target.GetRadius() - margin
 	target_point_x, target_point_y := Projection(ship.X, ship.Y, needed_distance, direct_angle)
 
-	return self.GetCourse(ship, Point{target_point_x, target_point_y})
+	return self.GetCourse(ship, Point{target_point_x, target_point_y}, avoid)
 }

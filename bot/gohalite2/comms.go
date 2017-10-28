@@ -114,7 +114,7 @@ func (self *Game) Parse() {
 			if ok == false {
 				ship.Id = sid
 				ship.Owner = pid
-				ship.Birth = Max(1, self.turn)					// If turn is 0 we are in init stage.
+				ship.Birth = Max(0, self.turn)					// Turn can be -1 in init stage.
 			}
 
 			ship.X = self.token_parser.Float()

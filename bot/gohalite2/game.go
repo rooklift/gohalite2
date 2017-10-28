@@ -24,6 +24,7 @@ var backend_dev_log = NewLog("backend_dev_log.txt")
 
 func NewGame() *Game {
 	game := new(Game)
+	game.turn = -1
 	game.token_parser = NewTokenParser()
 	game.pid = game.token_parser.Int()
 	game.width = game.token_parser.Int()
