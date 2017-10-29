@@ -34,9 +34,13 @@ func (self *Overmind) Step() {
 		pilot.ExecutePlanIfStationary(self.ATC)
 	}
 
-	for _, pilot := range self.Pilots {
-		if pilot.HasOrdered == false {
-			pilot.ExecutePlanIfSafe(self.ATC)
+	// Make multiple attempts to execute our orders. Should allow chains of ships to move OK.
+
+	for n := 0; n < 5; n++ {
+		for _, pilot := range self.Pilots {
+			if pilot.HasOrdered == false {
+				pilot.ExecutePlanIfSafe(self.ATC)
+			}
 		}
 	}
 }

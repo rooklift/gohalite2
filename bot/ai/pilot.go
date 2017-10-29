@@ -258,7 +258,8 @@ func (self *Pilot) ExecutePlanIfSafe(atc *AirTrafficControl) {
 		atc.Restrict(self.Ship, speed, degrees)
 		self.HasOrdered = true
 	} else {
-		self.Log("Refusing unsafe thrust %d / %d", speed, degrees)
+		// Make the format string contain the turn and ship number so this message only gets logged once, but others can be.
+		self.Game.LogOnce(fmt.Sprintf("t %d: %v: Refusing unsafe thrust %%d / %%d", self.Game.Turn(), self.Ship), speed, degrees)
 	}
 }
 

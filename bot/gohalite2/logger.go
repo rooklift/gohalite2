@@ -62,7 +62,7 @@ func (self *Game) StartLog(logfilename string) {
 }
 
 func (self *Game) Log(format_string string, args ...interface{}) {
-	format_string = fmt.Sprintf("t%d: ", self.Turn()) + format_string
+	format_string = fmt.Sprintf("t %d: ", self.Turn()) + format_string
 	self.logfile.Log(format_string, args...)
 }
 
