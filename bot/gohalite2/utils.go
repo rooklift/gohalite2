@@ -96,6 +96,10 @@ func Round(n float64) int {
 	return int(math.Floor(n + 0.5))
 }
 
+func RoundToFloat(n float64) float64 {
+	return math.Floor(n + 0.5)
+}
+
 func Dist(x1, y1, x2, y2 float64) float64 {
 	dx := x2 - x1
 	dy := y2 - y1

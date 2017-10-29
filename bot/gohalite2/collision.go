@@ -52,13 +52,19 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, d
 		return 0, 0, nil
 	}
 
+	// If we're close, only allow whole number distances so we don't hit things due to rounding later.
+
+	if distance < MAX_SPEED + 1 {
+		distance = RoundToFloat(distance)
+	}
+
 	degrees := Angle(ship.X, ship.Y, target.GetX(), target.GetY())
 
 	c, does_hit := self.FirstCollision(ship, distance, degrees, avoid)
 
 	if does_hit == false {
-		speed := Min(Round(distance), MAX_SPEED)	// FIXME: in rare cases the Round can make us hit objects that are near the
-		return speed, degrees, nil					// object we're avoiding, e.g. if a speed of 3.6 was safe but 4.0 kills us.
+		speed := Min(Round(distance), MAX_SPEED)
+		return speed, degrees, nil
 	}
 
 	if depth > 0 {
