@@ -57,8 +57,8 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, d
 	c, does_hit := self.FirstCollision(ship, distance, degrees, avoid)
 
 	if does_hit == false {
-		speed := Min(Round(distance), MAX_SPEED)
-		return speed, degrees, nil
+		speed := Min(Round(distance), MAX_SPEED)	// FIXME: in rare cases the Round can make us hit objects that are near the
+		return speed, degrees, nil					// object we're avoiding, e.g. if a speed of 3.6 was safe but 4.0 kills us.
 	}
 
 	if depth > 0 {
