@@ -226,8 +226,25 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 
 // -------------------------------------------------------------------
 
-func (self *Pilot) PlanThrust(speed, angle int) {
-	self.Plan = fmt.Sprintf("t %d %d %d", self.Id, speed, angle)
+func (self *Pilot) PlanThrust(speed, degrees int) {
+
+	// We put some extra info into the angle, which we can see in the Chlorine replayer...
+
+	var message int = -1
+
+	if self.TargetType == hal.PLANET {
+		message = self.TargetId
+	} else if self.TargetType == hal.SHIP {
+		message = 121
+	} else if self.TargetType == hal.NONE {
+		message = 180
+	}
+
+	if message > -1 {
+		degrees += (message + 1) * 360
+	}
+
+	self.Plan = fmt.Sprintf("t %d %d %d", self.Id, speed, degrees)
 }
 
 func (self *Pilot) PlanDock(planet hal.Planet) {
@@ -247,19 +264,6 @@ func (self *Pilot) ClearPlan() {
 func (self *Pilot) ExecutePlan() {
 	self.Game.RawOrder(self.Id, self.Plan)
 	self.HasOrdered = true
-
-	// If the plan is thrust, we can encode our target as a message.
-	// Doesn't work if we have no plan ("") at all.
-
-	if hal.GetOrderType(self.Plan) == hal.THRUST {
-		if self.TargetType == hal.PLANET {
-			self.Game.EncodeSecretInfo(self.Ship, self.TargetId)
-		} else if self.TargetType == hal.SHIP {
-			self.Game.EncodeSecretInfo(self.Ship, 121)
-		} else if self.TargetType == hal.NONE {
-			self.Game.EncodeSecretInfo(self.Ship, 180)
-		}
-	}
 }
 
 func (self *Pilot) PreliminaryRestrict(atc *AirTrafficControl) {			// In case we end up not moving, restrict airspace.

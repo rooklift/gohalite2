@@ -125,7 +125,7 @@ func CourseFromString(s string) (int, int) {
 		return 0, 0
 	}
 
-	for degrees < 0 {
+	for degrees < 0 {				// FIXME: this is dumb, what's the mathematical way?
 		degrees += 360
 	}
 

@@ -6,7 +6,6 @@ import (
 
 // Possible changes (FIXME?):
 //
-// -- Use a map[XYT]bool instead of a 3D slice? (Faster or slower??)
 // -- Use a higher resolution?
 // -- Reset target on failure (possibly after failing for n turns)
 
