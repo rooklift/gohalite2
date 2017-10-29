@@ -44,6 +44,23 @@ func (self *Overmind) Step() {
 			}
 		}
 	}
+
+	// Null thrust everyone who didn't move...
+
+	for _, pilot := range self.Pilots {
+		if pilot.HasOrdered == false && pilot.DockedStatus == hal.UNDOCKED {
+			pilot.PlanThrust(0, 0)
+			pilot.ExecutePlan()
+		}
+	}
+
+	// Encode target planet...
+
+	for _, pilot := range self.Pilots {
+		if pilot.TargetType == hal.PLANET {
+			self.Game.EncodeSecretInfo(pilot.Ship, pilot.TargetId)
+		}
+	}
 }
 
 func (self *Overmind) ChooseInitialTargets() {

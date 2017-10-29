@@ -121,5 +121,31 @@ func CourseFromString(s string) (int, int) {
 		return 0, 0
 	}
 
+	for degrees < 0 {
+		degrees += 360
+	}
+
+	degrees %= 360
+
 	return speed, degrees
+}
+
+func GetOrderType(s string) OrderType {
+
+	tokens := strings.Fields(s)
+
+	if len(tokens) == 0 {
+		return NO_ORDER
+	}
+	if tokens[0] == "t" {
+		return THRUST
+	}
+	if tokens[0] == "d" {
+		return DOCK
+	}
+	if tokens[0] == "u" {
+		return UNDOCK
+	}
+
+	return NO_ORDER
 }

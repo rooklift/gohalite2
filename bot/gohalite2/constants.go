@@ -25,4 +25,13 @@ const (
 	POINT
 )
 
+type OrderType int
+
+const (
+	NO_ORDER OrderType = iota
+	THRUST
+	DOCK
+	UNDOCK
+)
+
 var backend_dev_log = NewLog("backend_dev_log.txt")

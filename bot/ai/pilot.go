@@ -240,6 +240,11 @@ func (self *Pilot) ClearPlan() {
 	self.HasOrdered = false
 }
 
+func (self *Pilot) ExecutePlan() {
+	self.Game.RawOrder(self.Id, self.Plan)
+	self.HasOrdered = true
+}
+
 func (self *Pilot) PreliminaryRestrict(atc *AirTrafficControl) {			// In case we end up not moving, restrict airspace.
 	if self.DockedStatus == hal.UNDOCKED {			// Docked ships don't restrict airspace. We navigate around them using other means.
 		atc.Restrict(self.Ship, 0, 0)
