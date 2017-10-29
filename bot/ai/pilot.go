@@ -243,6 +243,9 @@ func (self *Pilot) ClearPlan() {
 func (self *Pilot) ExecutePlan() {
 	self.Game.RawOrder(self.Id, self.Plan)
 	self.HasOrdered = true
+	if hal.GetOrderType(self.Plan) == hal.THRUST && self.TargetType == hal.PLANET {
+		self.Game.EncodeSecretInfo(self.Ship, self.TargetId)
+	}
 }
 
 func (self *Pilot) PreliminaryRestrict(atc *AirTrafficControl) {			// In case we end up not moving, restrict airspace.
@@ -260,8 +263,7 @@ func (self *Pilot) ExecutePlanIfStationary(atc *AirTrafficControl) {
 
 	speed, _ := hal.CourseFromString(self.Plan)
 	if speed == 0 {
-		self.Game.RawOrder(self.Id, self.Plan)
-		self.HasOrdered = true
+		self.ExecutePlan()
 	}
 }
 
@@ -275,9 +277,8 @@ func (self *Pilot) ExecutePlanIfSafe(atc *AirTrafficControl) {
 	speed, degrees := hal.CourseFromString(self.Plan)
 	atc.Unrestrict(self.Ship, 0, 0)							// Unrestruct our preliminary null course so it doesn't block us.
 	if atc.PathIsFree(self.Ship, speed, degrees) {
-		self.Game.RawOrder(self.Id, self.Plan)
+		self.ExecutePlan()
 		atc.Restrict(self.Ship, speed, degrees)
-		self.HasOrdered = true
 	} else {
 		atc.Restrict(self.Ship, 0, 0)						// Restrict our null course again.
 		// Make the format string contain the turn and ship number so this message only gets logged once, but others can be.

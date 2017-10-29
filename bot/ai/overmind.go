@@ -53,14 +53,6 @@ func (self *Overmind) Step() {
 			pilot.ExecutePlan()
 		}
 	}
-
-	// Encode target planet...
-
-	for _, pilot := range self.Pilots {
-		if pilot.TargetType == hal.PLANET {
-			self.Game.EncodeSecretInfo(pilot.Ship, pilot.TargetId)
-		}
-	}
 }
 
 func (self *Overmind) ChooseInitialTargets() {
