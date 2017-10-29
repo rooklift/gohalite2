@@ -199,6 +199,10 @@ func (self *Game) CurrentOrder(ship Ship) string {
 	return self.orders[ship.Id]
 }
 
+func (self *Game) RawOrder(sid int, s string) {
+	self.orders[sid] = s
+}
+
 func (self *Game) Send() {
 	var commands []string
 	for _, s := range self.orders {

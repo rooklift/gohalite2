@@ -104,4 +104,3 @@ func (self *ATC) PathIsFree(ship hal.Ship, speed, degrees int) bool {
 
 	return true
 }
-

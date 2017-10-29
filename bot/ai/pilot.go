@@ -9,10 +9,11 @@ import (
 
 type Pilot struct {
 	hal.Ship
+	Plan			string				// Our planned order, valid for 1 turn only
 	Overmind		*Overmind
 	Game			*hal.Game
-	TargetType		hal.EntityType
-	TargetId		int
+	TargetType		hal.EntityType		// Long term target info
+	TargetId		int					// Long term target info
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
@@ -22,30 +23,11 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 
 func (self *Pilot) Update() {
 	self.Ship = self.Game.GetShip(self.Id)
+	self.Plan = ""
 }
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
-}
-
-func (self *Pilot) CurrentOrder() string {
-	return self.Game.CurrentOrder(self.Ship)
-}
-
-func (self *Pilot) Thrust(speed, angle int) {
-	self.Game.Thrust(self.Ship, speed, angle)
-}
-
-func (self *Pilot) Dock(planet hal.Planet) {
-	self.Game.Dock(self.Ship, planet)
-}
-
-func (self *Pilot) Undock() {
-	self.Game.Undock(self.Ship)
-}
-
-func (self *Pilot) ClearOrder() {
-	self.Game.ClearOrder(self.Ship)
 }
 
 func (self *Pilot) ValidateTarget() {
@@ -82,24 +64,26 @@ func (self *Pilot) Act() {
 
 	// Helpers can lock in an order by actually setting it.
 
-	if self.CurrentOrder() == "" {
+	if self.Plan == "" {
 		self.DockIfPossible()
 	}
 
-	if self.CurrentOrder() == "" {
+	if self.Plan == "" {
 		self.ChooseTarget()
 	}
 
-	if self.CurrentOrder() == "" {
+	if self.Plan == "" {
 		self.ChaseTarget()
 	}
+
+	self.ExecutePlan()
 }
 
 func (self *Pilot) DockIfPossible() {
 	if self.DockedStatus == hal.UNDOCKED {
 		closest_planet := self.ClosestPlanet()
 		if self.CanDock(closest_planet) {
-			self.Dock(closest_planet)
+			self.PlanDock(closest_planet)
 		}
 	}
 }
@@ -148,7 +132,7 @@ func (self *Pilot) ChaseTarget() {
 			self.Log("ChaseTarget(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
-			self.Thrust(speed, degrees)
+			self.PlanThrust(speed, degrees)
 		}
 
 	} else if self.TargetType == hal.SHIP {
@@ -161,7 +145,7 @@ func (self *Pilot) ChaseTarget() {
 			self.Log("ChaseTarget(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
-			self.Thrust(speed, degrees)
+			self.PlanThrust(speed, degrees)
 			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
 				self.Log("ChaseTarget(): not moving but not in range!")
 			}
@@ -210,7 +194,7 @@ func (self *Pilot) EngagePlanet() {
 		return
 	}
 
-	self.Thrust(speed, degrees)
+	self.PlanThrust(speed, degrees)
 }
 
 func (self *Pilot) FinalPlanetApproachForDock() {
@@ -224,7 +208,7 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 	planet := game.GetPlanet(self.TargetId)
 
 	if self.CanDock(planet) {
-		self.Dock(planet)
+		self.PlanDock(planet)
 		return
 	}
 
@@ -234,10 +218,33 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)
 	}
 
-	self.Thrust(speed, degrees)
+	self.PlanThrust(speed, degrees)
 }
 
+// -------------------------------------------------------------------
 
+func (self *Pilot) PlanThrust(speed, angle int) {
+	self.Plan = fmt.Sprintf("t %d %d %d", self.Id, speed, angle)
+}
+
+func (self *Pilot) PlanDock(planet hal.Planet) {
+	self.Plan = fmt.Sprintf("d %d %d", self.Id, planet.Id)
+}
+
+func (self *Pilot) PlanUndock() {
+	self.Plan = fmt.Sprintf("u %d", self.Id)
+}
+
+func (self *Pilot) ClearPlan() {
+	self.Plan = ""
+	self.Game.RawOrder(self.Id, "")		// Also clear the actual order if needed
+}
+
+func (self *Pilot) ExecutePlan() {
+	self.Game.RawOrder(self.Id, self.Plan)
+}
+
+// ----------------------------------------------
 
 type PilotsByY []*Pilot
 
