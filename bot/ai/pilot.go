@@ -243,8 +243,12 @@ func (self *Pilot) ClearPlan() {
 func (self *Pilot) ExecutePlan() {
 	self.Game.RawOrder(self.Id, self.Plan)
 	self.HasOrdered = true
-	if hal.GetOrderType(self.Plan) == hal.THRUST && self.TargetType == hal.PLANET {
-		self.Game.EncodeSecretInfo(self.Ship, self.TargetId)
+	if hal.GetOrderType(self.Plan) == hal.THRUST {
+		if self.TargetType == hal.PLANET {
+			self.Game.EncodeSecretInfo(self.Ship, self.TargetId)
+		} else if self.TargetType == hal.SHIP {
+			self.Game.EncodeSecretInfo(self.Ship, 121)
+		}
 	}
 }
 

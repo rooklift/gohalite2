@@ -42,6 +42,9 @@ func (self *Game) GetCourse(ship Ship, target Entity, avoid []Entity) (int, int,
 
 func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, depth int) (int, int, error) {		// speed, angle, error
 
+	// Try to navigate to (collide with) the target, but avoiding the list of entites,
+	// which could include the target.
+
 	const (
 		DODGE_MARGIN = 1.5
 	)
