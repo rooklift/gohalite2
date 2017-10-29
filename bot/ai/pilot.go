@@ -76,6 +76,10 @@ func (self *Pilot) MakePlan() {
 	if self.Plan == "" {
 		self.ChaseTarget()
 	}
+
+	if self.Plan == "" {
+		self.PlanThrust(0, 0)
+	}
 }
 
 func (self *Pilot) DockIfPossible() {
@@ -243,11 +247,17 @@ func (self *Pilot) ClearPlan() {
 func (self *Pilot) ExecutePlan() {
 	self.Game.RawOrder(self.Id, self.Plan)
 	self.HasOrdered = true
+
+	// If the plan is thrust, we can encode our target as a message.
+	// Doesn't work if we have no plan ("") at all.
+
 	if hal.GetOrderType(self.Plan) == hal.THRUST {
 		if self.TargetType == hal.PLANET {
 			self.Game.EncodeSecretInfo(self.Ship, self.TargetId)
 		} else if self.TargetType == hal.SHIP {
 			self.Game.EncodeSecretInfo(self.Ship, 121)
+		} else if self.TargetType == hal.NONE {
+			self.Game.EncodeSecretInfo(self.Ship, 180)
 		}
 	}
 }
