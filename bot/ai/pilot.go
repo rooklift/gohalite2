@@ -240,24 +240,41 @@ func (self *Pilot) ClearPlan() {
 	self.HasOrdered = false
 }
 
+func (self *Pilot) PreliminaryRestrict(atc *AirTrafficControl) {			// In case we end up not moving, restrict airspace.
+	if self.DockedStatus == hal.UNDOCKED {			// Docked ships don't restrict airspace. We navigate around them using other means.
+		atc.Restrict(self.Ship, 0, 0)
+	}
+}
+
 func (self *Pilot) ExecutePlanIfStationary(atc *AirTrafficControl) {
-	speed, degrees := hal.CourseFromString(self.Plan)
+
+	if self.HasOrdered {
+		self.Log("ExecutePlanIfStationary(): already ordered!")
+		return
+	}
+
+	speed, _ := hal.CourseFromString(self.Plan)
 	if speed == 0 {
 		self.Game.RawOrder(self.Id, self.Plan)
-		if self.DockedStatus == hal.UNDOCKED {			// Docked ships don't restrict airspace. We navigate around them using other means.
-			atc.Restrict(self.Ship, speed, degrees)
-		}
 		self.HasOrdered = true
 	}
 }
 
 func (self *Pilot) ExecutePlanIfSafe(atc *AirTrafficControl) {
+
+	if self.HasOrdered {
+		self.Log("ExecutePlanIfSafe(): already ordered!")
+		return
+	}
+
 	speed, degrees := hal.CourseFromString(self.Plan)
+	atc.Unrestrict(self.Ship, 0, 0)							// Unrestruct our preliminary null course so it doesn't block us.
 	if atc.PathIsFree(self.Ship, speed, degrees) {
 		self.Game.RawOrder(self.Id, self.Plan)
 		atc.Restrict(self.Ship, speed, degrees)
 		self.HasOrdered = true
 	} else {
+		atc.Restrict(self.Ship, 0, 0)						// Restrict our null course again.
 		// Make the format string contain the turn and ship number so this message only gets logged once, but others can be.
 		self.Game.LogOnce(fmt.Sprintf("t %d: %v: Refusing unsafe thrust %%d / %%d", self.Game.Turn(), self.Ship), speed, degrees)
 	}

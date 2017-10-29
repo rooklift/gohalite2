@@ -45,7 +45,7 @@ func (self *AirTrafficControl) Clear() {
 	}
 }
 
-func (self *AirTrafficControl) Restrict(ship hal.Ship, speed, degrees int) {
+func (self *AirTrafficControl) SetRestrict(ship hal.Ship, speed, degrees int, val bool) {
 
 	x2, y2 := hal.Projection(ship.X, ship.Y, float64(speed), degrees)
 
@@ -66,11 +66,19 @@ func (self *AirTrafficControl) Restrict(ship hal.Ship, speed, degrees int) {
 		for index_x := grid_x - FILL_RADIUS; index_x <= grid_x + FILL_RADIUS; index_x++ {
 			for index_y := grid_y - FILL_RADIUS; index_y <= grid_y + FILL_RADIUS; index_y++ {
 				if index_x >= 0 && index_x < self.Width && index_y >= 0 && index_y < self.Height {
-					self.Grid[index_x][index_y][t] = true
+					self.Grid[index_x][index_y][t] = val
 				}
 			}
 		}
 	}
+}
+
+func (self *AirTrafficControl) Restrict(ship hal.Ship, speed, degrees int) {
+	self.SetRestrict(ship, speed, degrees, true)
+}
+
+func (self *AirTrafficControl) Unrestrict(ship hal.Ship, speed, degrees int) {
+	self.SetRestrict(ship, speed, degrees, false)
 }
 
 func (self *AirTrafficControl) PathIsFree(ship hal.Ship, speed, degrees int) bool {

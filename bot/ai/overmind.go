@@ -31,6 +31,7 @@ func (self *Overmind) Step() {
 
 	for _, pilot := range self.Pilots {
 		pilot.MakePlan()
+		pilot.PreliminaryRestrict(self.ATC)
 		pilot.ExecutePlanIfStationary(self.ATC)
 	}
 
