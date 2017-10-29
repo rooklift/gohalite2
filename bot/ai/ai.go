@@ -9,7 +9,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "9 dev"
+	VERSION = "9 final"
 )
 
 func Run() {
