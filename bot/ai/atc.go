@@ -10,15 +10,15 @@ const (
 	FILL_RADIUS = 1		// filling from -1 to +1 inclusive
 )
 
-type ATC struct {
+type AirTrafficControl struct {
 	Grid	[][][]bool
 	Width	int
 	Height	int
 }
 
-func NewATC(world_width, world_height int) *ATC {
+func NewATC(world_width, world_height int) *AirTrafficControl {
 
-	ret := new(ATC)
+	ret := new(AirTrafficControl)
 
 	ret.Width = world_width * RESOLUTION
 	ret.Height = world_height * RESOLUTION
@@ -35,7 +35,7 @@ func NewATC(world_width, world_height int) *ATC {
 	return ret
 }
 
-func (self *ATC) Clear() {
+func (self *AirTrafficControl) Clear() {
 	for x := 0; x < self.Width; x++ {
 		for y := 0; y < self.Height; y++ {
 			for t := 0; t < TIME_STEPS; t++ {
@@ -45,7 +45,7 @@ func (self *ATC) Clear() {
 	}
 }
 
-func (self *ATC) Claim(ship hal.Ship, speed, degrees int) {
+func (self *AirTrafficControl) Restrict(ship hal.Ship, speed, degrees int) {
 
 	x2, y2 := hal.Projection(ship.X, ship.Y, float64(speed), degrees)
 
@@ -73,7 +73,7 @@ func (self *ATC) Claim(ship hal.Ship, speed, degrees int) {
 	}
 }
 
-func (self *ATC) PathIsFree(ship hal.Ship, speed, degrees int) bool {
+func (self *AirTrafficControl) PathIsFree(ship hal.Ship, speed, degrees int) bool {
 
 	x2, y2 := hal.Projection(ship.X, ship.Y, float64(speed), degrees)
 

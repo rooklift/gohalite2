@@ -24,10 +24,6 @@ func Run() {
 
 	overmind := NewOvermind(game)
 
-	game.Parse()
-	overmind.FirstTurn()
-	game.Send()
-
 	for {
 		game.Parse()
 		overmind.Step()

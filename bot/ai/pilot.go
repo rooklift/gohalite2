@@ -10,6 +10,7 @@ import (
 type Pilot struct {
 	hal.Ship
 	Plan			string				// Our planned order, valid for 1 turn only
+	HasOrdered		bool				// Have we actually sent the order?
 	Overmind		*Overmind
 	Game			*hal.Game
 	TargetType		hal.EntityType		// Long term target info
@@ -23,7 +24,7 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 
 func (self *Pilot) Update() {
 	self.Ship = self.Game.GetShip(self.Id)
-	self.Plan = ""
+	self.ClearPlan()					// Also clears the HasOrdered bool
 }
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
@@ -56,7 +57,7 @@ func (self *Pilot) ValidateTarget() {
 	}
 }
 
-func (self *Pilot) Act() {
+func (self *Pilot) MakePlan() {
 
 	// Clear dead / totally conquered targets...
 
@@ -75,8 +76,6 @@ func (self *Pilot) Act() {
 	if self.Plan == "" {
 		self.ChaseTarget()
 	}
-
-	self.ExecutePlan()
 }
 
 func (self *Pilot) DockIfPossible() {
@@ -238,10 +237,29 @@ func (self *Pilot) PlanUndock() {
 func (self *Pilot) ClearPlan() {
 	self.Plan = ""
 	self.Game.RawOrder(self.Id, "")		// Also clear the actual order if needed
+	self.HasOrdered = false
 }
 
-func (self *Pilot) ExecutePlan() {
-	self.Game.RawOrder(self.Id, self.Plan)
+func (self *Pilot) ExecutePlanIfStationary(atc *AirTrafficControl) {
+	speed, degrees := hal.CourseFromString(self.Plan)
+	if speed == 0 {
+		self.Game.RawOrder(self.Id, self.Plan)
+		if self.DockedStatus == hal.UNDOCKED {			// Docked ships don't restrict airspace. We navigate around them using other means.
+			atc.Restrict(self.Ship, speed, degrees)
+		}
+		self.HasOrdered = true
+	}
+}
+
+func (self *Pilot) ExecutePlanIfSafe(atc *AirTrafficControl) {
+	speed, degrees := hal.CourseFromString(self.Plan)
+	if atc.PathIsFree(self.Ship, speed, degrees) {
+		self.Game.RawOrder(self.Id, self.Plan)
+		atc.Restrict(self.Ship, speed, degrees)
+		self.HasOrdered = true
+	} else {
+		self.Log("Refusing unsafe thrust %d / %d", speed, degrees)
+	}
 }
 
 // ----------------------------------------------

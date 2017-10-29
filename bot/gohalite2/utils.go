@@ -2,6 +2,8 @@ package gohalite2
 
 import (
 	"math"
+	"strconv"
+	"strings"
 )
 
 func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius float64) bool {
@@ -98,4 +100,26 @@ func Dist(x1, y1, x2, y2 float64) float64 {
 	dx := x2 - x1
 	dy := y2 - y1
 	return math.Sqrt(dx * dx + dy * dy)
+}
+
+func CourseFromString(s string) (int, int) {
+
+	tokens := strings.Fields(s)
+
+	if len(tokens) != 4 {			// t sid speed angle
+		return 0, 0
+	}
+
+	if tokens[0] != "t" {
+		return 0, 0
+	}
+
+	speed, err1 := strconv.Atoi(tokens[2])
+	degrees, err2 := strconv.Atoi(tokens[3])
+
+	if err1 != nil || err2 != nil {
+		return 0, 0
+	}
+
+	return speed, degrees
 }

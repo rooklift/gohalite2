@@ -8,28 +8,40 @@ import (
 // --------------------------------------------
 
 type Overmind struct {
-	Game			*hal.Game
 	Pilots			[]*Pilot
+	Game			*hal.Game
+	ATC				*AirTrafficControl
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
+	ret.ATC = NewATC(game.Width(), game.Height())
 	return ret
 }
 
 func (self *Overmind) Step() {
 
 	self.UpdatePilots()
+	self.ATC.Clear()
+
+	if self.Game.Turn() == 0 {
+		self.ChooseInitialTargets()
+	}
 
 	for _, pilot := range self.Pilots {
-		pilot.Act()
+		pilot.MakePlan()
+		pilot.ExecutePlanIfStationary(self.ATC)
+	}
+
+	for _, pilot := range self.Pilots {
+		if pilot.HasOrdered == false {
+			pilot.ExecutePlanIfSafe(self.ATC)
+		}
 	}
 }
 
-func (self *Overmind) FirstTurn() {
-
-	self.UpdatePilots()
+func (self *Overmind) ChooseInitialTargets() {
 
 	closest_three := self.Game.AllPlanetsByDistance(self.Pilots[0])[:3]
 
@@ -39,10 +51,6 @@ func (self *Overmind) FirstTurn() {
 	for index, pilot := range self.Pilots {
 		pilot.TargetType = hal.PLANET
 		pilot.TargetId = closest_three[index].Id
-	}
-
-	for _, pilot := range self.Pilots {
-		pilot.Act()
 	}
 }
 
