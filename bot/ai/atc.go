@@ -4,6 +4,12 @@ import (
 	hal "../gohalite2"
 )
 
+// Possible changes (FIXME?):
+//
+// -- Use a map[XYT]bool instead of a 3D slice? (Faster or slower??)
+// -- Use a higher resolution?
+// -- Reset target on failure (possibly after failing for n turns)
+
 const (
 	TIME_STEPS = 7
 	RESOLUTION = 2		// i.e. double resolution
