@@ -16,39 +16,28 @@ const (
 	FILL_RADIUS = 1		// filling from -1 to +1 inclusive
 )
 
+type XYT struct {
+	X			int
+	Y			int
+	T			int
+}
+
 type AirTrafficControl struct {
-	Grid	[][][]bool
-	Width	int
-	Height	int
+	Grid		map[XYT]bool
+	Width		int
+	Height		int
 }
 
 func NewATC(world_width, world_height int) *AirTrafficControl {
-
 	ret := new(AirTrafficControl)
-
 	ret.Width = world_width * RESOLUTION
 	ret.Height = world_height * RESOLUTION
-
-	ret.Grid = make([][][]bool, ret.Width)
-
-	for x := 0; x < ret.Width; x++ {
-		ret.Grid[x] = make([][]bool, ret.Height)
-		for y := 0; y < ret.Height; y++ {
-			ret.Grid[x][y] = make([]bool, TIME_STEPS)
-		}
-	}
-
+	ret.Grid = make(map[XYT]bool)
 	return ret
 }
 
 func (self *AirTrafficControl) Clear() {
-	for x := 0; x < self.Width; x++ {
-		for y := 0; y < self.Height; y++ {
-			for t := 0; t < TIME_STEPS; t++ {
-				self.Grid[x][y][t] = false
-			}
-		}
-	}
+	self.Grid = make(map[XYT]bool)
 }
 
 func (self *AirTrafficControl) SetRestrict(ship hal.Ship, speed, degrees int, val bool) {
@@ -71,9 +60,7 @@ func (self *AirTrafficControl) SetRestrict(ship hal.Ship, speed, degrees int, va
 
 		for index_x := grid_x - FILL_RADIUS; index_x <= grid_x + FILL_RADIUS; index_x++ {
 			for index_y := grid_y - FILL_RADIUS; index_y <= grid_y + FILL_RADIUS; index_y++ {
-				if index_x >= 0 && index_x < self.Width && index_y >= 0 && index_y < self.Height {
-					self.Grid[index_x][index_y][t] = val
-				}
+				self.Grid[XYT{index_x, index_y, t}] = val
 			}
 		}
 	}
@@ -107,10 +94,8 @@ func (self *AirTrafficControl) PathIsFree(ship hal.Ship, speed, degrees int) boo
 
 		for index_x := grid_x - FILL_RADIUS; index_x <= grid_x + FILL_RADIUS; index_x++ {
 			for index_y := grid_y - FILL_RADIUS; index_y <= grid_y + FILL_RADIUS; index_y++ {
-				if index_x >= 0 && index_x < self.Width && index_y >= 0 && index_y < self.Height {
-					if self.Grid[index_x][index_y][t] {
-						return false
-					}
+				if self.Grid[XYT{index_x, index_y, t}] {
+					return false
 				}
 			}
 		}
