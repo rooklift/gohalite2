@@ -10,11 +10,11 @@ import (
 type Pilot struct {
 	hal.Ship
 	Plan			string				// Our planned order, valid for 1 turn only
-	HasOrdered		bool				// Have we actually sent the order?
+	HasExecuted		bool				// Have we actually sent the order?
 	Overmind		*Overmind
 	Game			*hal.Game
-	TargetType		hal.EntityType		// Long term target info
-	TargetId		int					// Long term target info
+	TargetType		hal.EntityType		// NONE / SHIP / PLANET
+	TargetId		int					// TargetId has no meaning if TargetType == NONE
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
@@ -24,30 +24,36 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 
 func (self *Pilot) Update() {
 	self.Ship = self.Game.GetShip(self.Id)
-	self.ClearPlan()					// Also clears the HasOrdered bool
+	self.ClearPlan()
+}
+
+func (self *Pilot) HasStationaryPlan() bool {		// true iff we DO have a plan, which doesn't move us.
+	if self.Plan == "" {
+		return false
+	}
+	speed, _ := hal.CourseFromString(self.Plan)
+	return speed == 0
 }
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
 }
 
-func (self *Pilot) ValidateTarget() {
+func (self *Pilot) ValidateTarget() bool {
 
 	game := self.Game
 
-	if self.TargetType == hal.SHIP {
+	switch self.TargetType {
+
+	case hal.SHIP:
+
 		target := game.GetShip(self.TargetId)
 		if target.Alive() == false {
 			self.TargetType = hal.NONE
-			closest_planet := self.ClosestPlanet()
-			if self.Dist(closest_planet) < 50 {
-				if closest_planet.IsFull() == false || closest_planet.Owner != game.Pid() {
-					self.TargetType = hal.PLANET
-					self.TargetId = closest_planet.Id
-				}
-			}
 		}
-	} else if self.TargetType == hal.PLANET {
+
+	case hal.PLANET:
+
 		target := game.GetPlanet(self.TargetId)
 		if target.Alive() == false {
 			self.TargetType = hal.NONE
@@ -55,47 +61,35 @@ func (self *Pilot) ValidateTarget() {
 			self.TargetType = hal.NONE
 		}
 	}
+
+	if self.TargetType == hal.NONE {
+		return false
+	}
+
+	return true
 }
 
-func (self *Pilot) MakePlan() {
-
-	// Clear dead / totally conquered targets...
-
-	self.ValidateTarget()
-
-	// Helpers can lock in an order by actually setting it.
-
-	if self.Plan == "" {
-		self.DockIfPossible()
-	}
-
-	if self.Plan == "" {
-		self.ChooseTarget()
-	}
-
-	if self.Plan == "" {
-		self.ChaseTarget()
-	}
-
-	if self.Plan == "" {
-		self.PlanThrust(0, 0)
-	}
-}
-
-func (self *Pilot) DockIfPossible() {
+func (self *Pilot) PlanDockIfPossible() bool {
 	if self.DockedStatus == hal.UNDOCKED {
 		closest_planet := self.ClosestPlanet()
 		if self.CanDock(closest_planet) {
 			self.PlanDock(closest_planet)
+			return true
 		}
 	}
+	return false
 }
 
 func (self *Pilot) ChooseTarget() {
 	game := self.Game
 
-	if self.TargetType != hal.NONE {		// We already have a target.
-		return
+	closest_planet := self.ClosestPlanet()
+	if self.Dist(closest_planet) < 50 {
+		if closest_planet.IsFull() == false || closest_planet.Owner != game.Pid() {
+			self.TargetType = hal.PLANET
+			self.TargetId = closest_planet.Id
+			return
+		}
 	}
 
 	all_planets := game.AllPlanets()
@@ -113,50 +107,52 @@ func (self *Pilot) ChooseTarget() {
 	}
 }
 
-func (self *Pilot) ChaseTarget() {
+func (self *Pilot) PlanChase(avoid []hal.Entity) {
 	game := self.Game
 
-	if self.TargetType == hal.NONE || self.DockedStatus != hal.UNDOCKED {
+	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
 
-	if self.TargetType == hal.PLANET {
+	switch self.TargetType {
+
+	case hal.PLANET:
 
 		planet := game.GetPlanet(self.TargetId)
 
 		if self.ApproachDist(planet) < 4 {
-			self.EngagePlanet()
+			self.EngagePlanet(avoid)
 			return
 		}
 
-		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, game.AllImmobile())
+		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid)
 
 		if err != nil {
-			self.Log("ChaseTarget(): %v", err)
+			self.Log("PlanChase(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
 			self.PlanThrust(speed, degrees)
 		}
 
-	} else if self.TargetType == hal.SHIP {
+	case hal.SHIP:
 
 		other_ship := game.GetShip(self.TargetId)
 
-		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 4.5, game.AllImmobile())		// GetApproach uses centre-to-edge distances, so 4.5
+		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 4.5, avoid)		// GetApproach uses centre-to-edge distances, so 4.5
 
 		if err != nil {
-			self.Log("ChaseTarget(): %v", err)
+			self.Log("PlanChase(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
 			self.PlanThrust(speed, degrees)
 			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
-				self.Log("ChaseTarget(): not moving but not in range!")
+				self.Log("PlanChase(): not moving but not in range!")
 			}
 		}
 	}
 }
 
-func (self *Pilot) EngagePlanet() {
+func (self *Pilot) EngagePlanet(avoid []hal.Entity) {
 	game := self.Game
 
 	// We are very close to our target planet. Do something about this.
@@ -178,7 +174,7 @@ func (self *Pilot) EngagePlanet() {
 	// Is it available for us to dock?
 
 	if planet.Owned == false || (planet.Owner == game.Pid() && planet.IsFull() == false) {
-		self.FinalPlanetApproachForDock()
+		self.FinalPlanetApproachForDock(avoid)
 		return
 	}
 
@@ -190,7 +186,7 @@ func (self *Pilot) EngagePlanet() {
 	self.TargetType = hal.SHIP
 	self.TargetId = enemy_ship.Id
 
-	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, game.AllImmobile())			// GetApproach uses centre-to-edge distances, so 4.5
+	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, avoid)			// GetApproach uses centre-to-edge distances, so 4.5
 
 	if err != nil {
 		self.Log("EngagePlanet(): %v", err)
@@ -200,7 +196,7 @@ func (self *Pilot) EngagePlanet() {
 	self.PlanThrust(speed, degrees)
 }
 
-func (self *Pilot) FinalPlanetApproachForDock() {
+func (self *Pilot) FinalPlanetApproachForDock(avoid []hal.Entity) {
 	game := self.Game
 
 	if self.TargetType != hal.PLANET {
@@ -215,7 +211,7 @@ func (self *Pilot) FinalPlanetApproachForDock() {
 		return
 	}
 
-	speed, degrees, err := game.GetApproach(self.Ship, planet, 4, game.AllImmobile())
+	speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid)
 
 	if err != nil {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)
@@ -258,12 +254,12 @@ func (self *Pilot) PlanUndock() {
 func (self *Pilot) ClearPlan() {
 	self.Plan = ""
 	self.Game.RawOrder(self.Id, "")		// Also clear the actual order if needed
-	self.HasOrdered = false
+	self.HasExecuted = false
 }
 
 func (self *Pilot) ExecutePlan() {
 	self.Game.RawOrder(self.Id, self.Plan)
-	self.HasOrdered = true
+	self.HasExecuted = true
 }
 
 func (self *Pilot) PreliminaryRestrict(atc *AirTrafficControl) {			// In case we end up not moving, restrict airspace.
@@ -272,26 +268,14 @@ func (self *Pilot) PreliminaryRestrict(atc *AirTrafficControl) {			// In case we
 	}
 }
 
-func (self *Pilot) ExecutePlanIfStationary(atc *AirTrafficControl) {
-
-	if self.HasOrdered {
-		self.Log("ExecutePlanIfStationary(): already ordered!")
-		return
-	}
-
+func (self *Pilot) ExecutePlanIfStationary() {
 	speed, _ := hal.CourseFromString(self.Plan)
 	if speed == 0 {
 		self.ExecutePlan()
 	}
 }
 
-func (self *Pilot) ExecutePlanIfSafe(atc *AirTrafficControl) {
-
-	if self.HasOrdered {
-		self.Log("ExecutePlanIfSafe(): already ordered!")
-		return
-	}
-
+func (self *Pilot) ExecutePlanWithATC(atc *AirTrafficControl) {
 	speed, degrees := hal.CourseFromString(self.Plan)
 	atc.Unrestrict(self.Ship, 0, 0)							// Unrestruct our preliminary null course so it doesn't block us.
 	if atc.PathIsFree(self.Ship, speed, degrees) {
