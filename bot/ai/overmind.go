@@ -148,7 +148,7 @@ func (self *Overmind) Step() {
 		}
 	}
 
-	// Don't forget our frozen ships!
+	// Don't forget our non-mobile ships!
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()

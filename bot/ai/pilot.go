@@ -151,7 +151,13 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 				self.Log("PlanChase(): not moving but not in range!")
 			}
 		}
+
+	case hal.NONE:
+
+		self.PlanThrust(0, 0)
+
 	}
+
 }
 
 func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
