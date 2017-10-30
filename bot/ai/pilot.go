@@ -232,6 +232,12 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 
 func (self *Pilot) PlanThrust(speed, degrees int) {
 
+	for degrees < 0 {
+		degrees += 360
+	}
+
+	degrees %= 360
+
 	// We put some extra info into the angle, which we can see in the Chlorine replayer...
 
 	var message int = -1

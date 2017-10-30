@@ -217,26 +217,3 @@ func (self *Game) Send() {
 	fmt.Printf(out)
 	fmt.Printf("\n")
 }
-
-// ---------------------------------------
-
-func (self *Game) EncodeSecretInfo(ship Ship, n int) {
-
-	if n < 0 || n > 180 {
-		return
-	}
-
-	current_order := self.CurrentOrder(ship)
-
-	// We can only do this if we are sending a thrust order.
-
-	if GetOrderType(current_order) != THRUST {
-		return
-	}
-
-	speed, degrees := CourseFromString(current_order)
-
-	val := ((n + 1) * 360) + degrees
-
-	self.RawOrder(ship.Id, fmt.Sprintf("t %d %d %d", ship.Id, speed, val))
-}

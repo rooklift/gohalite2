@@ -81,6 +81,17 @@ func (self *Game) MyShips() []Ship {
 	return self.ShipsOwnedBy(self.pid)
 }
 
+func (self *Game) EnemyShips() []Ship {
+	var ret []Ship
+	for sid, _ := range self.shipMap {
+		ship := self.GetShip(sid)
+		if ship.Alive() && ship.Owner != self.Pid() {
+			ret = append(ret, ship)
+		}
+	}
+	return ret
+}
+
 // ----------------------------------------------
 
 func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.

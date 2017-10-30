@@ -42,15 +42,18 @@ func (self *Overmind) Step() {
 		}
 	}
 
-	// Plan a Dock if possible. If we do, remove this pilot from the mobile pilots list and make it frozen.
+	// Plan a Dock if possible. (And we're not chasing a ship.)
+	// If we do, remove this pilot from the mobile pilots list and make it frozen.
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		ok := pilot.PlanDockIfPossible()
-		if ok {
-			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
-			frozen_pilots = append(frozen_pilots, pilot)
-			i--
+		if pilot.TargetType != hal.SHIP {
+			ok := pilot.PlanDockIfPossible()
+			if ok {
+				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
+				frozen_pilots = append(frozen_pilots, pilot)
+				i--
+			}
 		}
 	}
 
@@ -157,14 +160,26 @@ func (self *Overmind) Step() {
 
 func (self *Overmind) ChooseInitialTargets() {
 
-	closest_three := self.Game.AllPlanetsByDistance(self.Pilots[0])[:3]
+	if self.Game.InitialPlayers() == 2 {
 
-	sort.Sort(hal.PlanetsByY(closest_three))
-	sort.Sort(PilotsByY(self.Pilots))
+		closest_three := self.Game.EnemyShips()
 
-	for index, pilot := range self.Pilots {
-		pilot.TargetType = hal.PLANET
-		pilot.TargetId = closest_three[index].Id
+		for index, pilot := range self.Pilots {
+			pilot.TargetType = hal.SHIP
+			pilot.TargetId = closest_three[index].Id
+		}
+
+	} else {
+
+		closest_three := self.Game.AllPlanetsByDistance(self.Pilots[0])[:3]
+
+		sort.Sort(hal.PlanetsByY(closest_three))
+		sort.Sort(PilotsByY(self.Pilots))
+
+		for index, pilot := range self.Pilots {
+			pilot.TargetType = hal.PLANET
+			pilot.TargetId = closest_three[index].Id
+		}
 	}
 }
 
