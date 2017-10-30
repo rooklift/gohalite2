@@ -297,17 +297,3 @@ func (self *Pilot) ExecutePlanWithATC(atc *AirTrafficControl) bool {
 
 	}
 }
-
-// ----------------------------------------------
-
-type PilotsByY []*Pilot
-
-func (slice PilotsByY) Len() int {
-	return len(slice)
-}
-func (slice PilotsByY) Swap(i, j int) {
-	slice[i], slice[j] = slice[j], slice[i]
-}
-func (slice PilotsByY) Less(i, j int) bool {
-	return slice[i].Y < slice[j].Y
-}

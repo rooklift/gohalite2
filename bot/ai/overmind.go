@@ -160,21 +160,47 @@ func (self *Overmind) Step() {
 
 func (self *Overmind) ChooseInitialTargets() {
 
+	// Whatever we do we will use our pilots sorted by Y...
+
+	sort.Slice(self.Pilots, func(a, b int) bool {
+		return self.Pilots[a].Y < self.Pilots[b].Y
+	})
+
 	if self.Game.InitialPlayers() == 2 {
 
-		closest_three := self.Game.EnemyShips()
+		// Sort enemies by Y...
+
+		enemies := self.Game.EnemyShips()
+		sort.Slice(enemies, func(a, b int) bool {
+			return enemies[a].Y < enemies[b].Y
+		})
+
+		// Pair pilots with enemies...
 
 		for index, pilot := range self.Pilots {
 			pilot.TargetType = hal.SHIP
-			pilot.TargetId = closest_three[index].Id
+			pilot.TargetId = enemies[index].Id
 		}
 
 	} else {
 
-		closest_three := self.Game.AllPlanetsByDistance(self.Pilots[0])[:3]
+		// Sort all planets by distance to our fleet...
 
-		sort.Sort(hal.PlanetsByY(closest_three))
-		sort.Sort(PilotsByY(self.Pilots))
+		all_planets := self.Game.AllPlanets()
+
+		sort.Slice(all_planets, func(a, b int) bool {
+			return all_planets[a].Dist(self.Pilots[0]) < all_planets[b].Dist(self.Pilots[0])
+		})
+
+		// Sort closest 3 planets by Y...
+
+		closest_three := all_planets[:3]
+
+		sort.Slice(closest_three, func(a, b int) bool {
+			return closest_three[a].Y < closest_three[b].Y
+		})
+
+		// Pair pilots with planets...
 
 		for index, pilot := range self.Pilots {
 			pilot.TargetType = hal.PLANET
