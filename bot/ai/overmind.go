@@ -1,7 +1,9 @@
 package ai
 
 import (
+	"math/rand"
 	"sort"
+
 	hal "../gohalite2"
 )
 
@@ -61,15 +63,11 @@ func (self *Overmind) Step() {
 		}
 	}
 
-	// Start our avoid list as all planets plus all docked ships. It will get bigger later.
-
-	avoid_list := self.Game.AllImmobile()
-
 	// Perhaps this pilot doesn't need to move? If so, consider it frozen.
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		pilot.PlanChase(avoid_list)
+		pilot.PlanChase(self.Game.AllImmobile())	// Planets plus already-docked ships.
 		if pilot.HasStationaryPlan() {
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
@@ -77,14 +75,16 @@ func (self *Overmind) Step() {
 		}
 	}
 
-	// Our ChaseTarget() above didn't avoid frozen ships. Remake plans with the new info.
+	// Our PlanChase() above didn't avoid these frozen ships. Remake plans with the new info.
+	// Possibly avoiding collisions we would have (since the above ships won't use ATC).
 
+	avoid_list := self.Game.AllImmobile()
 	for _, pilot := range frozen_pilots {
-		avoid_list = append(avoid_list, pilot)
+		avoid_list = append(avoid_list, pilot.Ship)
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.ClearPlan()
+		pilot.Reset()
 		pilot.PlanChase(avoid_list)
 	}
 
@@ -92,10 +92,10 @@ func (self *Overmind) Step() {
 	// Note that it's possible that one of the colliding ships will not actually be moving.
 
 	for _, pilot := range mobile_pilots {
-		pilot.PreliminaryRestrict(self.ATC)
+		self.ATC.Restrict(pilot.Ship, 0, 0)			// All initially restrict a null move.
 	}
 
-	for n := 0; n < 5; n++ {
+	for n := 0; n < 5; n++ {						// Try a few times to allow chains of ships.
 		for _, pilot := range mobile_pilots {
 			if pilot.HasExecuted == false {
 				pilot.ExecutePlanWithATC(self.ATC)
@@ -103,17 +103,52 @@ func (self *Overmind) Step() {
 		}
 	}
 
+	// Randomly give up for half the ships that still aren't moving, and
+	// retry the pathfinding with the other half.
+
+	// Ships moved into the frozen slice can have their ATC restriction
+	// cleared since we will navigate around them precisely.
+
+	for i := 0; i < len(mobile_pilots); i++ {
+		pilot := mobile_pilots[i]
+		if pilot.HasExecuted == false && rand.Intn(2) == 0 {
+			pilot.PlanThrust(0, 0)
+			self.ATC.Unrestrict(pilot.Ship, 0, 0)
+			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
+			frozen_pilots = append(frozen_pilots, pilot)
+			i--
+		}
+	}
+
+	avoid_list = self.Game.AllImmobile()
+	for _, pilot := range frozen_pilots {
+		avoid_list = append(avoid_list, pilot.Ship)
+	}
+
+	for _, pilot := range mobile_pilots {
+		if pilot.HasExecuted == false {
+			pilot.Reset()
+			pilot.PlanChase(avoid_list)
+		}
+	}
+
+	for _, pilot := range mobile_pilots {
+		if pilot.HasExecuted == false {
+			pilot.ExecutePlanWithATC(self.ATC)
+		}
+	}
+
 	// Null thrust every "mobile" ship that didn't move. This causes target info to be put into
 	// the replay via the Angle Message system.
 
 	for _, pilot := range mobile_pilots {
-		if pilot.HasExecuted == false && pilot.DockedStatus == hal.UNDOCKED {
+		if pilot.HasExecuted == false {
 			pilot.PlanThrust(0, 0)
 			pilot.ExecutePlan()
 		}
 	}
 
-	// Don't forget our frozen pilots!
+	// Don't forget our frozen ships!
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
@@ -145,14 +180,14 @@ func (self *Overmind) UpdatePilots() {
 		pilot := new(Pilot)
 		pilot.Overmind = self
 		pilot.Game = game
-		pilot.Id = sid								// This has to be set so pilot.Update() can work.
+		pilot.Id = sid								// This has to be set so pilot.Reset() can work.
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
-	// Update the Ships embedded in each Pilot... (yeah that makes sense)
+	// Set various variables to initial state (Target info is untouched by this)...
 
 	for _, pilot := range self.Pilots {
-		pilot.Update()
+		pilot.Reset()
 	}
 
 	// Delete AIs with dead ships from the slice...

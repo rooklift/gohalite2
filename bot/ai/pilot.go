@@ -22,9 +22,11 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 	self.Game.Log(format_string, args...)
 }
 
-func (self *Pilot) Update() {
+func (self *Pilot) Reset() {						// Doesn't clear Target
 	self.Ship = self.Game.GetShip(self.Id)
-	self.ClearPlan()
+	self.Plan = ""
+	self.HasExecuted = false
+	self.Game.RawOrder(self.Id, "")
 }
 
 func (self *Pilot) HasStationaryPlan() bool {		// true iff we DO have a plan, which doesn't move us.
@@ -107,7 +109,7 @@ func (self *Pilot) ChooseTarget() {
 	}
 }
 
-func (self *Pilot) PlanChase(avoid []hal.Entity) {
+func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	game := self.Game
 
 	if self.DockedStatus != hal.UNDOCKED {
@@ -121,11 +123,11 @@ func (self *Pilot) PlanChase(avoid []hal.Entity) {
 		planet := game.GetPlanet(self.TargetId)
 
 		if self.ApproachDist(planet) < 4 {
-			self.EngagePlanet(avoid)
+			self.EngagePlanet(avoid_list)
 			return
 		}
 
-		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid)
+		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid_list)
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
@@ -138,7 +140,7 @@ func (self *Pilot) PlanChase(avoid []hal.Entity) {
 
 		other_ship := game.GetShip(self.TargetId)
 
-		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 4.5, avoid)		// GetApproach uses centre-to-edge distances, so 4.5
+		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 4.5, avoid_list)		// GetApproach uses centre-to-edge distances, so 4.5
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
@@ -152,7 +154,7 @@ func (self *Pilot) PlanChase(avoid []hal.Entity) {
 	}
 }
 
-func (self *Pilot) EngagePlanet(avoid []hal.Entity) {
+func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	game := self.Game
 
 	// We are very close to our target planet. Do something about this.
@@ -174,7 +176,7 @@ func (self *Pilot) EngagePlanet(avoid []hal.Entity) {
 	// Is it available for us to dock?
 
 	if planet.Owned == false || (planet.Owner == game.Pid() && planet.IsFull() == false) {
-		self.FinalPlanetApproachForDock(avoid)
+		self.FinalPlanetApproachForDock(avoid_list)
 		return
 	}
 
@@ -186,7 +188,7 @@ func (self *Pilot) EngagePlanet(avoid []hal.Entity) {
 	self.TargetType = hal.SHIP
 	self.TargetId = enemy_ship.Id
 
-	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, avoid)			// GetApproach uses centre-to-edge distances, so 4.5
+	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, avoid_list)			// GetApproach uses centre-to-edge distances, so 4.5
 
 	if err != nil {
 		self.Log("EngagePlanet(): %v", err)
@@ -196,7 +198,7 @@ func (self *Pilot) EngagePlanet(avoid []hal.Entity) {
 	self.PlanThrust(speed, degrees)
 }
 
-func (self *Pilot) FinalPlanetApproachForDock(avoid []hal.Entity) {
+func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 	game := self.Game
 
 	if self.TargetType != hal.PLANET {
@@ -211,7 +213,7 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid []hal.Entity) {
 		return
 	}
 
-	speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid)
+	speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid_list)
 
 	if err != nil {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)
@@ -251,21 +253,11 @@ func (self *Pilot) PlanUndock() {
 	self.Plan = fmt.Sprintf("u %d", self.Id)
 }
 
-func (self *Pilot) ClearPlan() {
-	self.Plan = ""
-	self.Game.RawOrder(self.Id, "")		// Also clear the actual order if needed
-	self.HasExecuted = false
-}
+// ----------------------------------------------
 
 func (self *Pilot) ExecutePlan() {
 	self.Game.RawOrder(self.Id, self.Plan)
 	self.HasExecuted = true
-}
-
-func (self *Pilot) PreliminaryRestrict(atc *AirTrafficControl) {			// In case we end up not moving, restrict airspace.
-	if self.DockedStatus == hal.UNDOCKED {			// Docked ships don't restrict airspace. We navigate around them using other means.
-		atc.Restrict(self.Ship, 0, 0)
-	}
 }
 
 func (self *Pilot) ExecutePlanIfStationary() {
@@ -275,16 +267,22 @@ func (self *Pilot) ExecutePlanIfStationary() {
 	}
 }
 
-func (self *Pilot) ExecutePlanWithATC(atc *AirTrafficControl) {
+func (self *Pilot) ExecutePlanWithATC(atc *AirTrafficControl) bool {
+
 	speed, degrees := hal.CourseFromString(self.Plan)
 	atc.Unrestrict(self.Ship, 0, 0)							// Unrestruct our preliminary null course so it doesn't block us.
+
 	if atc.PathIsFree(self.Ship, speed, degrees) {
+
 		self.ExecutePlan()
 		atc.Restrict(self.Ship, speed, degrees)
+		return true
+
 	} else {
+
 		atc.Restrict(self.Ship, 0, 0)						// Restrict our null course again.
-		// Make the format string contain the turn and ship number so this message only gets logged once, but others can be.
-		self.Game.LogOnce(fmt.Sprintf("t %d: %v: Refusing unsafe thrust %%d / %%d", self.Game.Turn(), self.Ship), speed, degrees)
+		return false
+
 	}
 }
 

@@ -36,11 +36,11 @@ func (self *Game) FirstCollision(ship Ship, distance float64, degrees int, possi
 	return closest_ent, true
 }
 
-func (self *Game) GetCourse(ship Ship, target Entity, avoid []Entity) (int, int, error) {
-	return self.GetCourseRecursive(ship, target, avoid, 10)
+func (self *Game) GetCourse(ship Ship, target Entity, avoid_list []Entity) (int, int, error) {
+	return self.GetCourseRecursive(ship, target, avoid_list, 10)
 }
 
-func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, depth int) (int, int, error) {		// speed, angle, error
+func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid_list []Entity, depth int) (int, int, error) {		// speed, angle, error
 
 	// Try to navigate to (collide with) the target, but avoiding the list of entites,
 	// which could include the target.
@@ -63,7 +63,7 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, d
 
 	degrees := Angle(ship.X, ship.Y, target.GetX(), target.GetY())
 
-	c, does_hit := self.FirstCollision(ship, distance, degrees, avoid)
+	c, does_hit := self.FirstCollision(ship, distance, degrees, avoid_list)
 
 	if does_hit == false {
 		speed := Min(Round(distance), MAX_SPEED)
@@ -71,14 +71,20 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid []Entity, d
 	}
 
 	if depth > 0 {
-		waypointx, waypointy := Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, degrees + 90)
-		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, avoid, depth - 1)
+		var waypoint_angle int
+		if ship.Id % 2 == 0 {
+			waypoint_angle = degrees + 90
+		} else {
+			waypoint_angle = degrees - 90
+		}
+		waypointx, waypointy := Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
+		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, avoid_list, depth - 1)
 	}
 
 	return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
 }
 
-func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid []Entity) (int, int, error) {
+func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid_list []Entity) (int, int, error) {
 
 	// Navigate so that the ship's centre is definitely within <margin> of the target's edge.
 
@@ -91,5 +97,5 @@ func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid []
 
 	travel_distance := ship.ApproachDist(target) + 0.51 - margin
 	target_point_x, target_point_y := Projection(ship.X, ship.Y, travel_distance, ship.Angle(target))
-	return self.GetCourse(ship, Point{target_point_x, target_point_y}, avoid)
+	return self.GetCourse(ship, Point{target_point_x, target_point_y}, avoid_list)
 }
