@@ -9,7 +9,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "13 final"
+	VERSION = "13 dev"
 )
 
 func Run() {
@@ -24,9 +24,25 @@ func Run() {
 
 	overmind := NewOvermind(game)
 
+	var longest_turn time.Duration
+
 	for {
+		start_time := time.Now()
+
 		game.Parse()
 		overmind.Step()
 		game.Send()
+
+		if time.Now().Sub(start_time) > longest_turn {
+			longest_turn = time.Now().Sub(start_time)
+		}
+
+		if len(game.MyShips()) < len(game.AllShips()) / 10 {
+			game.LogOnce("t %d: Defeat immanent. Longest turn took %v", game.Turn(), longest_turn)
+		}
+
+		if len(game.MyShips()) > (len(game.AllShips()) * 9) / 10 {
+			game.LogOnce("t %d: Victory immanent. Longest turn took %v", game.Turn(), longest_turn)
+		}
 	}
 }
