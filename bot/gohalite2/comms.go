@@ -64,27 +64,18 @@ func (self *TokenParser) Bool() bool {
 
 func (self *Game) Parse() {
 
-	self.orders = make(map[int]string)							// Clear all orders.
+	self.orders = make(map[int]string)								// Clear all orders.
 
 	if self.inited {
 		self.turn++
 	}
 
-	// Set all objects to have 0 HP, on the assumption that they are only sent to us if they have
-	// 1 or more HP. (Is this true?) Thus this is a default value if we receive no info (they are dead).
-
-	for plid, planet := range self.planetMap {
-		planet.HP = 0
-		self.planetMap[plid] = planet
-	}
-
-	for sid, ship := range self.shipMap {
-		ship.HP = 0
-		self.shipMap[sid] = ship
-	}
-
 	// Clear some info maps. We will recreate them during parsing.
 
+	old_shipmap := self.shipMap		// We need last turn's ship info for inferring movement / birth.
+
+	self.shipMap = make(map[int]Ship)
+	self.planetMap = make(map[int]Planet)
 	self.dockMap = make(map[int][]Ship)
 	self.lastmoveMap = make(map[int]MoveInfo)
 
@@ -110,14 +101,12 @@ func (self *Game) Parse() {
 
 		for s := 0; s < ship_count; s++ {
 
-			sid := self.token_parser.Int()
-			ship, ok := self.shipMap[sid]
+			var ship Ship
 
-			if ok == false {
-				ship.Id = sid
-				ship.Owner = pid
-				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
-			}
+			sid := self.token_parser.Int()
+
+			ship.Id = sid
+			ship.Owner = pid
 
 			ship.X = self.token_parser.Float()
 			ship.Y = self.token_parser.Float()
@@ -129,10 +118,12 @@ func (self *Game) Parse() {
 			ship.DockingProgress = self.token_parser.Int()
 			self.token_parser.Int()									// Skip deprecated "cooldown"
 
-			if ship.Birth == self.turn {
+			last_ship, ok := old_shipmap[sid]
+
+			if ok == false {
+				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
 				self.lastmoveMap[sid] = MoveInfo{Spawned: true}		// All other fields zero.
 			} else {
-				last_ship := self.shipMap[sid]
 				dx := ship.X - last_ship.X
 				dy := ship.Y - last_ship.Y
 				self.lastmoveMap[sid] = MoveInfo{
@@ -155,12 +146,10 @@ func (self *Game) Parse() {
 
 	for p := 0; p < planet_count; p++ {
 
-		plid := self.token_parser.Int()
-		planet, ok := self.planetMap[plid]
+		var planet Planet
 
-		if ok == false {
-			planet.Id = plid
-		}
+		plid := self.token_parser.Int()
+		planet.Id = plid
 
 		planet.X = self.token_parser.Float()
 		planet.Y = self.token_parser.Float()

@@ -16,9 +16,7 @@ func (self *Game) AllShips() []Ship {
 	var ret []Ship
 	for sid, _ := range self.shipMap {
 		ship := self.GetShip(sid)
-		if ship.Alive() {
-			ret = append(ret, ship)
-		}
+		ret = append(ret, ship)
 	}
 	return ret
 }
@@ -27,9 +25,7 @@ func (self *Game) AllPlanets() []Planet {
 	var ret []Planet
 	for plid, _ := range self.planetMap {
 		planet := self.GetPlanet(plid)
-		if planet.Alive() {
-			ret = append(ret, planet)
-		}
+		ret = append(ret, planet)
 	}
 	return ret
 }
@@ -38,12 +34,10 @@ func (self *Game) AllImmobile() []Entity {		// Returns all planets and all docke
 	var ret []Entity
 	for plid, _ := range self.planetMap {
 		planet := self.GetPlanet(plid)
-		if planet.Alive() {
-			ret = append(ret, planet)
-			all_docked := self.ShipsDockedAt(planet)
-			for _, s := range all_docked {
-				ret = append(ret, s)
-			}
+		ret = append(ret, planet)
+		all_docked := self.ShipsDockedAt(planet)
+		for _, s := range all_docked {
+			ret = append(ret, s)
 		}
 	}
 	return ret
@@ -55,7 +49,7 @@ func (self *Game) PlanetsOwnedBy(pid int) []Planet {
 	var ret []Planet
 	for plid, _ := range self.planetMap {
 		planet := self.GetPlanet(plid)
-		if planet.Alive() && planet.Owned && planet.Owner == pid {
+		if planet.Owned && planet.Owner == pid {
 			ret = append(ret, planet)
 		}
 	}
@@ -66,7 +60,7 @@ func (self *Game) ShipsOwnedBy(pid int) []Ship {
 	var ret []Ship
 	for sid, _ := range self.shipMap {
 		ship := self.GetShip(sid)
-		if ship.Alive() && ship.Owner == pid {
+		if ship.Owner == pid {
 			ret = append(ret, ship)
 		}
 	}
@@ -85,7 +79,7 @@ func (self *Game) EnemyShips() []Ship {
 	var ret []Ship
 	for sid, _ := range self.shipMap {
 		ship := self.GetShip(sid)
-		if ship.Alive() && ship.Owner != self.Pid() {
+		if ship.Owner != self.Pid() {
 			ret = append(ret, ship)
 		}
 	}
@@ -98,7 +92,7 @@ func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 	var ret []int
 	for sid, _ := range self.shipMap {
 		ship := self.shipMap[sid]
-		if ship.Birth == self.turn && ship.Owner == self.pid && ship.Alive() {
+		if ship.Birth == self.turn && ship.Owner == self.pid {
 			ret = append(ret, ship.Id)
 		}
 	}

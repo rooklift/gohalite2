@@ -30,8 +30,8 @@ type Game struct {
 	initialPlayers		int					// Stored only once at startup. Never changes.
 	currentPlayers		int
 
-	planetMap			map[int]Planet		// Planet ID --> Planet			(can contain dead objects)
-	shipMap				map[int]Ship		// Ship ID --> Ship				(can contain dead objects)
+	planetMap			map[int]Planet		// Planet ID --> Planet
+	shipMap				map[int]Ship		// Ship ID --> Ship
 	dockMap				map[int][]Ship		// Planet ID --> Ship slice
 	lastmoveMap			map[int]MoveInfo	// Ship ID --> MoveInfo struct
 
