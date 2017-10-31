@@ -52,7 +52,7 @@ func NewGame() *Game {
 	game.shipMap = make(map[int]Ship)
 	game.dockMap = make(map[int][]Ship)
 	game.Parse()
-	game.inited = true
+	game.inited = true		// Just means the parser will increment the turn value before parsing.
 	return game
 }
 

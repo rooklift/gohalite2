@@ -83,6 +83,10 @@ func (s Ship) Projection(distance float64, degrees int) Ship {
 	return ret
 }
 
+func (s Ship) CanMove() bool {
+	return s.DockedStatus == UNDOCKED
+}
+
 // ------------------------------------------------------
 
 type Point struct {

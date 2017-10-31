@@ -8,9 +8,10 @@ import (
 // --------------------------------------------
 
 type Overmind struct {
-	Pilots			[]*Pilot
-	Game			*hal.Game
-	ATC				*AirTrafficControl
+	Pilots					[]*Pilot
+	Game					*hal.Game
+	ATC						*AirTrafficControl
+	ProximityMap			map[int][]hal.Ship
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -23,6 +24,7 @@ func NewOvermind(game *hal.Game) *Overmind {
 func (self *Overmind) Step() {
 
 	self.UpdatePilots()
+	self.UpdateProximityMap()
 	self.ATC.Clear()
 
 	if self.Game.Turn() == 0 {
