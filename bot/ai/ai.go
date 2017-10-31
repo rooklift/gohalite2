@@ -38,11 +38,11 @@ func Run() {
 		}
 
 		if len(game.MyShips()) < len(game.AllShips()) / 10 {
-			game.LogOnce("t %d: Defeat immanent. Longest turn took %v", game.Turn(), longest_turn)
+			game.LogOnce("Defeat immanent. Longest turn took %v", game.Turn(), longest_turn)
 		}
 
 		if len(game.MyShips()) > (len(game.AllShips()) * 9) / 10 {
-			game.LogOnce("t %d: Victory immanent. Longest turn took %v", game.Turn(), longest_turn)
+			game.LogOnce("Victory immanent. Longest turn took %v", game.Turn(), longest_turn)
 		}
 	}
 }
