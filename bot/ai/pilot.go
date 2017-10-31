@@ -3,6 +3,7 @@ package ai
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 
 	hal "../gohalite2"
 )
@@ -85,27 +86,22 @@ func (self *Pilot) PlanDockIfPossible() bool {
 func (self *Pilot) ChooseTarget() {
 	game := self.Game
 
-	closest_planet := self.ClosestPlanet()
-	if self.Dist(closest_planet) < 50 {
-		if closest_planet.IsFull() == false || closest_planet.Owner != game.Pid() {
-			self.TargetType = hal.PLANET
-			self.TargetId = closest_planet.Id
-			return
+	all_planets := game.AllPlanets()
+	var target_planets []hal.Planet
+
+	for _, planet := range all_planets {
+		if planet.Owner != game.Pid() || planet.IsFull() == false {
+			target_planets = append(target_planets, planet)
 		}
 	}
 
-	all_planets := game.AllPlanets()
+	sort.Slice(target_planets, func(a, b int) bool {
+		return self.Dist(target_planets[a]) < self.Dist(target_planets[b])
+	})
 
-	for n := 0; n < 5; n++ {
-
-		i := rand.Intn(len(all_planets))
-		planet := all_planets[i]
-
-		if planet.Owner != game.Pid() || planet.IsFull() == false {
-			self.TargetId = planet.Id
-			self.TargetType = hal.PLANET
-			break
-		}
+	if len(target_planets) > 0 {
+		self.TargetId = target_planets[0].Id
+		self.TargetType = hal.PLANET
 	}
 }
 
