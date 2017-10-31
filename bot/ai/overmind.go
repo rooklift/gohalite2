@@ -11,7 +11,10 @@ type Overmind struct {
 	Pilots					[]*Pilot
 	Game					*hal.Game
 	ATC						*AirTrafficControl
-	ProximityMap			map[int][]hal.Ship
+
+	// Planets: mobile ships nearby.
+	EnemyMap				map[int][]hal.Ship		// Enemy ships near the planet
+	FriendlyMap				map[int][]hal.Ship		// My ships near the planet
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -24,7 +27,7 @@ func NewOvermind(game *hal.Game) *Overmind {
 func (self *Overmind) Step() {
 
 	self.UpdatePilots()
-	self.UpdateProximityMap()
+	self.UpdateProximityMaps()
 	self.ATC.Clear()
 
 	if self.Game.Turn() == 0 {

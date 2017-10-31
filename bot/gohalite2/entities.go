@@ -51,6 +51,10 @@ type Planet struct {
 	DockedShips						int			// The ships themselves can be accessed via game.dockMap[]
 }
 
+func (p Planet) OpenSpots() int {
+	return p.DockingSpots - p.DockedShips
+}
+
 func (p Planet) IsFull() bool {
 	return p.DockedShips >= p.DockingSpots
 }
