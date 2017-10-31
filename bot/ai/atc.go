@@ -23,14 +23,10 @@ type XYT struct {
 
 type AirTrafficControl struct {
 	Grid		map[XYT]bool
-	Width		int
-	Height		int
 }
 
-func NewATC(world_width, world_height int) *AirTrafficControl {
+func NewATC() *AirTrafficControl {
 	ret := new(AirTrafficControl)
-	ret.Width = world_width * RESOLUTION
-	ret.Height = world_height * RESOLUTION
 	ret.Grid = make(map[XYT]bool)
 	return ret
 }
