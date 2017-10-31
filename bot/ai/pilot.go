@@ -60,7 +60,7 @@ func (self *Pilot) ValidateTarget() bool {
 		target := game.GetPlanet(self.TargetId)
 		if target.Alive() == false {
 			self.TargetType = hal.NONE
-		} else if target.Owner == game.Pid() && target.IsFull() {
+		} else if target.Owner == game.Pid() && target.IsFull() && len(self.Overmind.EnemyMap[target.Id]) == 0 {
 			self.TargetType = hal.NONE
 		}
 	}
@@ -90,7 +90,18 @@ func (self *Pilot) ChooseTarget() {
 	var target_planets []hal.Planet
 
 	for _, planet := range all_planets {
-		if planet.Owner != game.Pid() || planet.IsFull() == false {
+
+		ok := false
+
+		if planet.Owner != game.Pid() {
+			ok = true
+		} else if planet.IsFull() == false {
+			ok = true
+		} else if len(self.Overmind.EnemyMap[planet.Id]) > len(self.Overmind.FriendlyMap[planet.Id]) {
+			ok = true
+		}
+
+		if ok {
 			target_planets = append(target_planets, planet)
 		}
 	}
@@ -158,20 +169,32 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	game := self.Game
+	overmind := self.Overmind
 
 	// We are very close to our target planet. Do something about this.
 
 	if self.TargetType != hal.PLANET {
-		self.Log("EngagePlanet() called but target wasn't a planet.", self.Id)
+		self.Log("EngagePlanet() called but target wasn't a planet.")
 		return
 	}
 
 	planet := game.GetPlanet(self.TargetId)
 
-	// Is it full and friendly? (This shouldn't be so.)
+	// Is it friendly but under seige?
 
-	if planet.Owned && planet.Owner == game.Pid() && planet.IsFull() {
-		self.Log("EngagePlanet() called but my planet was full.", self.Id)
+	if planet.Owned && planet.Owner == game.Pid() && len(overmind.EnemyMap[planet.Id]) > 0 {
+
+		// We directly plan our move without changing our stored (planet) target.
+
+		sort.Slice(overmind.EnemyMap[planet.Id], func(a, b int) bool {		// Sorting the list in place. Hmm.
+			return overmind.EnemyMap[planet.Id][a].Dist(self.Ship) < overmind.EnemyMap[planet.Id][b].Dist(self.Ship)
+		})
+
+		speed, degrees, err := game.GetApproach(self.Ship, overmind.EnemyMap[planet.Id][0], 4.5, avoid_list)
+		if err != nil {
+			self.Log("EngagePlanet(), while trying to engage siege ship: %v", err)
+		}
+		self.PlanThrust(speed, degrees)
 		return
 	}
 
@@ -183,6 +206,10 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	}
 
 	// So it's hostile...
+
+	if planet.Owner == game.Pid() {
+		self.Log("EngagePlanet(): entered attack mode at friendly planet not under siege!")
+	}
 
 	docked_targets := game.ShipsDockedAt(planet)
 

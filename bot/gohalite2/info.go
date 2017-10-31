@@ -99,11 +99,11 @@ func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 	return ret
 }
 
-func (self *Game) ShipsDockedAt(pl Planet) []Ship {
+func (self *Game) ShipsDockedAt(planet Planet) []Ship {
 
 	var ret []Ship
 
-	for _, Ship := range self.dockMap[pl.Id] {
+	for _, Ship := range self.dockMap[planet.Id] {
 		ret = append(ret, Ship)
 	}
 
