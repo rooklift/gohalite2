@@ -169,6 +169,8 @@ func (self *Overmind) UpdatePilots() {
 
 func (self *Overmind) UpdateProximityMap() {
 
+	// Currently only includes non-docked, enemy ships.
+
 	const THREAT_RANGE = 10
 
 	self.ProximityMap = make(map[int][]hal.Ship)
@@ -177,8 +179,8 @@ func (self *Overmind) UpdateProximityMap() {
 	all_planets := self.Game.AllPlanets()
 
 	for _, ship := range enemy_ships {
-		for _, planet := range all_planets {
-			if ship.CanMove() {
+		if ship.CanMove() {
+			for _, planet := range all_planets {
 				if ship.ApproachDist(planet) < THREAT_RANGE {
 					self.ProximityMap[planet.Id] = append(self.ProximityMap[planet.Id], ship)
 				}
