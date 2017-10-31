@@ -1,5 +1,25 @@
 package gohalite2
 
+import (
+	"fmt"
+)
+
+type MoveInfo struct {
+	Dx					float64
+	Dy					float64
+	Speed				int
+	Degrees				int
+	DockedStatus		DockedStatus
+	Spawned				bool
+}
+
+func (self MoveInfo) String() string {
+	if self.DockedStatus == DOCKED { return "is docked" }
+	if self.DockedStatus == DOCKING { return "is docking" }
+	if self.DockedStatus == UNDOCKING { return "is undocking" }
+	return fmt.Sprintf("dx: %.2f, dy: %.2f (%d / %d)", self.Dx, self.Dy, self.Speed, self.Degrees)
+}
+
 type Game struct {
 	inited				bool
 	turn				int
@@ -13,6 +33,7 @@ type Game struct {
 	planetMap			map[int]Planet		// Planet ID --> Planet			(can contain dead objects)
 	shipMap				map[int]Ship		// Ship ID --> Ship				(can contain dead objects)
 	dockMap				map[int][]Ship		// Planet ID --> Ship slice
+	lastmoveMap			map[int]MoveInfo	// Ship ID --> MoveInfo struct
 
 	orders				map[int]string
 

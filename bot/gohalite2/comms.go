@@ -3,6 +3,7 @@ package gohalite2
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -82,16 +83,17 @@ func (self *Game) Parse() {
 		self.shipMap[sid] = ship
 	}
 
-	// Clear the dock maps. We will recreate them during parsing.
+	// Clear some info maps. We will recreate them during parsing.
 
 	self.dockMap = make(map[int][]Ship)
+	self.lastmoveMap = make(map[int]MoveInfo)
 
 	// Player parsing.............................................................................
 
 	player_count := self.token_parser.Int()
 
 	if self.initialPlayers == 0 {
-		self.initialPlayers = player_count						// Only save this at init stage.
+		self.initialPlayers = player_count							// Only save this at init stage.
 	}
 
 	players_with_ships := 0
@@ -114,18 +116,34 @@ func (self *Game) Parse() {
 			if ok == false {
 				ship.Id = sid
 				ship.Owner = pid
-				ship.Birth = Max(0, self.turn)					// Turn can be -1 in init stage.
+				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
 			}
 
 			ship.X = self.token_parser.Float()
 			ship.Y = self.token_parser.Float()
 			ship.HP = self.token_parser.Int()
-			self.token_parser.Float()							// Skip deprecated "speedx"
-			self.token_parser.Float()							// Skip deprecated "speedy"
+			self.token_parser.Float()								// Skip deprecated "speedx"
+			self.token_parser.Float()								// Skip deprecated "speedy"
 			ship.DockedStatus = self.token_parser.DockedStatus()
 			ship.DockedPlanet = self.token_parser.Int()
 			ship.DockingProgress = self.token_parser.Int()
-			self.token_parser.Int()								// Skip deprecated "cooldown"
+			self.token_parser.Int()									// Skip deprecated "cooldown"
+
+			if ship.Birth == self.turn {
+				self.lastmoveMap[sid] = MoveInfo{Spawned: true}		// All other fields zero.
+			} else {
+				last_ship := self.shipMap[sid]
+				dx := ship.X - last_ship.X
+				dy := ship.Y - last_ship.Y
+				self.lastmoveMap[sid] = MoveInfo{
+					Dx: dx,
+					Dy: dy,
+					Speed: Round(math.Sqrt(dx * dx + dy * dy)),
+					Degrees: Angle(last_ship.X, last_ship.Y, ship.X, ship.Y),
+					DockedStatus: ship.DockedStatus,
+					Spawned: false,
+				}
+			}
 
 			self.shipMap[sid] = ship
 		}
@@ -150,7 +168,7 @@ func (self *Game) Parse() {
 		planet.Radius = self.token_parser.Float()
 		planet.DockingSpots = self.token_parser.Int()
 		planet.CurrentProduction = self.token_parser.Int()
-		self.token_parser.Int()									// Skip deprecated "remaining production"
+		self.token_parser.Int()										// Skip deprecated "remaining production"
 		planet.Owned = self.token_parser.Bool()
 		planet.Owner = self.token_parser.Int()
 
