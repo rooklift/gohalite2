@@ -119,19 +119,19 @@ func DecideSide(ship Ship, target Entity, planet Entity) Side {
 
 	diff := to_planet - to_target
 
-	if diff >= 0 && diff <= 90 {
+	if diff >= 0 && diff <= 180 {
 		return LEFT
 	}
 
-	if diff >= 270 {
+	if diff >= 180 {
 		return RIGHT
 	}
 
-	if diff <= -270 {
+	if diff <= -180 {
 		return LEFT
 	}
 
-	if diff >= -90 && diff <= 0 {
+	if diff >= -180 && diff <= 0 {
 		return RIGHT
 	}
 
