@@ -1,0 +1,11 @@
+package ai
+
+type MessageInt int
+
+const (
+	MSG_ATTACK_DOCKED = 121
+	MSG_FIGHT_IN_ORBIT = 122
+	MSG_DEACTIVATED = 150
+	MSG_DOCK_APPROACH = 179
+	MSG_NO_TARGET = 180
+)

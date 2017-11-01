@@ -2,7 +2,6 @@ package ai
 
 import (
 	"fmt"
-	"math/rand"
 	"sort"
 
 	hal "../gohalite2"
@@ -140,7 +139,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			self.Log("PlanChase(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
-			self.PlanThrust(speed, degrees)
+			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
 		}
 
 	case hal.SHIP:
@@ -153,7 +152,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			self.Log("PlanChase(): %v", err)
 			self.TargetType = hal.NONE
 		} else {
-			self.PlanThrust(speed, degrees)
+			self.PlanThrust(speed, degrees, MSG_ATTACK_DOCKED)
 			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
 				self.Log("PlanChase(): not moving but not in range!")
 			}
@@ -161,7 +160,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.NONE:
 
-		self.PlanThrust(0, 0)
+		self.PlanThrust(0, 0, MSG_NO_TARGET)
 
 	}
 
@@ -186,15 +185,28 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 		// We directly plan our move without changing our stored (planet) target.
 
-		sort.Slice(overmind.EnemyMap[planet.Id], func(a, b int) bool {		// Sorting the list in place. Hmm.
-			return overmind.EnemyMap[planet.Id][a].Dist(self.Ship) < overmind.EnemyMap[planet.Id][b].Dist(self.Ship)
+		var enemies []hal.Ship
+		enemies = append(enemies, overmind.EnemyMap[planet.Id]...)
+
+		// Our target can also be one of the docked ships...
+
+		if planet.Owner != game.Pid() {
+			enemies = append(enemies, game.ShipsDockedAt(planet)...)
+		}
+
+		// Find closest...
+
+		sort.Slice(enemies, func(a, b int) bool {
+			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 		})
 
-		speed, degrees, err := game.GetApproach(self.Ship, overmind.EnemyMap[planet.Id][0], 4.5, avoid_list)
+		enemy_ship := enemies[0]
+
+		speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, avoid_list)
 		if err != nil {
 			self.Log("EngagePlanet(), while trying to engage siege ship: %v", err)
 		}
-		self.PlanThrust(speed, degrees)
+		self.PlanThrust(speed, degrees, MSG_FIGHT_IN_ORBIT)
 		return
 	}
 
@@ -209,13 +221,18 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	if planet.Owner == game.Pid() {
 		self.Log("EngagePlanet(): entered attack mode at friendly planet not under siege!")
+		return
 	}
+
+	// We directly plan our move without changing our stored (planet) target.
 
 	docked_targets := game.ShipsDockedAt(planet)
 
-	enemy_ship := docked_targets[rand.Intn(len(docked_targets))]
-	self.TargetType = hal.SHIP
-	self.TargetId = enemy_ship.Id
+	sort.Slice(docked_targets, func(a, b int) bool {
+		return docked_targets[a].Dist(self.Ship) < docked_targets[b].Dist(self.Ship)
+	})
+
+	enemy_ship := docked_targets[0]
 
 	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, avoid_list)			// GetApproach uses centre-to-edge distances, so 4.5
 
@@ -224,7 +241,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 		return
 	}
 
-	self.PlanThrust(speed, degrees)
+	self.PlanThrust(speed, degrees, MSG_ATTACK_DOCKED)
 }
 
 func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
@@ -248,12 +265,12 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)
 	}
 
-	self.PlanThrust(speed, degrees)
+	self.PlanThrust(speed, degrees, MSG_DOCK_APPROACH)
 }
 
 // -------------------------------------------------------------------
 
-func (self *Pilot) PlanThrust(speed, degrees int) {
+func (self *Pilot) PlanThrust(speed, degrees int, message MessageInt) {		// Send -1 as message for no message.
 
 	for degrees < 0 {
 		degrees += 360
@@ -263,18 +280,8 @@ func (self *Pilot) PlanThrust(speed, degrees int) {
 
 	// We put some extra info into the angle, which we can see in the Chlorine replayer...
 
-	var message int = -1
-
-	if self.TargetType == hal.PLANET {
-		message = self.TargetId
-	} else if self.TargetType == hal.SHIP {
-		message = 121
-	} else if self.TargetType == hal.NONE {
-		message = 180
-	}
-
-	if message > -1 {
-		degrees += (message + 1) * 360
+	if message >= 0 && message <= 180 {
+		degrees += (int(message) + 1) * 360
 	}
 
 	self.Plan = fmt.Sprintf("t %d %d %d", self.Id, speed, degrees)

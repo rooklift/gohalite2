@@ -1,6 +1,5 @@
 TODO
 
-- Better Angle Messaging.
 - Choose which way we dodge while navigating (in collision.go) based on angle(us, final-target) and its first planet collision.
 ------ (Make sure not to use a ship collision.)
 - When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
