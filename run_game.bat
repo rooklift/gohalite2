@@ -1,1 +1,1 @@
-halite.exe -i "replays" "bot.exe" ".\otherbots\v12\mybot.exe" ".\otherbots\v12\mybot.exe" ".\otherbots\v12\mybot.exe"
+halite.exe -i "replays" "bot.exe" ".\otherbots\v14\mybot.exe" ".\otherbots\v14\mybot.exe" "bot.exe"

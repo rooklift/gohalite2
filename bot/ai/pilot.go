@@ -72,10 +72,10 @@ func (self *Pilot) ValidateTarget() bool {
 	return true
 }
 
-func (self *Pilot) PlanDockIfPossible() bool {
+func (self *Pilot) PlanDockIfSafe() bool {
 	if self.DockedStatus == hal.UNDOCKED {
 		closest_planet := self.ClosestPlanet()
-		if self.CanDock(closest_planet) {
+		if self.CanDock(closest_planet) && len(self.Overmind.EnemyMap[closest_planet.Id]) == 0 {
 			self.PlanDock(closest_planet)
 			return true
 		}
@@ -180,9 +180,9 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	planet := game.GetPlanet(self.TargetId)
 
-	// Is it friendly but under seige?
+	// Are there mobile enemy ships near the planet?
 
-	if planet.Owned && planet.Owner == game.Pid() && len(overmind.EnemyMap[planet.Id]) > 0 {
+	if len(overmind.EnemyMap[planet.Id]) > 0 {
 
 		// We directly plan our move without changing our stored (planet) target.
 
@@ -205,7 +205,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 		return
 	}
 
-	// So it's hostile...
+	// So it's owned by sitting ducks... (since otherwise our target would have been cleared earlier)
 
 	if planet.Owner == game.Pid() {
 		self.Log("EngagePlanet(): entered attack mode at friendly planet not under siege!")
