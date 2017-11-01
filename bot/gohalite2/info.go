@@ -30,6 +30,15 @@ func (self *Game) AllPlanets() []Planet {
 	return ret
 }
 
+func (self *Game) AllPlanetsAsEntities() []Entity {
+	var ret []Entity
+	for plid, _ := range self.planetMap {
+		planet := self.GetPlanet(plid)
+		ret = append(ret, planet)
+	}
+	return ret
+}
+
 func (self *Game) AllImmobile() []Entity {		// Returns all planets and all docked ships
 	var ret []Entity
 	for plid, _ := range self.planetMap {

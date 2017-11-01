@@ -36,11 +36,11 @@ func (self *Game) FirstCollision(ship Ship, distance float64, degrees int, possi
 	return closest_ent, true
 }
 
-func (self *Game) GetCourse(ship Ship, target Entity, avoid_list []Entity) (int, int, error) {
-	return self.GetCourseRecursive(ship, target, avoid_list, 10)
+func (self *Game) GetCourse(ship Ship, target Entity, avoid_list []Entity, side Side) (int, int, error) {
+	return self.GetCourseRecursive(ship, target, avoid_list, 10, side)
 }
 
-func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid_list []Entity, depth int) (int, int, error) {		// speed, angle, error
+func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid_list []Entity, depth int, side Side) (int, int, error) {		// speed, angle, error
 
 	// Try to navigate to (collide with) the target, but avoiding the list of entites,
 	// which could include the target.
@@ -72,19 +72,19 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid_list []Enti
 
 	if depth > 0 {
 		var waypoint_angle int
-		if ship.Id % 2 == 0 {
+		if side == RIGHT {
 			waypoint_angle = degrees + 90
 		} else {
 			waypoint_angle = degrees - 90
 		}
 		waypointx, waypointy := Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
-		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, avoid_list, depth - 1)
+		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, avoid_list, depth - 1, side)
 	}
 
 	return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
 }
 
-func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid_list []Entity) (int, int, error) {
+func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid_list []Entity, side Side) (int, int, error) {
 
 	// Navigate so that the ship's centre is definitely within <margin> of the target's edge.
 
@@ -97,5 +97,42 @@ func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid_li
 
 	travel_distance := ship.ApproachDist(target) + 0.51 - margin
 	target_point_x, target_point_y := Projection(ship.X, ship.Y, travel_distance, ship.Angle(target))
-	return self.GetCourse(ship, Point{target_point_x, target_point_y}, avoid_list)
+	return self.GetCourse(ship, Point{target_point_x, target_point_y}, avoid_list, side)
+}
+
+
+
+
+type Side int
+
+const (
+	LEFT Side = iota
+	RIGHT
+)
+
+func DecideSide(ship Ship, target Entity, planet Entity) Side {
+
+	to_planet := ship.Angle(planet)
+	to_target := ship.Angle(target)
+
+	diff := to_planet - to_target
+
+	if diff >= 0 && diff <= 90 {
+		return LEFT
+	}
+
+	if diff >= 270 {
+		return RIGHT
+	}
+
+	if diff <= -270 {
+		return LEFT
+	}
+
+	if diff >= -90 && diff <= 0 {
+		return RIGHT
+	}
+
+	backend_dev_log.Log("DecideSide() failed.")
+	return RIGHT
 }
