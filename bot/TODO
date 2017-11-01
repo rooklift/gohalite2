@@ -1,12 +1,16 @@
 TODO
 
-- Choose which way we dodge while navigating (in collision.go) based on angle(us, final-target) and its first planet collision.
------- (Make sure not to use a ship collision.)
 - When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
 - Docking is OK for a few ships (select them somehow) if we have overwhelming force.
 - Maybe use our ship IDs to decide whether we are needed, if there are a lot more friendlies present.
 - Perhaps our ship's stored target should always be a planet for simplicity?
 - 1v1 improvements.
+
+1v1 note:
+- If the lead ship can close fast enough, it can both absorb all the shots and collide with an enemy (which is good).
+- i.e. the enemy will waste their shots. Hopefully our ships don't waste theirs.
+- The distances need to be right. All of the above needs to happen in 1 turn.
+- It very much relies on the enemy closing with us. If the enemy sits still we won't collide.
 
 Allocation idea:
 - Make a list of targets.
