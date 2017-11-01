@@ -14,6 +14,7 @@ import (
 type TokenParser struct {
 	scanner		*bufio.Scanner
 	count		int
+	all_tokens	[]string		// This is used for logging only. It is cleared each time it's asked-for.
 }
 
 func NewTokenParser() *TokenParser {
@@ -25,6 +26,7 @@ func NewTokenParser() *TokenParser {
 
 func (self *TokenParser) Int() int {
 	self.scanner.Scan()
+	self.all_tokens = append(self.all_tokens, self.scanner.Text())
 	ret, err := strconv.Atoi(self.scanner.Text())
 	if err != nil {
 		panic(fmt.Sprintf("TokenReader.Int(): Atoi failed at token %d: \"%s\"", self.count, self.scanner.Text()))
@@ -39,6 +41,7 @@ func (self *TokenParser) DockedStatus() DockedStatus {
 
 func (self *TokenParser) Float() float64 {
 	self.scanner.Scan()
+	self.all_tokens = append(self.all_tokens, self.scanner.Text())
 	ret, err := strconv.ParseFloat(self.scanner.Text(), 64)
 	if err != nil {
 		panic(fmt.Sprintf("TokenReader.Float(): ParseFloat failed at token %d: \"%s\"", self.count, self.scanner.Text()))
@@ -49,6 +52,7 @@ func (self *TokenParser) Float() float64 {
 
 func (self *TokenParser) Bool() bool {
 	self.scanner.Scan()
+	self.all_tokens = append(self.all_tokens, self.scanner.Text())
 	s := self.scanner.Text()
 	self.count++
 	if s == "0" {
@@ -58,6 +62,16 @@ func (self *TokenParser) Bool() bool {
 	}
 
 	panic(fmt.Sprintf("TokenReader.Bool(): Value wasn't 0 or 1 (was: \"%s\")", s))
+}
+
+func (self *TokenParser) Tokens(sep string) string {
+	ret := strings.Join(self.all_tokens, sep)
+	self.all_tokens = nil
+	return ret
+}
+
+func (self *TokenParser) ClearTokens() {
+	self.all_tokens = nil
 }
 
 // ---------------------------------------
@@ -115,6 +129,11 @@ func (self *Game) Parse() {
 			self.token_parser.Float()								// Skip deprecated "speedy"
 			ship.DockedStatus = self.token_parser.DockedStatus()
 			ship.DockedPlanet = self.token_parser.Int()
+
+			if ship.DockedStatus == UNDOCKED {
+				ship.DockedPlanet = -1
+			}
+
 			ship.DockingProgress = self.token_parser.Int()
 			self.token_parser.Int()									// Skip deprecated "cooldown"
 
@@ -182,6 +201,7 @@ func (self *Game) Parse() {
 	}
 
 	self.currentPlayers = players_with_ships
+	self.raw = self.token_parser.Tokens(" ")
 }
 
 // ---------------------------------------

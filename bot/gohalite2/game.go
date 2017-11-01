@@ -39,6 +39,7 @@ type Game struct {
 
 	logfile             *Logfile
 	token_parser		*TokenParser
+	raw					string
 }
 
 func NewGame() *Game {
@@ -51,8 +52,9 @@ func NewGame() *Game {
 	game.planetMap = make(map[int]Planet)
 	game.shipMap = make(map[int]Ship)
 	game.dockMap = make(map[int][]Ship)
+	game.token_parser.ClearTokens()			// This is just clearing the token_parser's "log".
 	game.Parse()
-	game.inited = true		// Just means the parser will increment the turn value before parsing.
+	game.inited = true		// Just means Parse() will increment the turn value before parsing.
 	return game
 }
 

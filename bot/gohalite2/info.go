@@ -129,3 +129,7 @@ func (self *Game) ClosestPlanet(e Entity) Planet {
 
 	return ret
 }
+
+func (self *Game) RawWorld() string {
+	return self.raw
+}
