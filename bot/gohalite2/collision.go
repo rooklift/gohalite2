@@ -100,8 +100,7 @@ func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid_li
 	return self.GetCourse(ship, Point{target_point_x, target_point_y}, avoid_list, side)
 }
 
-
-
+// ---------------------------------------------------------------------
 
 type Side int
 
@@ -109,6 +108,9 @@ const (
 	LEFT Side = iota
 	RIGHT
 )
+
+// Given a ship and some target, and some planet to navigate around,
+// which side should we go?
 
 func DecideSide(ship Ship, target Entity, planet Entity) Side {
 
