@@ -153,3 +153,16 @@ func GetOrderType(s string) OrderType {
 
 	return NO_ORDER
 }
+
+func RemovePointFromSlice(slice []Point, point Point) []Point {
+
+	// Caller should re-assign its slice using the return value.
+
+	for i := 0; i < len(slice); i++ {
+		if slice[i] == point {
+			slice = append(slice[:i], slice[i+1:]...)
+			i--
+		}
+	}
+	return slice
+}

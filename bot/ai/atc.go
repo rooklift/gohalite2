@@ -6,13 +6,12 @@ import (
 
 // Possible changes (FIXME?):
 //
-// -- Use a higher resolution?
 // -- Reset target on failure (possibly after failing for n turns)
 
 const (
-	TIME_STEPS = 7
-	RESOLUTION = 2		// i.e. double resolution
-	FILL_RADIUS = 1		// filling from -1 to +1 inclusive
+	TIME_STEPS = 21			// The true value for resolution. Higher is more exact. Can be safely changed.
+	SPACE_RESOLUTION = 2	// Leave this alone.
+	FILL_RADIUS = 1			// Leave this alone.
 )
 
 type XYT struct {
@@ -22,20 +21,20 @@ type XYT struct {
 }
 
 type AirTrafficControl struct {
-	Grid		map[XYT]bool
+	Grid		map[XYT][]hal.Point
 }
 
 func NewATC() *AirTrafficControl {
 	ret := new(AirTrafficControl)
-	ret.Grid = make(map[XYT]bool)
+	ret.Grid = make(map[XYT][]hal.Point)
 	return ret
 }
 
 func (self *AirTrafficControl) Clear() {
-	self.Grid = make(map[XYT]bool)
+	self.Grid = make(map[XYT][]hal.Point)
 }
 
-func (self *AirTrafficControl) SetRestrict(ship hal.Ship, speed, degrees int, val bool) {
+func (self *AirTrafficControl) SetRestrict(ship hal.Ship, speed, degrees int, yes bool) {
 
 	x2, y2 := hal.Projection(ship.X, ship.Y, float64(speed), degrees)
 
@@ -50,12 +49,18 @@ func (self *AirTrafficControl) SetRestrict(ship hal.Ship, speed, degrees int, va
 		x += stepx
 		y += stepy
 
-		grid_x := int(x) * RESOLUTION
-		grid_y := int(y) * RESOLUTION
+		point := hal.Point{x, y}
+
+		grid_x := int(x) * SPACE_RESOLUTION
+		grid_y := int(y) * SPACE_RESOLUTION
 
 		for index_x := grid_x - FILL_RADIUS; index_x <= grid_x + FILL_RADIUS; index_x++ {
 			for index_y := grid_y - FILL_RADIUS; index_y <= grid_y + FILL_RADIUS; index_y++ {
-				self.Grid[XYT{index_x, index_y, t}] = val
+				if yes {
+					self.Grid[XYT{index_x, index_y, t}] = append(self.Grid[XYT{index_x, index_y, t}], point)
+				} else {
+					self.Grid[XYT{index_x, index_y, t}] = hal.RemovePointFromSlice(self.Grid[XYT{index_x, index_y, t}], point)
+				}
 			}
 		}
 	}
@@ -84,13 +89,17 @@ func (self *AirTrafficControl) PathIsFree(ship hal.Ship, speed, degrees int) boo
 		x += stepx
 		y += stepy
 
-		grid_x := int(x) * RESOLUTION
-		grid_y := int(y) * RESOLUTION
+		point := hal.Point{x, y}
+
+		grid_x := int(x) * SPACE_RESOLUTION
+		grid_y := int(y) * SPACE_RESOLUTION
 
 		for index_x := grid_x - FILL_RADIUS; index_x <= grid_x + FILL_RADIUS; index_x++ {
 			for index_y := grid_y - FILL_RADIUS; index_y <= grid_y + FILL_RADIUS; index_y++ {
-				if self.Grid[XYT{index_x, index_y, t}] {
-					return false
+				for _, restriction := range self.Grid[XYT{index_x, index_y, t}] {
+					if restriction.Dist(point) <= hal.SHIP_RADIUS * 2 {
+						return false
+					}
 				}
 			}
 		}

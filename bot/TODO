@@ -1,0 +1,15 @@
+TODO
+
+- Better Angle Messaging.
+- When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
+- Docking is OK for a few ships (select them somehow) if we have overwhelming force.
+- Maybe use our ship IDs to decide whether we are needed, if there are a lot more friendlies present.
+- Perhaps our ship's stored target should always be a planet for simplicity?
+- 1v1 improvements.
+
+Allocation idea:
+- Make a list of targets.
+- Each target requires some number of ships allocated to it.
+- Every time we send a ship, lower the requirement count.
+- (Maybe increase the requirement count if the ship going is lost.)
+- If something ceases to be a target, deallocate whatever's going to it.
