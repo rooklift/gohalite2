@@ -206,10 +206,6 @@ func (self *Game) Parse() {
 
 // ---------------------------------------
 
-/*
-These functions are now commented out since the AI does its
-own orders, so I have no need for these.
-
 func (self *Game) Thrust(ship Ship, speed, angle int) {
 	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, angle)
 }
@@ -225,7 +221,6 @@ func (self *Game) Undock(ship Ship) {
 func (self *Game) ClearOrder(ship Ship) {
 	delete(self.orders, ship.Id)
 }
-*/
 
 func (self *Game) CurrentOrder(ship Ship) string {
 	return self.orders[ship.Id]
