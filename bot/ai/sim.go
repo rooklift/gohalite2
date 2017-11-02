@@ -59,31 +59,39 @@ func (self *Sim) Step() {
 
 	var possible_events []*PossibleEvent
 
-	// Attacks...
+	// Possible attacks...
 
 	for i, ship_a := range self.ships {
-		for _, ship_b := range self.ships[i+1:] {
-			if ship_a.owner != ship_b.owner {
-				ok, t := collision_time(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// 5.0 seems to be right. Uh, but see #191.
-				if ok && t >= 0 && t <= 1 {
-					possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, ATTACK})
+		if ship_a.hp > 0 {
+			for _, ship_b := range self.ships[i+1:] {
+				if ship_b.hp > 0 {
+					if ship_a.owner != ship_b.owner {
+						ok, t := collision_time(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// 5.0 seems to be right. Uh, but see #191.
+						if ok && t >= 0 && t <= 1 {
+							possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, ATTACK})
+						}
+					}
 				}
 			}
 		}
 	}
 
-	// Ship collisions...
+	// Possible ship collisions...
 
 	for i, ship_a := range self.ships {
-		for _, ship_b := range self.ships[i+1:] {
-			ok, t := collision_time(1.0, &ship_a.SimEntity, &ship_b.SimEntity)
-			if ok {
-				possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, SHIP_COLLISION})
+		if ship_a.hp > 0 {
+			for _, ship_b := range self.ships[i+1:] {
+				if ship_b.hp > 0 {
+					ok, t := collision_time(1.0, &ship_a.SimEntity, &ship_b.SimEntity)
+					if ok {
+						possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, SHIP_COLLISION})
+					}
+				}
 			}
 		}
 	}
 
-	// Planet collisions...
+	// Possible ship-planet collisions...
 
 	for _, planet := range self.planets {
 		for _, ship := range self.ships {
@@ -125,18 +133,24 @@ func (self *Sim) Step() {
 
 		for _, event := range grouping {
 
-			ship_a, ship_b := event.ship_a, event.ship_b
-
-			if ship_a.ship_state == DEAD || ship_b.ship_state == DEAD {
-				continue
-			}
-
 			if event.what == SHIP_COLLISION {
+
+				ship_a, ship_b := event.ship_a, event.ship_b
+
+				if ship_a.ship_state == DEAD || ship_b.ship_state == DEAD {
+					continue
+				}
 
 				ship_a.hp = 0
 				ship_b.hp = 0
 
 			} else if event.what == ATTACK {
+
+				ship_a, ship_b := event.ship_a, event.ship_b
+
+				if ship_a.ship_state == DEAD || ship_b.ship_state == DEAD {
+					continue
+				}
 
 				if ship_a.weapon_state != SPENT {
 					ship_a.weapon_state = FIRING
@@ -150,7 +164,7 @@ func (self *Sim) Step() {
 
 			} else if event.what == PLANET_COLLISION {				// FIXME: if we use this for real sims, we need to do planet damage.
 
-				ship_a.hp = 0
+				event.ship_a.hp = 0
 
 			}
 		}
