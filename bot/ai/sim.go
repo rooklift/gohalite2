@@ -2,6 +2,7 @@ package ai
 
 import (
 	"sort"
+	hal "../gohalite2"
 )
 
 type Sim struct {					// Using pointers, unlike in most of the code
@@ -192,5 +193,32 @@ func (self *Sim) Step() {
 				ship.ship_state = DEAD
 			}
 		}
+	}
+}
+
+func SetupSim(game hal.Game) {
+
+	sim := new(Sim)
+
+	for _, planet := range game.AllPlanets() {
+		sim.planets = append(sim.planets, &SimPlanet{
+			SimEntity{
+				x: planet.X,
+				y: planet.Y,
+				radius: planet.Radius,
+			},
+		})
+	}
+
+	for _, ship := range game.AllShips() {
+		sim.ships = append(sim.ships, &SimShip{
+			SimEntity: SimEntity{
+				x: ship.X,
+				y: ship.Y,
+				radius: hal.SHIP_RADIUS,
+			},
+			ship_state: ALIVE,
+			hp: ship.HP,
+		})
 	}
 }
