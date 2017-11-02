@@ -196,7 +196,7 @@ func (self *Sim) Step() {
 	}
 }
 
-func SetupSim(game hal.Game) {
+func SetupSim(game *hal.Game) *Sim {
 
 	sim := new(Sim)
 
@@ -218,7 +218,30 @@ func SetupSim(game hal.Game) {
 				radius: hal.SHIP_RADIUS,
 			},
 			ship_state: ALIVE,
+			weapon_state: READY,
 			hp: ship.HP,
+			owner: ship.Owner,
 		})
 	}
+
+	return sim
+}
+
+// In theory:
+//
+// 1. Pretend we will charge straight forward like madmen.
+// 2. Let the enemy evolve against that.
+// 3. Evolve against the enemy.
+//
+// However, to start with, maybe just expect the enemy to move like a madman.
+
+type Genome struct {
+	speeds		[]int
+	angles		[]int
+}
+
+func EvolveGenome(game *hal.Game, our_pid int) {
+
+	// sim := SetupSim(game)
+
 }
