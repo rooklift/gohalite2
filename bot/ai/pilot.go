@@ -132,16 +132,31 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		planet := game.GetPlanet(self.TargetId)
 
-		// If the first planet in our path isn't our target planet, we choose a side to navigate around...
-
-		first_planet_collision, ok := game.FirstCollision(self.Ship, 1000, self.Angle(planet), game.AllPlanetsAsEntities())
-		if ok && first_planet_collision.GetId() != planet.Id {
-			side = hal.DecideSide(self.Ship, planet, first_planet_collision)
-		}
-
 		if self.ApproachDist(planet) < 8 {		// If this is too low, we may get outside the action zone when navigating round allies.
 			self.EngagePlanet(avoid_list)
 			return
+		}
+
+		// If the first planet in our path isn't our target planet, we choose a side to navigate around...
+
+		collision_entity, ok := game.FirstCollision(self.Ship, 1000, self.Angle(planet), game.AllImmobile())	// See note below!
+
+		if ok {
+
+			var blocking_planet hal.Planet
+
+			// We also consider docked ships to be "part of the planet" for these purposes -+- we must use game.AllImmobile() above
+
+			if collision_entity.Type() == hal.PLANET {
+				blocking_planet = collision_entity.(hal.Planet)
+			} else {
+				s := collision_entity.(hal.Ship)
+				blocking_planet = game.GetPlanet(s.DockedPlanet)
+			}
+
+			if blocking_planet.GetId() != planet.Id {
+				side = hal.DecideSide(self.Ship, planet, blocking_planet)
+			}
 		}
 
 		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid_list, side)
