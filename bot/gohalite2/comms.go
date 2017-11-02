@@ -141,6 +141,7 @@ func (self *Game) Parse() {
 
 			if ok == false {
 				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
+				self.cumulativeShips[pid]++
 				self.lastmoveMap[sid] = MoveInfo{Spawned: true}		// All other fields zero.
 			} else {
 				dx := ship.X - last_ship.X

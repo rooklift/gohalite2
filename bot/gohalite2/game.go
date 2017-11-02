@@ -34,6 +34,7 @@ type Game struct {
 	shipMap				map[int]Ship		// Ship ID --> Ship
 	dockMap				map[int][]Ship		// Planet ID --> Ship slice
 	lastmoveMap			map[int]MoveInfo	// Ship ID --> MoveInfo struct
+	cumulativeShips		map[int]int			// Player ID --> Count
 
 	orders				map[int]string
 
@@ -52,6 +53,8 @@ func NewGame() *Game {
 	game.planetMap = make(map[int]Planet)
 	game.shipMap = make(map[int]Ship)
 	game.dockMap = make(map[int][]Ship)
+	game.lastmoveMap = make(map[int]MoveInfo)
+	game.cumulativeShips = make(map[int]int)
 	game.token_parser.ClearTokens()			// This is just clearing the token_parser's "log".
 	game.Parse()
 	game.inited = true		// Just means Parse() will increment the turn value before parsing.

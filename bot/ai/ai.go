@@ -38,11 +38,29 @@ func Run() {
 		}
 
 		if len(game.MyShips()) < len(game.AllShips()) / 10 {
-			game.LogOnce("Defeat immanent. Longest turn took %v", longest_turn)
+			game.LogOnce("Defeat immanent!")
+			PrintFinalInfo(game, longest_turn)
 		}
 
 		if len(game.MyShips()) > (len(game.AllShips()) * 9) / 10 {
-			game.LogOnce("Victory immanent. Longest turn took %v", longest_turn)
+			game.LogOnce("Victory immanent!")
+			PrintFinalInfo(game, longest_turn)
 		}
 	}
+}
+
+func PrintFinalInfo(game * hal.Game, longest_turn time.Duration) {
+	game.LogOnce("Total ships........ %3d, %3d, %3d, %3d",
+		len(game.ShipsOwnedBy(0)),
+		len(game.ShipsOwnedBy(1)),
+		len(game.ShipsOwnedBy(2)),
+		len(game.ShipsOwnedBy(3)),
+	)
+	game.LogOnce("Cumulative ships... %3d, %3d, %3d, %3d",
+		game.GetCumulativeShipCount(0),
+		game.GetCumulativeShipCount(1),
+		game.GetCumulativeShipCount(2),
+		game.GetCumulativeShipCount(3),
+	)
+	game.LogOnce("Longest turn took %v", longest_turn)
 }

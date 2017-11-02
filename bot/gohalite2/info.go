@@ -142,3 +142,7 @@ func (self *Game) ClosestPlanet(e Entity) Planet {
 func (self *Game) RawWorld() string {
 	return self.raw
 }
+
+func (self *Game) GetCumulativeShipCount(pid int) int {
+	return self.cumulativeShips[pid]
+}
