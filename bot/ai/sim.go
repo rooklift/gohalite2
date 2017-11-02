@@ -7,7 +7,7 @@ import (
 
 // Simplified game info for 3v3 (6 ships, thus "hex") battle sims
 
-type HexSim struct {
+type HexSim struct {					// Using pointers, unlike in most of the code
 	planets			[]*SimPlanet
 	all_ships		[]*SimShip
 }
@@ -18,12 +18,28 @@ type SimPlanet struct {
 	radius			float64
 }
 
+type ShipState int
+
+const (
+	ALIVE ShipState = iota
+	DYING
+	DEAD
+)
+
+type WeaponState int
+
+const (
+	READY WeaponState = iota
+	FIRING
+	SPENT
+)
+
 type SimShip struct {
 	x				float64
 	y				float64
 	vel_x			float64
 	vel_y			float64
-	shot_time		float64
+	weapon_state	WeaponState
 	actual_targets	[]*SimShip		// Who we actually, really, definitely shoot at.
 	hp				int
 	owner			int
@@ -33,7 +49,7 @@ type EventType int
 
 const (
 	ATTACK EventType = iota
-	COLLISION
+	SHIP_COLLISION
 )
 
 type PossibleEvent struct {
@@ -111,16 +127,16 @@ func collision_time(r float64, ship1 * SimShip, ship2 * SimShip) (bool, float64)
 
 func (self *HexSim) Step() {
 
-	var possible_events []PossibleEvent
+	var possible_events []*PossibleEvent
 
 	// Attacks...
 
 	for i, ship_a := range self.all_ships {
 		for _, ship_b := range self.all_ships[i+1:] {
 			if ship_a.owner != ship_b.owner {
-				attacks_possible, t := collision_time(5.0, ship_a, ship_b)		// 5.0 seems to be right. Uh, but see #191.
-				if attacks_possible && t >= 0 && t <= 1 {
-					possible_events = append(possible_events, PossibleEvent{ship_a, ship_b, t, ATTACK})
+				ok, t := collision_time(5.0, ship_a, ship_b)		// 5.0 seems to be right. Uh, but see #191.
+				if ok && t >= 0 && t <= 1 {
+					possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, t, ATTACK})
 				}
 			}
 		}
@@ -130,20 +146,81 @@ func (self *HexSim) Step() {
 
 	for i, ship_a := range self.all_ships {
 		for _, ship_b := range self.all_ships[i+1:] {
-			collision_possible, t := collision_time(1.0, ship_a, ship_b)
-			if collision_possible {
-				possible_events = append(possible_events, PossibleEvent{ship_a, ship_b, t, ATTACK})
+			ok, t := collision_time(1.0, ship_a, ship_b)
+			if ok {
+				possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, t, ATTACK})
 			}
 		}
 	}
 
-	// For each event, check t >= 0 && t <= 1
-	// The events need to get inserted into a slice, sorted by time, then invalidated if necessary (based on what happened earlier).
+	// We want events sorted into groups of simultaneous events.
 
 	sort.Slice(possible_events, func(a, b int) bool {
 		return possible_events[a].t < possible_events[b].t
 	})
 
+	var grouped_events [][]*PossibleEvent
 
+	current_t := -1.0
+
+	for _, event := range possible_events {
+
+		t := event.t
+		if t > current_t {
+			current_t = t
+			grouped_events = append(grouped_events, nil)
+		}
+
+		grouped_events[len(grouped_events) - 1] = append(grouped_events[len(grouped_events) - 1], event)
+	}
+
+	// Now update ships...
+
+	for _, grouping := range grouped_events {
+
+		// Complete state transitions for weapon and alive/dead...
+
+		for _, ship := range self.all_ships {
+
+			if ship.weapon_state == FIRING {
+				ship.weapon_state = SPENT
+			}
+
+			if ship.hp <= 0 {
+				ship.ship_state = DEAD
+			}
+		}
+
+		// Now go through each event and update stuff if the conditions are right...
+		// Note that having 0 HP is not sufficient to be irrelevant, because we may
+		// have died this very moment. Instead, check ship_state == DEAD.
+
+		for _, event := range grouping {
+
+			if event.ship_a.ship_state == DEAD || event.ship_b.ship_state == DEAD {
+				continue
+			}
+
+			if event.what == SHIP_COLLISION {
+
+				ship_a.hp = 0
+				ship_a.ship_state = DYING
+				ship_b.hp = 0
+				ship_b.ship_state = DYING
+
+			} else if event.what == ATTACK {
+
+				if ship_a.weapon_state != SPENT {
+					ship_a.weapon_state = FIRING
+					ship_a.actual_targets = append(ship_a.actual_targets, ship_b)
+				}
+
+				if ship_b.weapon_state != SPENT {
+					ship_b.weapon_state = FIRING
+					ship_b.actual_targets = append(ship_b.actual_targets, ship_a)
+				}
+			}
+		}
+	}
 }
 
