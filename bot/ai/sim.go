@@ -39,6 +39,7 @@ type SimShip struct {
 	y				float64
 	vel_x			float64
 	vel_y			float64
+	ship_state		ShipState
 	weapon_state	WeaponState
 	actual_targets	[]*SimShip		// Who we actually, really, definitely shoot at.
 	hp				int
@@ -197,7 +198,9 @@ func (self *HexSim) Step() {
 
 		for _, event := range grouping {
 
-			if event.ship_a.ship_state == DEAD || event.ship_b.ship_state == DEAD {
+			ship_a, ship_b := event.ship_a, event.ship_b
+
+			if ship_a.ship_state == DEAD || ship_b.ship_state == DEAD {
 				continue
 			}
 
@@ -218,6 +221,17 @@ func (self *HexSim) Step() {
 				if ship_b.weapon_state != SPENT {
 					ship_b.weapon_state = FIRING
 					ship_b.actual_targets = append(ship_b.actual_targets, ship_a)
+				}
+			}
+		}
+
+		// Apply weapon damage...
+
+		for _, ship := range self.all_ships {
+			if len(ship.actual_targets) > 0 {
+				damage := 64 / len(ship.actual_targets)				// Right? A straight up integer truncation?
+				for _, target := range ship.actual_targets {
+					target.hp -= damage
 				}
 			}
 		}
