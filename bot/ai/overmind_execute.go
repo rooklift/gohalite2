@@ -106,13 +106,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
-			pilot.ResetAndUpdate()
 			pilot.PlanChase(avoid_list)
-		}
-	}
-
-	for _, pilot := range mobile_pilots {
-		if pilot.HasExecuted == false {
 			pilot.ExecutePlanWithATC(self.ATC)
 		}
 	}
