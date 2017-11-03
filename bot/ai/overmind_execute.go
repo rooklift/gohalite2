@@ -38,11 +38,7 @@ func (self *Overmind) ExecuteMoves() {
 	for _, pilot := range mobile_pilots {
 		valid := pilot.ValidateTarget()
 		if valid == false {
-			if self.CowardFlag {
-				pilot.ChooseCowardSpot()
-			} else {
-				pilot.ChooseTarget()
-			}
+			pilot.ChooseTarget()
 		}
 	}
 
@@ -160,6 +156,9 @@ func (self *Overmind) UpdatePilots() {
 
 	for _, pilot := range self.Pilots {
 		pilot.ResetAndUpdate()
+		if pilot.Target == nil {
+			panic("nil pilot.Target")
+		}
 	}
 
 	// Delete AIs with dead ships from the slice...

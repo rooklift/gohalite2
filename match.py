@@ -1,11 +1,20 @@
 import json, subprocess
 
+process1 = "bot.exe"
+process2 = "bot.exe"
+process3 = ".\\otherbots\\v18\\mybot.exe"
+process4 = ".\\otherbots\\v18\\mybot.exe"
+
 scores = [0,0,0,0]
+
+print("{} --- {} --- {} --- {}".format(process1, process2, process3, process4))
 
 while 1:
 
 	output = subprocess.check_output(
-		"halite.exe -r -q -i \"replays\" \"bot.exe\" \".\\otherbots\\v18\\mybot.exe\" \".\\otherbots\\v18\\mybot.exe\" \"bot.exe\"").decode("ascii")
+		"halite.exe -r -q -i \"replays\" \"{}\" \"{}\" \"{}\" \"{}\"".format(
+			process1, process2, process3, process4
+			)).decode("ascii")
 
 	result = json.loads(output)
 

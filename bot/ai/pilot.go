@@ -90,26 +90,6 @@ func (self *Pilot) PlanDockIfSafe() bool {
 	return false
 }
 
-func (self *Pilot) ChooseCowardSpot() {
-
-	game := self.Game
-	target := hal.Point{}
-
-	if self.X < float64(game.Width()) / 2 {
-		target.X = 3
-	} else {
-		target.X = float64(game.Width()) - 3
-	}
-
-	if self.Y < float64(game.Height()) / 2 {
-		target.Y = 3
-	} else {
-		target.Y = float64(game.Height()) - 3
-	}
-
-	self.Target = target
-}
-
 func (self *Pilot) ChooseTarget() {
 	game := self.Game
 
