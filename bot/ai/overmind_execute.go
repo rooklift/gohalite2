@@ -6,6 +6,8 @@ import (
 
 func (self *Overmind) ExecuteMoves() {
 
+	avoid_list := self.Game.AllImmobile()		// To start with. AllImmobile() is planets + docked ships.
+
 	// Setup data structures...
 
 	var mobile_pilots []*Pilot
@@ -45,7 +47,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		pilot.PlanChase(self.Game.AllImmobile())	// Planets plus already-docked ships.
+		pilot.PlanChase(avoid_list)			// avoid_list is, at this point, planets plus already-docked ships.
 		if pilot.HasStationaryPlan() {
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
@@ -56,7 +58,6 @@ func (self *Overmind) ExecuteMoves() {
 	// Our PlanChase() above didn't avoid these frozen ships. Remake plans with the new info.
 	// Possibly avoiding collisions we would have (since the above ships won't use ATC).
 
-	avoid_list := self.Game.AllImmobile()
 	for _, pilot := range frozen_pilots {
 		avoid_list = append(avoid_list, pilot.Ship)
 	}
@@ -98,7 +99,7 @@ func (self *Overmind) ExecuteMoves() {
 		}
 	}
 
-	avoid_list = self.Game.AllImmobile()
+	avoid_list = self.Game.AllImmobile()			// Remake the avoid_list...
 	for _, pilot := range frozen_pilots {
 		avoid_list = append(avoid_list, pilot.Ship)
 	}

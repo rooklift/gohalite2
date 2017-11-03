@@ -214,7 +214,7 @@ func (self *Game) Parse() {
 	self.currentPlayers = players_with_ships
 	self.raw = self.token_parser.Tokens(" ")
 
-	// Caches... (while these could be done interleaved with the above, they are separated for clarity).
+	// Query responses (see info.go)... while these could be done interleaved with the above, they are separated for clarity.
 
 	self.all_ships_cache = nil
 	for _, ship := range self.shipMap {
