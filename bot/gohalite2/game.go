@@ -5,12 +5,12 @@ import (
 )
 
 type MoveInfo struct {
-	Dx					float64
-	Dy					float64
-	Speed				int
-	Degrees				int
-	DockedStatus		DockedStatus
-	Spawned				bool
+	Dx						float64
+	Dy						float64
+	Speed					int
+	Degrees					int
+	DockedStatus			DockedStatus
+	Spawned					bool
 }
 
 func (self MoveInfo) String() string {
@@ -21,31 +21,34 @@ func (self MoveInfo) String() string {
 }
 
 type Game struct {
-	inited				bool
-	turn				int
-	pid					int					// Our own ID
-	width				int
-	height				int
+	inited					bool
+	turn					int
+	pid						int					// Our own ID
+	width					int
+	height					int
 
-	initialPlayers		int					// Stored only once at startup. Never changes.
-	currentPlayers		int
+	initialPlayers			int					// Stored only once at startup. Never changes.
+	currentPlayers			int
 
-	planetMap			map[int]Planet		// Planet ID --> Planet
-	shipMap				map[int]Ship		// Ship ID --> Ship
-	dockMap				map[int][]Ship		// Planet ID --> Ship slice
-	lastmoveMap			map[int]MoveInfo	// Ship ID --> MoveInfo struct
-	cumulativeShips		map[int]int			// Player ID --> Count
+	planetMap				map[int]Planet		// Planet ID --> Planet
+	shipMap					map[int]Ship		// Ship ID --> Ship
+	dockMap					map[int][]Ship		// Planet ID --> Ship slice
+	lastmoveMap				map[int]MoveInfo	// Ship ID --> MoveInfo struct
+	playershipMap			map[int][]Ship		// Player ID --> Ship slice
+	cumulativeShips			map[int]int			// Player ID --> Count
 
-	orders				map[int]string
+	orders					map[int]string
 
-	logfile             *Logfile
-	token_parser		*TokenParser
-	raw					string
+	logfile					*Logfile
+	token_parser			*TokenParser
+	raw						string
 
 	// These slices are kept as answers to common queries...
 
-	all_planets_cache	[]Planet
-	all_immobile_cache	[]Entity
+	all_ships_cache			[]Ship
+	enemy_ships_cache		[]Ship
+	all_planets_cache		[]Planet
+	all_immobile_cache		[]Entity
 }
 
 func NewGame() *Game {

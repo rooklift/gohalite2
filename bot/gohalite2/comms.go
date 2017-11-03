@@ -93,6 +93,7 @@ func (self *Game) Parse() {
 	self.planetMap = make(map[int]Planet)
 	self.dockMap = make(map[int][]Ship)
 	self.lastmoveMap = make(map[int]MoveInfo)
+	self.playershipMap = make(map[int][]Ship)
 
 	// Player parsing.............................................................................
 
@@ -158,7 +159,12 @@ func (self *Game) Parse() {
 			}
 
 			self.shipMap[sid] = ship
+			self.playershipMap[pid] = append(self.playershipMap[pid], ship)
 		}
+
+		sort.Slice(self.playershipMap[pid], func(a, b int) bool {
+			return self.playershipMap[pid][a].Id < self.playershipMap[pid][b].Id
+		})
 	}
 
 	// Planet parsing.............................................................................
@@ -209,6 +215,24 @@ func (self *Game) Parse() {
 	self.raw = self.token_parser.Tokens(" ")
 
 	// Caches... (while these could be done interleaved with the above, they are separated for clarity).
+
+	self.all_ships_cache = nil
+	for _, ship := range self.shipMap {
+		self.all_ships_cache = append(self.all_ships_cache, ship)
+	}
+	sort.Slice(self.all_ships_cache, func(a, b int) bool {
+		return self.all_ships_cache[a].Id < self.all_ships_cache[b].Id
+	})
+
+	self.enemy_ships_cache = nil
+	for _, ship := range self.shipMap {
+		if ship.Owner != self.pid {
+			self.enemy_ships_cache = append(self.enemy_ships_cache, ship)
+		}
+	}
+	sort.Slice(self.enemy_ships_cache, func(a, b int) bool {
+		return self.enemy_ships_cache[a].Id < self.enemy_ships_cache[b].Id
+	})
 
 	self.all_planets_cache = nil
 	for _, planet := range self.planetMap {

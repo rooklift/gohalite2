@@ -1,5 +1,9 @@
 package gohalite2
 
+import (
+	"sort"
+)
+
 // ----------------------------------------------
 
 func (self *Game) GetShip(sid int) Ship {
@@ -13,11 +17,8 @@ func (self *Game) GetPlanet(plid int) Planet {
 // ----------------------------------------------
 
 func (self *Game) AllShips() []Ship {
-	var ret []Ship
-	for sid, _ := range self.shipMap {
-		ship := self.GetShip(sid)
-		ret = append(ret, ship)
-	}
+	ret := make([]Ship, len(self.all_ships_cache))
+	copy(ret, self.all_ships_cache)
 	return ret
 }
 
@@ -35,30 +36,10 @@ func (self *Game) AllImmobile() []Entity {						// Returns all planets and all d
 
 // ----------------------------------------------
 
-func (self *Game) PlanetsOwnedBy(pid int) []Planet {
-	var ret []Planet
-	for plid, _ := range self.planetMap {
-		planet := self.GetPlanet(plid)
-		if planet.Owned && planet.Owner == pid {
-			ret = append(ret, planet)
-		}
-	}
-	return ret
-}
-
 func (self *Game) ShipsOwnedBy(pid int) []Ship {
-	var ret []Ship
-	for sid, _ := range self.shipMap {
-		ship := self.GetShip(sid)
-		if ship.Owner == pid {
-			ret = append(ret, ship)
-		}
-	}
+	ret := make([]Ship, len(self.playershipMap[pid]))
+	copy(ret, self.playershipMap[pid])
 	return ret
-}
-
-func (self *Game) MyPlanets() []Planet {
-	return self.PlanetsOwnedBy(self.pid)
 }
 
 func (self *Game) MyShips() []Ship {
@@ -66,13 +47,8 @@ func (self *Game) MyShips() []Ship {
 }
 
 func (self *Game) EnemyShips() []Ship {
-	var ret []Ship
-	for sid, _ := range self.shipMap {
-		ship := self.GetShip(sid)
-		if ship.Owner != self.Pid() {
-			ret = append(ret, ship)
-		}
-	}
+	ret := make([]Ship, len(self.enemy_ships_cache))
+	copy(ret, self.enemy_ships_cache)
 	return ret
 }
 
@@ -86,6 +62,9 @@ func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 			ret = append(ret, ship.Id)
 		}
 	}
+	sort.Slice(ret, func(a, b int) bool {
+		return ret[a] < ret[b]
+	})
 	return ret
 }
 
