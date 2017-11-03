@@ -181,7 +181,7 @@ func (self *Overmind) UpdateProximityMaps() {
 	self.EnemyMap = make(map[int][]hal.Ship)
 	self.FriendlyMap = make(map[int][]hal.Ship)
 
-	all_ships := self.Game.EnemyShips()
+	all_ships := self.Game.AllShips()
 	all_planets := self.Game.AllPlanets()
 
 	for _, ship := range all_ships {

@@ -2,8 +2,8 @@ import json, subprocess
 
 process1 = "bot.exe"
 process2 = "bot.exe"
-process3 = ".\\otherbots\\v18\\mybot.exe"
-process4 = ".\\otherbots\\v18\\mybot.exe"
+process3 = ".\\otherbots\\v19\\mybot.exe"
+process4 = ".\\otherbots\\v19\\mybot.exe"
 
 scores = [0,0,0,0]
 
