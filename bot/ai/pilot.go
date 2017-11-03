@@ -191,19 +191,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			}
 		}
 
-	case hal.POINT:
-
-		point := self.Target.(hal.Point)
-
-		speed, degrees, err := game.GetCourse(self.Ship, point, avoid_list, side)
-
-		if err != nil {
-			self.Log("PlanChase(): %v", err)
-			self.Target = hal.Nothing{}
-		} else {
-			self.PlanThrust(speed, degrees, MSG_COWARD)
-		}
-
 	case hal.NOTHING:
 
 		self.PlanThrust(0, 0, MSG_NO_TARGET)
