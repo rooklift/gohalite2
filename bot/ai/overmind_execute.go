@@ -147,7 +147,7 @@ func (self *Overmind) UpdatePilots() {
 		pilot.Overmind = self
 		pilot.Game = game
 		pilot.Id = sid								// This has to be set so pilot.Reset() can work.
-		pilot.Target = hal.Point{0, 0}				// The null target. We don't ever use nil here.
+		pilot.Target = hal.Nothing{}				// The null target. We don't ever use nil here.
 		self.Pilots = append(self.Pilots, pilot)
 	}
 

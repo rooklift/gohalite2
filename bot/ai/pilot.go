@@ -41,8 +41,8 @@ func (self *Pilot) HasStationaryPlan() bool {		// true iff we DO have a plan, wh
 	return speed == 0
 }
 
-func (self *Pilot) HasTarget() bool {				// we use Point{0, 0} as "no target"
-	return self.Target.Type() != hal.POINT || self.Target.(hal.Point).X != 0 || self.Target.(hal.Point).Y != 0
+func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g. call hal.Type()
+	return self.Target.Type() != hal.NOTHING
 }
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
@@ -58,7 +58,7 @@ func (self *Pilot) ValidateTarget() bool {
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Point{0, 0}
+			self.Target = hal.Nothing{}
 		}
 
 	case hal.PLANET:
@@ -66,13 +66,13 @@ func (self *Pilot) ValidateTarget() bool {
 		target := self.Target.(hal.Planet)
 
 		if target.Alive() == false {
-			self.Target = hal.Point{0, 0}
+			self.Target = hal.Nothing{}
 		} else if target.Owner == game.Pid() && target.IsFull() && len(self.Overmind.EnemyMap[target.Id]) == 0 {
-			self.Target = hal.Point{0, 0}
+			self.Target = hal.Nothing{}
 		}
 	}
 
-	if self.Target == (hal.Point{0, 0}) {
+	if self.Target == (hal.Nothing{}) {
 		return false
 	}
 
@@ -170,7 +170,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.Target = hal.Point{0, 0}
+			self.Target = hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
 		}
@@ -183,7 +183,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.Target = hal.Point{0, 0}
+			self.Target = hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees, MSG_ATTACK_DOCKED)
 			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
@@ -195,19 +195,20 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		point := self.Target.(hal.Point)
 
-		if point == (hal.Point{0, 0}) {
-			self.PlanThrust(0, 0, MSG_NO_TARGET)
-			return
-		}
-
 		speed, degrees, err := game.GetCourse(self.Ship, point, avoid_list, side)
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.Target = hal.Point{0, 0}
+			self.Target = hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees, MSG_COWARD)
 		}
+
+	case hal.NOTHING:
+
+		self.PlanThrust(0, 0, MSG_NO_TARGET)
+		return
+
 	}
 }
 

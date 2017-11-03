@@ -19,10 +19,11 @@ const (
 type EntityType int
 
 const (
-	NONE EntityType = iota
+	UNSET EntityType = iota
 	SHIP
 	PLANET
 	POINT
+	NOTHING
 )
 
 type OrderType int
