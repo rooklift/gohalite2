@@ -13,7 +13,7 @@ type Pilot struct {
 	HasExecuted		bool				// Have we actually sent the order?
 	Overmind		*Overmind
 	Game			*hal.Game
-	Target			hal.Entity			// Use the zero point as a null.
+	Target			hal.Entity			// Use a hal.Nothing{} struct for no target.
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
