@@ -198,6 +198,9 @@ func (self *Game) Parse() {
 			sid := self.token_parser.Int()
 			self.dockMap[plid] = append(self.dockMap[plid], self.GetShip(sid))
 		}
+		sort.Slice(self.dockMap[plid], func(a, b int) bool {
+			return self.dockMap[plid][a].Id < self.dockMap[plid][b].Id
+		})
 
 		self.planetMap[plid] = planet
 	}

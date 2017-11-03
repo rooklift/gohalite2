@@ -90,13 +90,8 @@ func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 }
 
 func (self *Game) ShipsDockedAt(planet Planet) []Ship {
-
-	var ret []Ship
-
-	for _, Ship := range self.dockMap[planet.Id] {
-		ret = append(ret, Ship)
-	}
-
+	ret := make ([]Ship, len(self.dockMap[planet.Id]))
+	copy(ret, self.dockMap[planet.Id])
 	return ret
 }
 
