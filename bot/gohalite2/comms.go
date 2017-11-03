@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -203,6 +204,33 @@ func (self *Game) Parse() {
 
 	self.currentPlayers = players_with_ships
 	self.raw = self.token_parser.Tokens(" ")
+
+	// Caches... (while these could be done interleaved with the above, they are separated for clarity).
+
+	self.all_planets_cache = nil
+	for _, planet := range self.planetMap {
+		self.all_planets_cache = append(self.all_planets_cache, planet)
+	}
+	sort.Slice(self.all_planets_cache, func(a, b int) bool {
+		return self.all_planets_cache[a].Id < self.all_planets_cache[b].Id
+	})
+
+	self.all_immobile_cache = nil
+	for _, planet := range self.planetMap {
+		self.all_immobile_cache = append(self.all_immobile_cache, planet)
+		for _, ship := range self.ShipsDockedAt(planet) {
+			self.all_immobile_cache = append(self.all_immobile_cache, ship)
+		}
+	}
+	sort.Slice(self.all_immobile_cache, func(a, b int) bool {
+		if self.all_immobile_cache[a].Type() == PLANET && self.all_immobile_cache[b].Type() == SHIP {
+			return true
+		}
+		if self.all_immobile_cache[a].Type() == SHIP && self.all_immobile_cache[b].Type() == PLANET {
+			return false
+		}
+		return self.all_immobile_cache[a].GetId() < self.all_immobile_cache[b].GetId()
+	})
 }
 
 // ---------------------------------------

@@ -41,6 +41,11 @@ type Game struct {
 	logfile             *Logfile
 	token_parser		*TokenParser
 	raw					string
+
+	// These slices are kept as answers to common queries...
+
+	all_planets_cache	[]Planet
+	all_immobile_cache	[]Entity
 }
 
 func NewGame() *Game {

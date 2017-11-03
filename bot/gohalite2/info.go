@@ -22,33 +22,14 @@ func (self *Game) AllShips() []Ship {
 }
 
 func (self *Game) AllPlanets() []Planet {
-	var ret []Planet
-	for plid, _ := range self.planetMap {
-		planet := self.GetPlanet(plid)
-		ret = append(ret, planet)
-	}
+	ret := make([]Planet, len(self.all_planets_cache))
+	copy(ret, self.all_planets_cache)
 	return ret
 }
 
-func (self *Game) AllPlanetsAsEntities() []Entity {
-	var ret []Entity
-	for plid, _ := range self.planetMap {
-		planet := self.GetPlanet(plid)
-		ret = append(ret, planet)
-	}
-	return ret
-}
-
-func (self *Game) AllImmobile() []Entity {		// Returns all planets and all docked ships
-	var ret []Entity
-	for plid, _ := range self.planetMap {
-		planet := self.GetPlanet(plid)
-		ret = append(ret, planet)
-		all_docked := self.ShipsDockedAt(planet)
-		for _, s := range all_docked {
-			ret = append(ret, s)
-		}
-	}
+func (self *Game) AllImmobile() []Entity {						// Returns all planets and all docked ships
+	ret := make([]Entity, len(self.all_immobile_cache))
+	copy(ret, self.all_immobile_cache)
 	return ret
 }
 
