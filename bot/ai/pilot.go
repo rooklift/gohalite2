@@ -13,8 +13,7 @@ type Pilot struct {
 	HasExecuted		bool				// Have we actually sent the order?
 	Overmind		*Overmind
 	Game			*hal.Game
-	TargetType		hal.EntityType		// NONE / SHIP / PLANET
-	TargetId		int					// TargetId has no meaning if TargetType == NONE
+	Target			hal.Entity			// Use the zero point as a null.
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
@@ -22,11 +21,16 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 	self.Game.Log(format_string, args...)
 }
 
-func (self *Pilot) Reset() {						// Doesn't clear Target
+func (self *Pilot) ResetAndUpdate() {						// Doesn't clear Target
 	self.Ship = self.Game.GetShip(self.Id)
 	self.Plan = ""
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
+
+	switch self.Target.Type() {
+		case   hal.SHIP: self.Target = self.Game.GetShip(self.Target.GetId())
+		case hal.PLANET: self.Target = self.Game.GetPlanet(self.Target.GetId())
+	}
 }
 
 func (self *Pilot) HasStationaryPlan() bool {		// true iff we DO have a plan, which doesn't move us.
@@ -37,6 +41,10 @@ func (self *Pilot) HasStationaryPlan() bool {		// true iff we DO have a plan, wh
 	return speed == 0
 }
 
+func (self *Pilot) HasTarget() bool {				// we use Point{0, 0} as "no target"
+	return self.Target.Type() != hal.POINT || self.Target.(hal.Point).X != 0 || self.Target.(hal.Point).Y != 0
+}
+
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
 }
@@ -45,26 +53,26 @@ func (self *Pilot) ValidateTarget() bool {
 
 	game := self.Game
 
-	switch self.TargetType {
+	switch self.Target.Type() {
 
 	case hal.SHIP:
 
-		target := game.GetShip(self.TargetId)
-		if target.Alive() == false {
-			self.TargetType = hal.NONE
+		if self.Target.Alive() == false {
+			self.Target = hal.Point{0, 0}
 		}
 
 	case hal.PLANET:
 
-		target := game.GetPlanet(self.TargetId)
+		target := self.Target.(hal.Planet)
+
 		if target.Alive() == false {
-			self.TargetType = hal.NONE
+			self.Target = hal.Point{0, 0}
 		} else if target.Owner == game.Pid() && target.IsFull() && len(self.Overmind.EnemyMap[target.Id]) == 0 {
-			self.TargetType = hal.NONE
+			self.Target = hal.Point{0, 0}
 		}
 	}
 
-	if self.TargetType == hal.NONE {
+	if self.Target == (hal.Point{0, 0}) {
 		return false
 	}
 
@@ -80,6 +88,26 @@ func (self *Pilot) PlanDockIfSafe() bool {
 		}
 	}
 	return false
+}
+
+func (self *Pilot) ChooseCowardSpot() {
+
+	game := self.Game
+	target := hal.Point{}
+
+	if self.X < float64(game.Width()) / 2 {
+		target.X = 3
+	} else {
+		target.X = float64(game.Width()) - 3
+	}
+
+	if self.Y < float64(game.Height()) / 2 {
+		target.Y = 3
+	} else {
+		target.Y = float64(game.Height()) - 3
+	}
+
+	self.Target = target
 }
 
 func (self *Pilot) ChooseTarget() {
@@ -110,8 +138,7 @@ func (self *Pilot) ChooseTarget() {
 	})
 
 	if len(target_planets) > 0 {
-		self.TargetId = target_planets[0].Id
-		self.TargetType = hal.PLANET
+		self.Target = target_planets[0]
 	}
 }
 
@@ -126,11 +153,11 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	// Which side of objects to navigate around. As a default, use this arbitrary choice...
 	var side hal.Side; if self.Id % 2 == 0 { side = hal.RIGHT } else { side = hal.LEFT }
 
-	switch self.TargetType {
+	switch self.Target.Type() {
 
 	case hal.PLANET:
 
-		planet := game.GetPlanet(self.TargetId)
+		planet := self.Target.(hal.Planet)
 
 		if self.ApproachDist(planet) < 8 {		// If this is too low, we may get outside the action zone when navigating round allies.
 			self.EngagePlanet(avoid_list)
@@ -163,20 +190,20 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.TargetType = hal.NONE
+			self.Target = hal.Point{0, 0}
 		} else {
 			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
 		}
 
 	case hal.SHIP:
 
-		other_ship := game.GetShip(self.TargetId)
+		other_ship := self.Target.(hal.Ship)
 
 		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 4.5, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 4.5
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.TargetType = hal.NONE
+			self.Target = hal.Point{0, 0}
 		} else {
 			self.PlanThrust(speed, degrees, MSG_ATTACK_DOCKED)
 			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
@@ -184,10 +211,23 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			}
 		}
 
-	case hal.NONE:
+	case hal.POINT:
 
-		self.PlanThrust(0, 0, MSG_NO_TARGET)
+		point := self.Target.(hal.Point)
 
+		if point == (hal.Point{0, 0}) {
+			self.PlanThrust(0, 0, MSG_NO_TARGET)
+			return
+		}
+
+		speed, degrees, err := game.GetCourse(self.Ship, point, avoid_list, side)
+
+		if err != nil {
+			self.Log("PlanChase(): %v", err)
+			self.Target = hal.Point{0, 0}
+		} else {
+			self.PlanThrust(speed, degrees, MSG_COWARD)
+		}
 	}
 }
 
@@ -197,12 +237,12 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	// We are very close to our target planet. Do something about this.
 
-	if self.TargetType != hal.PLANET {
+	if self.Target.Type() != hal.PLANET {
 		self.Log("EngagePlanet() called but target wasn't a planet.")
 		return
 	}
 
-	planet := game.GetPlanet(self.TargetId)
+	planet := self.Target.(hal.Planet)
 
 	// Are there mobile enemy ships near the planet?
 
@@ -274,12 +314,12 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 	game := self.Game
 
-	if self.TargetType != hal.PLANET {
+	if self.Target.Type() != hal.PLANET {
 		self.Log("FinalPlanetApproachForDock() called but target wasn't a planet.", self.Id)
 		return
 	}
 
-	planet := game.GetPlanet(self.TargetId)
+	planet := self.Target.(hal.Planet)
 
 	if self.CanDock(planet) {
 		self.PlanDock(planet)

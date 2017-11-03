@@ -15,6 +15,8 @@ type Overmind struct {
 	// Planets: mobile ships nearby.
 	EnemyMap				map[int][]hal.Ship		// Enemy ships near the planet
 	FriendlyMap				map[int][]hal.Ship		// My ships near the planet
+
+	CowardFlag				bool
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -25,6 +27,11 @@ func NewOvermind(game *hal.Game) *Overmind {
 }
 
 func (self *Overmind) Step() {
+
+	if self.ShouldBeCoward() {
+		self.CowardFlag = true
+		self.Game.LogOnce("Coward flag!")
+	}
 
 	self.UpdatePilots()
 	self.UpdateProximityMaps()
@@ -68,8 +75,7 @@ func (self *Overmind) ChooseAssassinateTargets() {
 	// Pair pilots with enemies...
 
 	for index, pilot := range self.Pilots {
-		pilot.TargetType = hal.SHIP
-		pilot.TargetId = enemies[index].Id
+		pilot.Target = enemies[index]
 	}
 }
 
@@ -100,8 +106,29 @@ func (self *Overmind) ChooseThreePlanets() {
 	// Pair pilots with planets...
 
 	for index, pilot := range self.Pilots {
-		pilot.TargetType = hal.PLANET
-		pilot.TargetId = closest_three[index].Id
+		pilot.Target = closest_three[index]
 	}
 }
 
+func (self *Overmind) ShouldBeCoward() bool {
+	game := self.Game
+
+	if game.CurrentPlayers() < 3 {
+		return false
+	}
+
+	my_ships := len(game.MyShips())
+
+	for n := 0; n < self.Game.InitialPlayers(); n++ {
+
+		if n == game.Pid() {
+			continue
+		}
+
+		if len(game.ShipsOwnedBy(n)) / 4 > my_ships {
+			return true
+		}
+	}
+
+	return false
+}

@@ -1,5 +1,6 @@
 TODO
 
+- Create a null entity type and use it instead of Point{0, 0}
 - Cache some commonly called things.
 - Shummie's 2nd place shennanigans.
 - It's likely safest to start all on one planet, or at worst a 2-1 split.

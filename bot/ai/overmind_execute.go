@@ -23,7 +23,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		if pilot.TargetType != hal.SHIP {
+		if pilot.HasTarget() == false || pilot.Target.Type() == hal.PLANET {
 			ok := pilot.PlanDockIfSafe()
 			if ok {
 				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
@@ -38,7 +38,11 @@ func (self *Overmind) ExecuteMoves() {
 	for _, pilot := range mobile_pilots {
 		valid := pilot.ValidateTarget()
 		if valid == false {
-			pilot.ChooseTarget()
+			if self.CowardFlag {
+				pilot.ChooseCowardSpot()
+			} else {
+				pilot.ChooseTarget()
+			}
 		}
 	}
 
@@ -63,7 +67,7 @@ func (self *Overmind) ExecuteMoves() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.Reset()
+		pilot.ResetAndUpdate()
 		pilot.PlanChase(avoid_list)
 	}
 
@@ -106,7 +110,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
-			pilot.Reset()
+			pilot.ResetAndUpdate()
 			pilot.PlanChase(avoid_list)
 		}
 	}
@@ -147,13 +151,15 @@ func (self *Overmind) UpdatePilots() {
 		pilot.Overmind = self
 		pilot.Game = game
 		pilot.Id = sid								// This has to be set so pilot.Reset() can work.
+		pilot.Target = hal.Point{0, 0}				// The null target. We don't ever use nil here.
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
-	// Set various variables to initial state (Target info is untouched by this)...
+	// Set various variables to initial state (Target info is untouched by this).
+	// Also updates target info from the Game...
 
 	for _, pilot := range self.Pilots {
-		pilot.Reset()
+		pilot.ResetAndUpdate()
 	}
 
 	// Delete AIs with dead ships from the slice...
