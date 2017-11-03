@@ -63,4 +63,5 @@ func PrintFinalInfo(game * hal.Game, longest_turn time.Duration) {
 		game.GetCumulativeShipCount(3),
 	)
 	game.LogOnce("Longest turn took %v", longest_turn)
+	game.LogOnce("Board SHA-1: %v", hal.HashFromString(game.RawWorld()))
 }

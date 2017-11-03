@@ -1,6 +1,8 @@
 package gohalite2
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -165,4 +167,10 @@ func RemovePointFromSlice(slice []Point, point Point) []Point {
 		}
 	}
 	return slice
+}
+
+func HashFromString(datastring string) string {
+    data := []byte(datastring)
+    sum := sha1.Sum(data)
+    return fmt.Sprintf("%x", sum)
 }
