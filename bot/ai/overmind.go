@@ -102,3 +102,50 @@ func (self *Overmind) ChooseThreePlanets() {
 		pilot.Target = closest_three[index]
 	}
 }
+
+/*
+
+func (self *Overmind) ChooseThreeDocks() {				// Pretty bad in internal testing.
+
+	// Sort our pilots by Y...
+
+	sort.Slice(self.Pilots, func(a, b int) bool {
+		return self.Pilots[a].Y < self.Pilots[b].Y
+	})
+
+	// Sort all planets by distance to our fleet...
+
+	all_planets := self.Game.AllPlanets()
+
+	sort.Slice(all_planets, func(a, b int) bool {
+		return all_planets[a].Dist(self.Pilots[0]) < all_planets[b].Dist(self.Pilots[0])
+	})
+
+	closest_three := all_planets[:3]
+
+	// Get docks...
+
+	var docks []hal.Planet
+
+	for _, planet := range closest_three {
+		for n := 0; n < planet.OpenSpots(); n++ {
+			docks = append(docks, planet)
+		}
+	}
+
+	// Sort closest 3 docks by Y...
+
+	closest_three_docks := docks[:3]
+
+	sort.Slice(closest_three_docks, func(a, b int) bool {
+		return closest_three_docks[a].Y < closest_three_docks[b].Y
+	})
+
+	// Pair pilots with planets...
+
+	for index, pilot := range self.Pilots {
+		pilot.Target = closest_three_docks[index]
+	}
+}
+
+*/
