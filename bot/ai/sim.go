@@ -67,7 +67,7 @@ func (self *Sim) Step() {
 			for _, ship_b := range self.ships[i+1:] {
 				if ship_b.hp > 0 {
 					if ship_a.owner != ship_b.owner {
-						ok, t := collision_time(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// 5.0 seems to be right. Uh, but see #191.
+						t, ok := collision_time(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// 5.0 seems to be right. Uh, but see #191.
 						if ok && t >= 0 && t <= 1 {
 							possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, ATTACK})
 						}
@@ -83,7 +83,7 @@ func (self *Sim) Step() {
 		if ship_a.hp > 0 {
 			for _, ship_b := range self.ships[i+1:] {
 				if ship_b.hp > 0 {
-					ok, t := collision_time(1.0, &ship_a.SimEntity, &ship_b.SimEntity)
+					t, ok := collision_time(1.0, &ship_a.SimEntity, &ship_b.SimEntity)
 					if ok {
 						possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, SHIP_COLLISION})
 					}
@@ -96,7 +96,7 @@ func (self *Sim) Step() {
 
 	for _, planet := range self.planets {
 		for _, ship := range self.ships {
-			ok, t := collision_time(planet.radius + 0.5, &ship.SimEntity, &planet.SimEntity)
+			t, ok := collision_time(planet.radius + 0.5, &ship.SimEntity, &planet.SimEntity)
 			if ok {
 				possible_events = append(possible_events, &PossibleEvent{ship, nil, planet, t, PLANET_COLLISION})
 			}

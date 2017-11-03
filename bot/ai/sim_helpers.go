@@ -14,7 +14,7 @@ func max(a, b float64) float64 {
 	return b
 }
 
-func collision_time(r float64, e1 * SimEntity, e2 * SimEntity) (bool, float64) {
+func collision_time(r float64, e1 * SimEntity, e2 * SimEntity) (float64, bool) {
 
 	// https://github.com/HaliteChallenge/Halite-II/blob/master/environment/core/SimulationEvent.cpp#L100
 	//
@@ -43,29 +43,29 @@ func collision_time(r float64, e1 * SimEntity, e2 * SimEntity) (bool, float64) {
 		if (b == 0.0) {
 			if (c <= 0.0) {
 				// Implies r^2 >= dx^2 + dy^2 and the two are already colliding
-				return true, 0.0
+				return 0.0, true
 			}
-			return false, 0.0
+			return 0.0, false
 		}
 		t := -c / b
 		if (t >= 0.0) {
-			return true, t
+			return t, true
 		}
-		return false, 0.0
+		return 0.0, false
 	} else if (disc == 0.0) {
 		// One solution
 		t := -b / (2 * a)
-		return true, t
+		return t, true
 	} else if (disc > 0) {
 		t1 := -b + math.Sqrt(disc)
 		t2 := -b - math.Sqrt(disc)
 
 		if (t1 >= 0.0 && t2 >= 0.0) {
-			return true, min(t1, t2) / (2 * a)
+			return min(t1, t2) / (2 * a), true
 		} else {
-			return true, max(t1, t2) / (2 * a)
+			return max(t1, t2) / (2 * a), true
 		}
 	} else {
-		return false, 0.0
+		return 0.0, false
 	}
 }
