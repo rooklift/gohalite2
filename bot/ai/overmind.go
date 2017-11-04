@@ -31,7 +31,7 @@ func (self *Overmind) Step() {
 		self.ChooseInitialTargets()
 	}
 
-	if self.Detect3v3() {
+	if self.DetectRushFight() {
 		self.Game.LogOnce("Entering dangerous 3v3!")
 		self.ExecuteMoves()
 	} else {
@@ -152,9 +152,9 @@ func (self *Overmind) ChooseThreeDocks() {				// Pretty bad in internal testing.
 
 */
 
-func (self *Overmind) Detect3v3() bool {
+func (self *Overmind) DetectRushFight() bool {
 
-	// 3 ships each
+	// <= 3 ships each
 	// All ships near each other
 	// No docked ships on map
 
@@ -168,7 +168,7 @@ func (self *Overmind) Detect3v3() bool {
 
 	for _, pid := range players {
 		ships := self.Game.ShipsOwnedBy(pid)
-		if len(ships) != 3 {
+		if len(ships) > 3 {
 			return false
 		}
 		for _, ship := range ships {
@@ -198,5 +198,4 @@ func (self *Overmind) Detect3v3() bool {
 	}
 
 	return true
-
 }
