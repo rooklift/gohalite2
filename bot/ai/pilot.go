@@ -21,7 +21,7 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 	self.Game.Log(format_string, args...)
 }
 
-func (self *Pilot) ResetAndUpdate() {						// Doesn't clear Target
+func (self *Pilot) ResetAndUpdate() {				// Doesn't clear Target
 	self.Ship = self.Game.GetShip(self.Id)
 	self.Plan = ""
 	self.HasExecuted = false
@@ -185,7 +185,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			self.Log("PlanChase(): %v", err)
 			self.Target = hal.Nothing{}
 		} else {
-			self.PlanThrust(speed, degrees, MSG_ATTACK_DOCKED)
+			self.PlanThrust(speed, degrees, MSG_ASSASSINATE)
 			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
 				self.Log("PlanChase(): not moving but not in range!")
 			}
