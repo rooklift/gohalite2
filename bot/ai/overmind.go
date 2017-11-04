@@ -31,7 +31,12 @@ func (self *Overmind) Step() {
 		self.ChooseInitialTargets()
 	}
 
-	self.ExecuteMoves()
+	if self.Detect3v3() {
+		self.Game.LogOnce("Entering dangerous 3v3!")
+		self.ExecuteMoves()
+	} else {
+		self.ExecuteMoves()
+	}
 }
 
 func (self *Overmind) ChooseInitialTargets() {
@@ -146,3 +151,52 @@ func (self *Overmind) ChooseThreeDocks() {				// Pretty bad in internal testing.
 }
 
 */
+
+func (self *Overmind) Detect3v3() bool {
+
+	// 3 ships each
+	// All ships near each other
+	// No docked ships on map
+
+	players := self.Game.SurvivingPlayerIDs()
+
+	if len(players) != 2 {
+		return false
+	}
+
+	var all_ships []hal.Ship
+
+	for _, pid := range players {
+		ships := self.Game.ShipsOwnedBy(pid)
+		if len(ships) != 3 {
+			return false
+		}
+		for _, ship := range ships {
+			if ship.DockedStatus != hal.UNDOCKED {
+				return false
+			}
+		}
+		all_ships = append(all_ships, ships...)
+	}
+
+	avg_x := 0.0
+	avg_y := 0.0
+
+	for _, ship := range all_ships {
+		avg_x += ship.X
+		avg_y += ship.Y
+	}
+	avg_x /= float64(len(all_ships))
+	avg_y /= float64(len(all_ships))
+
+	centre_of_gravity := hal.Point{avg_x, avg_y}
+
+	for _, ship := range all_ships {
+		if ship.Dist(centre_of_gravity) > 20 {
+			return false
+		}
+	}
+
+	return true
+
+}
