@@ -1,26 +1,32 @@
-import json, subprocess
+import json, random, subprocess
 
-process1 = "bot.exe"
-process2 = "bot.exe"
-process3 = ".\\otherbots\\v19\\mybot.exe"
-process4 = ".\\otherbots\\v19\\mybot.exe"
+processes = [
+	"bot.exe",
+	"bot.exe",
+	".\\otherbots\\v19\\mybot.exe",
+	".\\otherbots\\v19\\mybot.exe"
+]
 
 scores = [0,0,0,0]
 
-print("{} --- {} --- {} --- {}".format(process1, process2, process3, process4))
+positions = [0,1,2,3]
+
+print("{} --- {} --- {} --- {}".format(processes[0], processes[1], processes[2], processes[3]))
 
 while 1:
 
+	random.shuffle(positions)
+
 	output = subprocess.check_output(
-		"halite.exe -r -q -i \"replays\" \"{}\" \"{}\" \"{}\" \"{}\"".format(
-			process1, process2, process3, process4
+		"halite.exe -q -i \"replays\" \"{}\" \"{}\" \"{}\" \"{}\"".format(
+			processes[positions[0]], processes[positions[1]], processes[positions[2]], processes[positions[3]]
 			)).decode("ascii")
 
 	result = json.loads(output)
 
 	for key in result["stats"]:
 		rank = result["stats"][key]["rank"]
-		pid = int(key)
+		pid = positions[int(key)]
 
 		if rank == 1:
 			scores[pid] += 1
