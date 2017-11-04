@@ -24,7 +24,7 @@ func NewOvermind(game *hal.Game) *Overmind {
 func (self *Overmind) Step() {
 
 	self.UpdatePilots()
-	self.UpdateProximityMaps()
+	self.UpdateProximityMap()
 	self.ATC.Clear()
 
 	if self.Game.Turn() == 0 {
@@ -39,7 +39,7 @@ func (self *Overmind) Step() {
 	}
 }
 
-func (self *Overmind) ChooseInitialTargets() {
+func (self *Overmind) ChooseInitialTargets() bool {		// Returns: are we assassinating?
 
 	// As a good default...
 
@@ -48,8 +48,11 @@ func (self *Overmind) ChooseInitialTargets() {
 	if self.Game.InitialPlayers() == 2 {
 		if self.Game.MyShips()[0].Dist(self.Game.EnemyShips()[0]) < 150 {
 			self.ChooseAssassinateTargets()
+			return true
 		}
 	}
+
+	return false
 }
 
 func (self *Overmind) ChooseAssassinateTargets() {
@@ -179,23 +182,47 @@ func (self *Overmind) DetectRushFight() bool {
 		all_ships = append(all_ships, ships...)
 	}
 
-	avg_x := 0.0
-	avg_y := 0.0
-
 	for _, ship := range all_ships {
-		avg_x += ship.X
-		avg_y += ship.Y
-	}
-	avg_x /= float64(len(all_ships))
-	avg_y /= float64(len(all_ships))
-
-	centre_of_gravity := hal.Point{avg_x, avg_y}
-
-	for _, ship := range all_ships {
-		if ship.Dist(centre_of_gravity) > 20 {
+		if ship.Dist(self.Game.AllShipsCentreOfGravity()) > 20 {
 			return false
 		}
 	}
 
 	return true
 }
+
+/*
+
+func (self *Overmind) TurnZeroCluster() {
+
+	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+
+	if centre_of_gravity.X > self.Pilots[0].X {
+		self.Cluster(7, 15, 6, 0, 7, 345)
+	} else if centre_of_gravity.X < self.Pilots[0].X {
+		self.Cluster(7, 165, 6, 180, 7, 195)
+	} else if centre_of_gravity.Y > self.Pilots[0].Y {
+		self.Cluster(7, 90, 5, 100, 2, 60)
+	} else if centre_of_gravity.Y < self.Pilots[0].Y {
+		self.Cluster(2, 240, 5, 280, 7, 270)
+	}
+}
+
+func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
+
+	// Sort our pilots by Y...
+
+	sort.Slice(self.Pilots, func(a, b int) bool {
+		return self.Pilots[a].Y < self.Pilots[b].Y
+	})
+
+	self.Pilots[0].PlanThrust(s0, d0, -1)
+	self.Pilots[1].PlanThrust(s1, d1, -1)
+	self.Pilots[2].PlanThrust(s2, d2, -1)
+
+	for _, pilot := range self.Pilots {
+		pilot.ExecutePlan()
+	}
+}
+
+*/

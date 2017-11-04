@@ -118,3 +118,19 @@ func (self *Game) SurvivingPlayerIDs() []int {
 
 	return ret
 }
+
+func (self *Game) AllShipsCentreOfGravity() Point {
+	avg_x := 0.0
+	avg_y := 0.0
+
+	all_ships := self.AllShips()
+
+	for _, ship := range all_ships {
+		avg_x += ship.X
+		avg_y += ship.Y
+	}
+	avg_x /= float64(len(all_ships))
+	avg_y /= float64(len(all_ships))
+
+	return Point{avg_x, avg_y}
+}

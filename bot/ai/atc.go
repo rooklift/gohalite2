@@ -76,6 +76,10 @@ func (self *AirTrafficControl) Unrestrict(ship hal.Ship, speed, degrees int) {
 
 func (self *AirTrafficControl) PathIsFree(ship hal.Ship, speed, degrees int) bool {
 
+	const (
+		SAFETY_MARGIN = 0.0
+	)
+
 	x2, y2 := hal.Projection(ship.X, ship.Y, float64(speed), degrees)
 
 	stepx := (x2 - ship.X) / TIME_STEPS
@@ -97,7 +101,7 @@ func (self *AirTrafficControl) PathIsFree(ship hal.Ship, speed, degrees int) boo
 		for index_x := grid_x - FILL_RADIUS; index_x <= grid_x + FILL_RADIUS; index_x++ {
 			for index_y := grid_y - FILL_RADIUS; index_y <= grid_y + FILL_RADIUS; index_y++ {
 				for _, restriction := range self.Grid[XYT{index_x, index_y, t}] {
-					if restriction.Dist(point) <= hal.SHIP_RADIUS * 2 {
+					if restriction.Dist(point) <= hal.SHIP_RADIUS * 2 + SAFETY_MARGIN {
 						return false
 					}
 				}
