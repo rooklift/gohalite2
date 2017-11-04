@@ -26,10 +26,10 @@ while 1:
 
 	for key in result["stats"]:
 		rank = result["stats"][key]["rank"]
-		pid = positions[int(key)]
+		i = positions[int(key)]
 
 		if rank == 1:
-			scores[pid] += 1
+			scores[i] += 1
 
 	print(scores)
 
