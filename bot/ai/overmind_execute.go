@@ -90,7 +90,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		if pilot.HasExecuted == false && pilot.Id % self.Game.Turn() == 0 {
+		if pilot.HasExecuted == false && (pilot.Id + (self.Game.Turn() % 2)) % 2 == 0 {
 			pilot.PlanThrust(0, 0, MSG_DEACTIVATED)
 			self.ATC.Unrestrict(pilot.Ship, 0, 0)
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
@@ -116,8 +116,10 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
-			pilot.PlanThrust(0, 0, MSG_DEACTIVATED)
-			pilot.ExecutePlan()
+			if pilot.Plan != "" {
+				pilot.PlanThrust(0, 0, MSG_ATC_RESTRICT)
+				pilot.ExecutePlan()
+			}
 		}
 	}
 

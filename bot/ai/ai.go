@@ -50,7 +50,7 @@ func Run() {
 }
 
 func PrintFinalInfo(game * hal.Game, longest_turn time.Duration) {
-	game.LogOnce("Total ships........ %3d, %3d, %3d, %3d",
+	game.LogOnce("Current ships...... %3d, %3d, %3d, %3d",
 		len(game.ShipsOwnedBy(0)),
 		len(game.ShipsOwnedBy(1)),
 		len(game.ShipsOwnedBy(2)),
