@@ -104,7 +104,7 @@ func (self *Pilot) ChooseTarget() {
 			ok = true
 		} else if planet.IsFull() == false {
 			ok = true
-		} else if len(self.Overmind.EnemyMap[planet.Id]) > len(self.Overmind.FriendlyMap[planet.Id]) {
+		} else if len(self.Overmind.EnemyMap[planet.Id]) > 0 {
 			ok = true
 		}
 

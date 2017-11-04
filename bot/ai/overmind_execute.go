@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"math/rand"
 	hal "../gohalite2"
 )
 
@@ -82,7 +83,7 @@ func (self *Overmind) ExecuteMoves() {
 		}
 	}
 
-	// "Randomly" give up for half the ships that still aren't moving, and
+	// Randomly give up for half the ships that still aren't moving, and
 	// retry the pathfinding with the other half.
 
 	// Ships moved into the frozen slice can have their ATC restriction
@@ -90,7 +91,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		if pilot.HasExecuted == false && (pilot.Id + (self.Game.Turn() % 2)) % 2 == 0 {
+		if pilot.HasExecuted == false && rand.Intn(2) == 0 {
 			pilot.PlanThrust(0, 0, MSG_DEACTIVATED)
 			self.ATC.Unrestrict(pilot.Ship, 0, 0)
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
@@ -175,7 +176,6 @@ func (self *Overmind) UpdateProximityMaps() {
 	const THREAT_RANGE = 10
 
 	self.EnemyMap = make(map[int][]hal.Ship)
-	self.FriendlyMap = make(map[int][]hal.Ship)
 
 	all_ships := self.Game.AllShips()
 	all_planets := self.Game.AllPlanets()
@@ -184,9 +184,7 @@ func (self *Overmind) UpdateProximityMaps() {
 		if ship.CanMove() {
 			for _, planet := range all_planets {
 				if ship.ApproachDist(planet) < THREAT_RANGE {
-					if ship.Owner == self.Game.Pid() {
-						self.FriendlyMap[planet.Id] = append(self.FriendlyMap[planet.Id], ship)
-					} else {
+					if ship.Owner != self.Game.Pid() {
 						self.EnemyMap[planet.Id] = append(self.EnemyMap[planet.Id], ship)
 					}
 				}

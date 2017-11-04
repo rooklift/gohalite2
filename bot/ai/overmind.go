@@ -11,10 +11,7 @@ type Overmind struct {
 	Pilots					[]*Pilot
 	Game					*hal.Game
 	ATC						*AirTrafficControl
-
-	// Planets: mobile ships nearby.
-	EnemyMap				map[int][]hal.Ship		// Enemy ships near the planet
-	FriendlyMap				map[int][]hal.Ship		// My ships near the planet
+	EnemyMap				map[int][]hal.Ship		// Planet ID --> Enemy ships near the planet
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
