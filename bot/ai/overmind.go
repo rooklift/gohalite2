@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"math/rand"
 	"sort"
 	hal "../gohalite2"
 )
@@ -43,7 +44,7 @@ func (self *Overmind) ChooseInitialTargets() bool {		// Returns: are we assassin
 
 	// As a good default...
 
-	self.ChooseThreePlanets()
+	self.ChooseThreeDocks()
 
 	if self.Game.InitialPlayers() == 2 {
 		if self.Game.MyShips()[0].Dist(self.Game.EnemyShips()[0]) < 150 {
@@ -108,15 +109,7 @@ func (self *Overmind) ChooseThreePlanets() {
 	}
 }
 
-/*
-
-func (self *Overmind) ChooseThreeDocks() {				// Pretty bad in internal testing.
-
-	// Sort our pilots by Y...
-
-	sort.Slice(self.Pilots, func(a, b int) bool {
-		return self.Pilots[a].Y < self.Pilots[b].Y
-	})
+func (self *Overmind) ChooseThreeDocks() {
 
 	// Sort all planets by distance to our fleet...
 
@@ -130,30 +123,41 @@ func (self *Overmind) ChooseThreeDocks() {				// Pretty bad in internal testing.
 
 	// Get docks...
 
-	var docks []hal.Planet
+	var docks []hal.Point
 
 	for _, planet := range closest_three {
-		for n := 0; n < planet.OpenSpots(); n++ {
-			docks = append(docks, planet)
-		}
+		docks = append(docks, planet.OpeningDockHelper(self.Pilots[1].Ship)...)
 	}
 
-	// Sort closest 3 docks by Y...
+	docks = docks[:3]
 
-	closest_three_docks := docks[:3]
+	for n := 0; n < 1000; n++ {		// Use BogoSort to find a valid non-crossing solution... I'm sure there's a smarter way.
 
-	sort.Slice(closest_three_docks, func(a, b int) bool {
-		return closest_three_docks[a].Y < closest_three_docks[b].Y
-	})
+		var new_docks []hal.Point
 
-	// Pair pilots with planets...
+		for _, i := range rand.Perm(len(docks)) {
+			new_docks = append(new_docks, docks[i])
+		}
 
-	for index, pilot := range self.Pilots {
-		pilot.Target = closest_three_docks[index]
+		self.Pilots[0].Target = new_docks[0]
+		self.Pilots[1].Target = new_docks[1]
+		self.Pilots[2].Target = new_docks[2]
+
+		if intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
+			continue
+		}
+
+		if intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+			continue
+		}
+
+		if intersect(self.Pilots[1].Ship, self.Pilots[1].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+			continue
+		}
+
+		break
 	}
 }
-
-*/
 
 func (self *Overmind) DetectRushFight() bool {
 
@@ -226,3 +230,14 @@ func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
 }
 
 */
+
+// Line segment intersection helpers...
+// https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
+
+func ccw(a, b, c hal.Entity) bool {
+	return (c.GetY() - a.GetY()) * (b.GetX() - a.GetX()) > (b.GetY() - a.GetY()) * (c.GetX() - a.GetX())
+}
+
+func intersect(a, b, c, d hal.Entity) bool {							// Return true if line segments AB and CD intersect
+	return (ccw(a, c, d) != ccw(b, c, d)) && (ccw(a, b, c) != ccw(a, b, d))
+}
