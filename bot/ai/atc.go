@@ -21,11 +21,13 @@ type XYT struct {
 }
 
 type AirTrafficControl struct {
+	Game		*hal.Game					// Nice to have for debugging.
 	Grid		map[XYT][]hal.Point
 }
 
-func NewATC() *AirTrafficControl {
+func NewATC(game *hal.Game) *AirTrafficControl {
 	ret := new(AirTrafficControl)
+	ret.Game = game
 	ret.Grid = make(map[XYT][]hal.Point)
 	return ret
 }

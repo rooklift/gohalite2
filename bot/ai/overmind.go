@@ -17,7 +17,7 @@ type Overmind struct {
 func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
-	ret.ATC = NewATC()
+	ret.ATC = NewATC(game)
 	return ret
 }
 
