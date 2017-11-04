@@ -62,8 +62,10 @@ func collision_time(r float64, e1 * SimEntity, e2 * SimEntity) (float64, bool) {
 
 		if (t1 >= 0.0 && t2 >= 0.0) {
 			return min(t1, t2) / (2 * a), true
-		} else {
+		} else if (t1 <= 0.0 && t2 <= 0.0) {
 			return max(t1, t2) / (2 * a), true
+		} else {
+			return 0.0, true
 		}
 	} else {
 		return 0.0, false
