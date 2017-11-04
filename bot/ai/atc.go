@@ -77,7 +77,7 @@ func (self *AirTrafficControl) Unrestrict(ship hal.Ship, speed, degrees int) {
 func (self *AirTrafficControl) PathIsFree(ship hal.Ship, speed, degrees int) bool {
 
 	const (
-		SAFETY_MARGIN = 0.0
+		SAFETY_MARGIN = 0.001
 	)
 
 	x2, y2 := hal.Projection(ship.X, ship.Y, float64(speed), degrees)
