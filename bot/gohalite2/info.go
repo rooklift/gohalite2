@@ -101,3 +101,20 @@ func (self *Game) RawWorld() string {
 func (self *Game) GetCumulativeShipCount(pid int) int {
 	return self.cumulativeShips[pid]
 }
+
+func (self *Game) SurvivingPlayerIDs() []int {
+
+	var ret []int
+
+	for pid, ships := range self.playershipMap {
+		if len(ships) > 0 {
+			ret = append(ret, pid)
+		}
+	}
+
+	sort.Slice(ret, func(a, b int) bool {
+		return ret[a] < ret[b]
+	})
+
+	return ret
+}
