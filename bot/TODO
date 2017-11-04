@@ -1,6 +1,6 @@
 TODO
 
-- Once the does_collide function is fixed in Halite, use it for perfect ATC.
+- Should use does_collide() for perfect ATC.
 - When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
 - Docking is OK for a few ships (select them somehow) if we have overwhelming force.
 - Maybe use our ship IDs to decide whether we are needed, if there are a lot more friendlies present.
