@@ -5,8 +5,11 @@ import (
 )
 
 func (self *Game) CheckEntityCollision(ship Ship, distance float64, degrees int, other Entity) bool {	// Would we hit some specific entity?
+
+	const SAFETY_MARGIN = 0.001		// Needed to avoid floating point errors.
+
 	endx, endy := Projection(ship.X, ship.Y, distance, degrees)
-	return IntersectSegmentCircle(ship.X, ship.Y, endx, endy, other.GetX(), other.GetY(), other.GetRadius() + SHIP_RADIUS)
+	return IntersectSegmentCircle(ship.X, ship.Y, endx, endy, other.GetX(), other.GetY(), other.GetRadius() + SHIP_RADIUS + SAFETY_MARGIN)
 }
 
 func (self *Game) FirstCollision(ship Ship, distance float64, degrees int, possibles []Entity) (Entity, bool) {
