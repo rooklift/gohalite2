@@ -37,8 +37,12 @@ func (self *Pilot) HasStationaryPlan() bool {		// true iff we DO have a plan, wh
 	if self.Plan == "" {
 		return false
 	}
-	speed, _ := hal.CourseFromString(self.Plan)
+	speed, _ := self.CourseFromPlan()
 	return speed == 0
+}
+
+func (self *Pilot) CourseFromPlan() (int, int) {
+	return hal.CourseFromString(self.Plan)
 }
 
 func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g. call hal.Type()
@@ -281,7 +285,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	enemy_ship := docked_targets[0]
 	side := hal.DecideSide(self.Ship, enemy_ship, planet)
 
-	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.5, avoid_list, side)			// GetApproach uses centre-to-edge distances, so 4.5
+	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 1.55, avoid_list, side)			// GetApproach uses centre-to-edge distances, so 4.5
 
 	if err != nil {
 		self.Log("EngagePlanet(): %v", err)
