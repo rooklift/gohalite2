@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"math/rand"
 	"sort"
 	hal "../gohalite2"
 )
@@ -67,7 +68,7 @@ func (self *Sim) Step() {
 			for _, ship_b := range self.ships[i+1:] {
 				if ship_b.hp > 0 {
 					if ship_a.owner != ship_b.owner {
-						t, ok := collision_time(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// 5.0 seems to be right. Uh, but see #191.
+						t, ok := CollisionTime(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// 5.0 seems to be right. Uh, but see #191.
 						if ok && t >= 0 && t <= 1 {
 							possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, ATTACK})
 						}
@@ -83,7 +84,7 @@ func (self *Sim) Step() {
 		if ship_a.hp > 0 {
 			for _, ship_b := range self.ships[i+1:] {
 				if ship_b.hp > 0 {
-					t, ok := collision_time(1.0, &ship_a.SimEntity, &ship_b.SimEntity)
+					t, ok := CollisionTime(1.0, &ship_a.SimEntity, &ship_b.SimEntity)
 					if ok {
 						possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, SHIP_COLLISION})
 					}
@@ -96,7 +97,7 @@ func (self *Sim) Step() {
 
 	for _, planet := range self.planets {
 		for _, ship := range self.ships {
-			t, ok := collision_time(planet.radius + 0.5, &ship.SimEntity, &planet.SimEntity)
+			t, ok := CollisionTime(planet.radius + 0.5, &ship.SimEntity, &planet.SimEntity)
 			if ok {
 				possible_events = append(possible_events, &PossibleEvent{ship, nil, planet, t, PLANET_COLLISION})
 			}
@@ -210,7 +211,7 @@ func SetupSim(game *hal.Game) *Sim {
 		})
 	}
 
-	for _, ship := range game.AllShips() {
+	for _, ship := range game.AllShips() {				// Guaranteed sorted by ship ID
 		sim.ships = append(sim.ships, &SimShip{
 			SimEntity: SimEntity{
 				x: ship.X,
@@ -235,13 +236,41 @@ func SetupSim(game *hal.Game) *Sim {
 //
 // However, to start with, maybe just expect the enemy to move like a madman.
 
-type Genome struct {
-	speeds		[]int
-	angles		[]int
+type Gene struct {			// A gene is an instruction to a ship.
+	sid			int
+	speed		int
+	angle		int
 }
 
-func EvolveGenome(game *hal.Game, our_pid int) {
+type Genome struct {
+	genes		[]*Gene
+}
 
+func (self *Genome) Init(sids []int) {
+	self.genes = nil
+	for _, sid := range sids {
+		self.genes = append(self.genes, &Gene{
+			sid: sid,
+			speed: rand.Intn(8),
+			angle: rand.Intn(360),
+		})
+	}
+}
+
+func EvolveGenome(game *hal.Game) {
 	// sim := SetupSim(game)
+	genome := new(Genome)
 
+	var my_ship_ids []int
+	var enemy_ship_ids []int
+
+	for _, ship := range game.MyShips() {
+		my_ship_ids = append(my_ship_ids, ship.Id)
+	}
+
+	for _, ship := range game.EnemyShips() {
+		enemy_ship_ids = append(enemy_ship_ids, ship.Id)
+	}
+
+	genome.Init(my_ship_ids)
 }

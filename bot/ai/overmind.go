@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"os"
 	"sort"
 	hal "../gohalite2"
 )
@@ -39,20 +40,21 @@ func (self *Overmind) Step() {
 	}
 }
 
-func (self *Overmind) ChooseInitialTargets() bool {		// Returns: are we assassinating?
+func (self *Overmind) ChooseInitialTargets() {
 
 	// As a good default...
 
 	self.ChooseThreeDocks()
 
+	if StringSliceContains(os.Args, "--conservative") {
+		return
+	}
+
 	if self.Game.InitialPlayers() == 2 {
 		if self.Game.MyShips()[0].Dist(self.Game.EnemyShips()[0]) < 150 {
 			self.ChooseAssassinateTargets()
-			return true
 		}
 	}
-
-	return false
 }
 
 func (self *Overmind) ChooseAssassinateTargets() {
@@ -145,15 +147,15 @@ func (self *Overmind) ChooseThreeDocks() {
 		self.Pilots[1].Target = docks[perm[1]]
 		self.Pilots[2].Target = docks[perm[2]]
 
-		if intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
+		if Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
 			continue
 		}
 
-		if intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+		if Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
 			continue
 		}
 
-		if intersect(self.Pilots[1].Ship, self.Pilots[1].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+		if Intersect(self.Pilots[1].Ship, self.Pilots[1].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
 			continue
 		}
 
@@ -232,14 +234,3 @@ func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
 }
 
 */
-
-// Line segment intersection helpers...
-// https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
-
-func ccw(a, b, c hal.Entity) bool {
-	return (c.GetY() - a.GetY()) * (b.GetX() - a.GetX()) > (b.GetY() - a.GetY()) * (c.GetX() - a.GetX())
-}
-
-func intersect(a, b, c, d hal.Entity) bool {							// Return true if line segments AB and CD intersect
-	return (ccw(a, c, d) != ccw(b, c, d)) && (ccw(a, b, c) != ccw(a, b, d))
-}
