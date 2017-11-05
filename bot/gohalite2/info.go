@@ -134,3 +134,16 @@ func (self *Game) AllShipsCentreOfGravity() Point {
 
 	return Point{avg_x, avg_y}
 }
+
+func (self *Game) DesiredSpots(planet Planet) int {
+
+	// If we don't own it, we want all its spots...
+
+	if planet.Owner != self.pid {
+		return planet.DockingSpots
+	}
+
+	// If we do, we want to fill it up...
+
+	return planet.OpenSpots()
+}
