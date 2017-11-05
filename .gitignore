@@ -1,6 +1,6 @@
 *.exe
-*.hlt
 *.log
 *.txt
 starterbot/
 otherbots/
+replays/
