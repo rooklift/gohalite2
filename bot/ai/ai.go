@@ -2,6 +2,8 @@ package ai
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	hal "../gohalite2"
@@ -9,7 +11,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "21b1"
+	VERSION = "21b1"			// "744ea268ab0eb406d4f96b3b66a0cb52422c7eb6" -- log 1
 )
 
 func Run() {
@@ -20,7 +22,11 @@ func Run() {
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
 
-	fmt.Printf("%s %s\n", NAME, VERSION)
+	if len(os.Args) < 2 {
+		fmt.Printf("%s %s\n", NAME, VERSION)
+	} else {
+		fmt.Printf("%s %s %s\n", NAME, VERSION, strings.Join(os.Args[1:], " "))
+	}
 
 	overmind := NewOvermind(game)
 

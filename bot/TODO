@@ -1,7 +1,9 @@
 TODO
 
+- No need to dock more than <spots_available> ships when docking.
 - Distress calls / target overrides.
 - On turn 1, is the enemy coming for me? If yes, go aggro. If no, land...
+- Or alternatively, if the other player flees, take the centre planets?
 - Should use does_collide() for perfect ATC.
 - When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
 - Docking is OK for a few ships (select them somehow) if we have overwhelming force.

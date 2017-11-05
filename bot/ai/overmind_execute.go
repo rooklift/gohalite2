@@ -2,6 +2,8 @@ package ai
 
 import (
 	"math/rand"
+	"os"
+
 	hal "../gohalite2"
 )
 
@@ -37,8 +39,20 @@ func (self *Overmind) ExecuteMoves() {
 
 	// Choose target if needed... (i.e. we don't have a valid target already).
 
+	var stateless bool
+
+	if StringSliceContains(os.Args, "--stateless") {
+		stateless = true
+	}
+
 	for _, pilot := range mobile_pilots {
-		valid := pilot.ValidateTarget()
+
+		var valid bool
+
+		if stateless == false {
+			valid = pilot.ValidateTarget()
+		}
+
 		if valid == false {
 			pilot.ChooseTarget()
 		}
