@@ -11,7 +11,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "21b1"			// "744ea268ab0eb406d4f96b3b66a0cb52422c7eb6" -- log 1
+	VERSION = "21b1"			// "22c7f12ef125a7652166f5e3fcd502c3698de37b" -- log 3
 )
 
 func Run() {
