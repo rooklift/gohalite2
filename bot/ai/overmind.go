@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"math/rand"
 	"sort"
 	hal "../gohalite2"
 )
@@ -131,17 +130,20 @@ func (self *Overmind) ChooseThreeDocks() {
 
 	docks = docks[:3]
 
-	for n := 0; n < 1000; n++ {		// Use BogoSort to find a valid non-crossing solution... I'm sure there's a smarter way.
+	var permutations = [][]int{
+		[]int{0,1,2},
+		[]int{0,2,1},
+		[]int{1,0,2},
+		[]int{1,2,0},
+		[]int{2,0,1},
+		[]int{2,1,0},
+	}
 
-		var new_docks []hal.Point
+	for _, perm := range permutations {		// Find a non-crossing solution...
 
-		for _, i := range rand.Perm(len(docks)) {
-			new_docks = append(new_docks, docks[i])
-		}
-
-		self.Pilots[0].Target = new_docks[0]
-		self.Pilots[1].Target = new_docks[1]
-		self.Pilots[2].Target = new_docks[2]
+		self.Pilots[0].Target = docks[perm[0]]
+		self.Pilots[1].Target = docks[perm[1]]
+		self.Pilots[2].Target = docks[perm[2]]
 
 		if intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
 			continue
