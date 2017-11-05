@@ -134,8 +134,37 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		return
 	}
 
-	// Which side of objects to navigate around. As a default, use this arbitrary choice...
+	if self.Target.Type() == hal.NOTHING {
+		self.PlanThrust(0, 0, MSG_NO_TARGET)
+		return
+	}
+
+	// Which side of objects to navigate around? As a default, use this arbitrary choice...
+
 	var side hal.Side; if self.Id % 2 == 0 { side = hal.RIGHT } else { side = hal.LEFT }
+
+	// If the first planet in our path isn't our target planet, we choose a side to navigate around.
+	// By using AllImmobile() as the avoid_list, any collision will be with a planet or docked ship.
+
+	collision_entity, ok := game.FirstCollision(self.Ship, 1000, self.Angle(self.Target), game.AllImmobile())
+
+	if ok {
+
+		var blocking_planet hal.Planet
+
+		// We also consider docked ships to be "part of the planet" for these purposes -+- we must use game.AllImmobile() above
+
+		if collision_entity.Type() == hal.PLANET {
+			blocking_planet = collision_entity.(hal.Planet)
+		} else {
+			s := collision_entity.(hal.Ship)
+			blocking_planet = game.GetPlanet(s.DockedPlanet)
+		}
+
+		if self.Target.Type() != hal.PLANET || blocking_planet.Id != self.Target.GetId() {
+			side = hal.DecideSide(self.Ship, self.Target, blocking_planet)
+		}
+	}
 
 	switch self.Target.Type() {
 
@@ -146,28 +175,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		if self.ApproachDist(planet) < 8 {		// If this is too low, we may get outside the action zone when navigating round allies.
 			self.EngagePlanet(avoid_list)
 			return
-		}
-
-		// If the first planet in our path isn't our target planet, we choose a side to navigate around...
-
-		collision_entity, ok := game.FirstCollision(self.Ship, 1000, self.Angle(planet), game.AllImmobile())	// See note below!
-
-		if ok {
-
-			var blocking_planet hal.Planet
-
-			// We also consider docked ships to be "part of the planet" for these purposes -+- we must use game.AllImmobile() above
-
-			if collision_entity.Type() == hal.PLANET {
-				blocking_planet = collision_entity.(hal.Planet)
-			} else {
-				s := collision_entity.(hal.Ship)
-				blocking_planet = game.GetPlanet(s.DockedPlanet)
-			}
-
-			if blocking_planet.GetId() != planet.Id {
-				side = hal.DecideSide(self.Ship, planet, blocking_planet)
-			}
 		}
 
 		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid_list, side)
@@ -206,12 +213,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		} else {
 			self.PlanThrust(speed, degrees, MSG_POINT_TARGET)
 		}
-
-	case hal.NOTHING:
-
-		self.PlanThrust(0, 0, MSG_NO_TARGET)
-		return
-
 	}
 }
 
