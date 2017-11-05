@@ -1,5 +1,3 @@
-# gohalite2
-
 My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
 
 At a strategic level there's not much to the bot. We have a few principles:
