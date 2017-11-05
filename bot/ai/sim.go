@@ -237,7 +237,6 @@ func SetupSim(game *hal.Game) *Sim {
 // However, to start with, maybe just expect the enemy to move like a madman.
 
 type Gene struct {			// A gene is an instruction to a ship.
-	sid			int
 	speed		int
 	angle		int
 }
@@ -246,11 +245,10 @@ type Genome struct {
 	genes		[]*Gene
 }
 
-func (self *Genome) Init(sids []int) {
+func (self *Genome) Init(size int) {
 	self.genes = nil
-	for _, sid := range sids {
+	for i := 0; i < size; i++ {
 		self.genes = append(self.genes, &Gene{
-			sid: sid,
 			speed: rand.Intn(8),
 			angle: rand.Intn(360),
 		})
@@ -258,19 +256,50 @@ func (self *Genome) Init(sids []int) {
 }
 
 func EvolveGenome(game *hal.Game) {
-	// sim := SetupSim(game)
+
+	// IN PROGRESS...
+
+	/*
+		Have initial game state
+		Create genome
+		Set ship velocities
+		Update sim
+		Evaluate
+		Save genome
+		Mutate
+		Reset game state
+		Try again
+	*/
+
+	sim := SetupSim(game)
 	genome := new(Genome)
 
-	var my_ship_ids []int
-	var enemy_ship_ids []int
+	var my_sim_ship_ptrs []*SimShip
+	var enemy_sim_ship_ptrs []*SimShip
 
-	for _, ship := range game.MyShips() {
-		my_ship_ids = append(my_ship_ids, ship.Id)
+	for _, ship := range sim.ships {
+		if ship.owner == game.Pid() {
+			my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
+		} else {
+			enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
+		}
 	}
 
-	for _, ship := range game.EnemyShips() {
-		enemy_ship_ids = append(enemy_ship_ids, ship.Id)
+	genome.Init(len(my_sim_ship_ptrs))
+
+	for i := 0; i < len(my_sim_ship_ptrs); i++ {
+		speed := genome.genes[i].speed
+		angle := genome.genes[i].angle
+		vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
+		my_sim_ship_ptrs[i].vel_x = vel_x
+		my_sim_ship_ptrs[i].vel_y = vel_y
 	}
 
-	genome.Init(my_ship_ids)
+	for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
+		enemy_sim_ship_ptrs[i].vel_x = 0				// FIXME
+		enemy_sim_ship_ptrs[i].vel_y = 0
+	}
+
+
+
 }
