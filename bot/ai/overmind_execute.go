@@ -28,7 +28,7 @@ func (self *Overmind) ExecuteMoves() {
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
 		if pilot.HasTarget() == false || pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {
-			ok := pilot.PlanDockIfSafe()
+			_, ok := pilot.PlanDockIfWise()
 			if ok {
 				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 				frozen_pilots = append(frozen_pilots, pilot)

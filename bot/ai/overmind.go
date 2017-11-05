@@ -13,6 +13,7 @@ type Overmind struct {
 	Game					*hal.Game
 	ATC						*AirTrafficControl
 	EnemyMap				map[int][]hal.Ship		// Planet ID --> Enemy ships near the planet
+	ShipsDockingMap			map[int]int				// Planet ID --> My ship count docking this turn
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -26,6 +27,7 @@ func (self *Overmind) Step() {
 
 	self.UpdatePilots()
 	self.UpdateProximityMap()
+	self.ShipsDockingMap = make(map[int]int)
 	self.ATC.Clear()
 
 	if self.Game.Turn() == 0 {

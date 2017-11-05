@@ -71,7 +71,9 @@ func (self *Pilot) ValidateTarget() bool {
 
 		if target.Alive() == false {
 			self.Target = hal.Nothing{}
-		} else if target.Owner == game.Pid() && target.IsFull() && len(self.Overmind.EnemyMap[target.Id]) == 0 {
+		} else if game.DesiredSpots(target) == 0 && len(self.Overmind.EnemyMap[target.Id]) == 0 {		// Planet fully owned, and safe
+			self.Target = hal.Nothing{}
+		} else if self.Overmind.ShipsDockingMap[target.Id] >= game.DesiredSpots(target) {					// We've enough of guys trying to dock
 			self.Target = hal.Nothing{}
 		}
 	}
@@ -83,15 +85,28 @@ func (self *Pilot) ValidateTarget() bool {
 	return true
 }
 
-func (self *Pilot) PlanDockIfSafe() bool {
-	if self.DockedStatus == hal.UNDOCKED {
-		closest_planet := self.ClosestPlanet()
-		if self.CanDock(closest_planet) && len(self.Overmind.EnemyMap[closest_planet.Id]) == 0 {
-			self.PlanDock(closest_planet)
-			return true
-		}
+func (self *Pilot) PlanDockIfWise() (hal.Planet, bool) {
+
+	closest_planet := self.ClosestPlanet()
+
+	if self.DockedStatus != hal.UNDOCKED {
+		return hal.Planet{}, false
 	}
-	return false
+
+	if self.CanDock(closest_planet) == false {
+		return hal.Planet{}, false
+	}
+
+	if len(self.Overmind.EnemyMap[closest_planet.Id]) > 0 {
+		return hal.Planet{}, false
+	}
+
+	if self.Overmind.ShipsDockingMap[closest_planet.Id] >= self.Game.DesiredSpots(closest_planet) {
+		return hal.Planet{}, false
+	}
+
+	self.PlanDock(closest_planet)
+	return closest_planet, true
 }
 
 func (self *Pilot) ChooseTarget() {
@@ -104,9 +119,7 @@ func (self *Pilot) ChooseTarget() {
 
 		ok := false
 
-		if planet.Owner != game.Pid() {
-			ok = true
-		} else if planet.IsFull() == false {
+		if game.DesiredSpots(planet) > 0 && self.Overmind.ShipsDockingMap[planet.Id] < game.DesiredSpots(planet) {
 			ok = true
 		} else if len(self.Overmind.EnemyMap[planet.Id]) > 0 {
 			ok = true
@@ -344,6 +357,7 @@ func (self *Pilot) PlanThrust(speed, degrees int, message MessageInt) {		// Send
 
 func (self *Pilot) PlanDock(planet hal.Planet) {
 	self.Plan = fmt.Sprintf("d %d %d", self.Id, planet.Id)
+	self.Overmind.ShipsDockingMap[planet.Id]++
 }
 
 func (self *Pilot) PlanUndock() {
