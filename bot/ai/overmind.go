@@ -129,7 +129,7 @@ func (self *Overmind) ChooseThreeDocks() {
 	var docks []hal.Point
 
 	for _, planet := range closest_three {
-		docks = append(docks, planet.OpeningDockHelper(self.Pilots[1].Ship)...)
+		docks = append(docks, planet.OpeningDockHelper(self.Pilots[0].Ship)...)
 	}
 
 	docks = docks[:3]

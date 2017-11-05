@@ -3,10 +3,8 @@ import json, random, subprocess
 processes = [
 	"bot.exe",
 	"bot.exe",
-	"bot.exe --stateless",
-	"bot.exe --stateless",
-	# ".\\otherbots\\v20\\mybot.exe",
-	# ".\\otherbots\\v20\\mybot.exe"
+	".\\otherbots\\v20\\mybot.exe",
+	".\\otherbots\\v20\\mybot.exe"
 ]
 
 scores = [0,0,0,0]
@@ -20,7 +18,7 @@ while 1:
 	random.shuffle(positions)
 
 	output = subprocess.check_output(
-		"halite.exe -q -i \"replays\" \"{}\" \"{}\" \"{}\" \"{}\"".format(
+		"halite.exe -r -q -i \"replays\" \"{}\" \"{}\" \"{}\" \"{}\"".format(
 			processes[positions[0]], processes[positions[1]], processes[positions[2]], processes[positions[3]]
 			)).decode("ascii")
 
