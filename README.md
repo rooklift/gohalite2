@@ -4,7 +4,9 @@ At a strategic level there's not much to the bot. We have a few principles:
 
 * Don't crash our ships into each other.
 * Send new ships to the nearest planet that *needs help* (either not fully owned by us, or under threat).
-* When at a planet, attack any ship that needs attacking, otherwise dock if possible, otherwise get a new planet to go to.
+* When at a planet, attack the nearest ship that needs attacking, if there are any...
+* ...otherwise dock if possible.
+* ...otherwise find the nearest planet that *needs help* and go there.
 * Don't dock while there are enemy ships around.
 * In 1v1, we sometimes just rush the enemy.
 
