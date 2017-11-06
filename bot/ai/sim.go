@@ -310,6 +310,7 @@ func EvolveGenome(game *hal.Game) *Genome {
 	initial_sim := SetupSim(game)
 
 	genome := new(Genome)
+	genome.Init(len(game.MyShips()))
 
 	best_score := -999999
 	best_genome := genome.Copy()
@@ -329,8 +330,6 @@ func EvolveGenome(game *hal.Game) *Genome {
 				enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
 			}
 		}
-
-		genome.Init(len(my_sim_ship_ptrs))
 
 		for i := 0; i < len(my_sim_ship_ptrs); i++ {
 			speed := genome.genes[i].speed
