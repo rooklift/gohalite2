@@ -19,10 +19,15 @@ func Run() {
 
 	game := hal.NewGame()
 
+	defer func() {
+		if p := recover(); p != nil {
+			game.Log("Panic: %v", p)
+		}
+	}()
+
 	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
-
 
 	if StringSliceContains(os.Args, "--timeseed") {
 		seed := time.Now().UTC().UnixNano()

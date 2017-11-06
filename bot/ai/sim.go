@@ -239,6 +239,11 @@ func (self *Sim) Step() {
 			ship.actual_targets = nil
 		}
 	}
+
+	for _, ship := range self.ships {
+		ship.x += ship.vel_x
+		ship.y += ship.vel_y
+	}
 }
 
 func SetupSim(game *hal.Game) *Sim {
@@ -314,9 +319,13 @@ func (self *Genome) Init(size int) {
 
 func (self *Genome) Mutate() {
 	i := rand.Intn(len(self.genes))
-	if rand.Intn(2) == 0 {
+	switch rand.Intn(3) {
+	case 0:
 		self.genes[i].speed = rand.Intn(8)
-	} else {
+	case 1:
+		self.genes[i].angle = rand.Intn(360)
+	case 2:
+		self.genes[i].speed = rand.Intn(8)
 		self.genes[i].angle = rand.Intn(360)
 	}
 }
@@ -327,13 +336,15 @@ func EvolveGenome(game *hal.Game) *Genome {
 
 	initial_sim := SetupSim(game)
 
-	// centre_of_gravity := game.AllShipsCentreOfGravity()
+	centre_of_gravity := game.AllShipsCentreOfGravity()
 
 	genome := new(Genome)
 	genome.Init(len(game.MyShips()))
 
 	best_score := -999999
 	best_genome := genome.Copy()
+
+	steps := 0
 
 	for n := 0; n < 50000; n++ {
 
@@ -384,24 +395,26 @@ func EvolveGenome(game *hal.Game) *Genome {
 
 			for _, ship := range my_sim_ship_ptrs {
 				if ship.hp > 0 {
-					score += ship.hp
-					score += 1
+					score += ship.hp * 100
 				}
+				score -= int(ship.Dist(centre_of_gravity))
 			}
 
 			for _, ship := range enemy_sim_ship_ptrs {
 				if ship.hp > 0 {
-					score -= ship.hp
-					score -= 1
+					score -= ship.hp * 100
 				}
 			}
 		}
 
 		if score > best_score {
+			steps++
 			best_score = score
 			best_genome = genome.Copy()
 		}
 	}
+
+	game.Log("Evolved some moves in %v steps.", steps)
 
 	return best_genome
 }
@@ -412,7 +425,7 @@ func Play3v3(game *hal.Game) {
 
 	genome := EvolveGenome(game)
 
-	game.Log("Evolving some moves! This took %v.", time.Now().Sub(start_time))
+	game.Log("This took %v.", time.Now().Sub(start_time))
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
 		game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)
