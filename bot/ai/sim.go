@@ -42,7 +42,8 @@ type SimShip struct {
 	SimEntity
 	ship_state		ShipState
 	weapon_state	WeaponState
-	actual_targets	[]*SimShip		// Who we actually, really, definitely shoot at.
+	actual_targets	[]*SimShip			// Who we actually, really, definitely shoot at.
+	dockedstatus	hal.DockedStatus
 	owner			int
 	hp				int
 	id				int
@@ -170,12 +171,12 @@ func (self *Sim) Step() {
 					continue
 				}
 
-				if ship_a.weapon_state != SPENT {
+				if ship_a.weapon_state != SPENT && ship_a.dockedstatus == hal.UNDOCKED {
 					ship_a.weapon_state = FIRING
 					ship_a.actual_targets = append(ship_a.actual_targets, ship_b)
 				}
 
-				if ship_b.weapon_state != SPENT {
+				if ship_b.weapon_state != SPENT && ship_b.dockedstatus == hal.UNDOCKED {
 					ship_b.weapon_state = FIRING
 					ship_b.actual_targets = append(ship_b.actual_targets, ship_a)
 				}
@@ -236,6 +237,7 @@ func SetupSim(game *hal.Game) *Sim {
 			},
 			ship_state: ALIVE,
 			weapon_state: READY,
+			dockedstatus: ship.DockedStatus,
 			hp: ship.HP,
 			owner: ship.Owner,
 			id: ship.Id,
