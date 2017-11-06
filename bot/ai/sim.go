@@ -11,6 +11,21 @@ type Sim struct {					// Using pointers, unlike in most of the code
 	ships			[]*SimShip
 }
 
+func (self *Sim) Copy() *Sim {
+	ret := new(Sim)
+	for _, planet := range self.planets {
+		new_planet := new(SimPlanet)
+		*new_planet = *planet
+		ret.planets = append(ret.planets, new_planet)
+	}
+	for _, ship := range self.ships {
+		new_ship := new(SimShip)
+		*new_ship = *ship
+		ret.ships = append(ret.ships, new_ship)
+	}
+	return ret
+}
+
 type SimEntity struct {
 	x				float64
 	y				float64
@@ -30,6 +45,7 @@ type SimShip struct {
 	actual_targets	[]*SimShip		// Who we actually, really, definitely shoot at.
 	owner			int
 	hp				int
+	id				int
 }
 
 type PossibleEvent struct {
@@ -222,6 +238,7 @@ func SetupSim(game *hal.Game) *Sim {
 			weapon_state: READY,
 			hp: ship.HP,
 			owner: ship.Owner,
+			id: ship.Id,
 		})
 	}
 
@@ -265,6 +282,15 @@ func (self *Genome) Init(size int) {
 	}
 }
 
+func (self *Genome) Mutate() {
+	i := rand.Intn(len(self.genes))
+	if rand.Intn(2) == 0 {
+		self.genes[i].speed = rand.Intn(8)
+	} else {
+		self.genes[i].angle = rand.Intn(360)
+	}
+}
+
 func EvolveGenome(game *hal.Game) *Genome {
 
 	// IN PROGRESS...
@@ -281,60 +307,74 @@ func EvolveGenome(game *hal.Game) *Genome {
 		Try again
 	*/
 
-	sim := SetupSim(game)
+	initial_sim := SetupSim(game)
+
 	genome := new(Genome)
+
 	best_score := -999999
 	best_genome := genome.Copy()
 
-	var my_sim_ship_ptrs []*SimShip
-	var enemy_sim_ship_ptrs []*SimShip
+	for n := 0; n < 1000; n++ {
 
-	for _, ship := range sim.ships {
-		if ship.owner == game.Pid() {
-			my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
-		} else {
-			enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
+		sim := initial_sim.Copy()
+		genome.Mutate()
+
+		var my_sim_ship_ptrs []*SimShip
+		var enemy_sim_ship_ptrs []*SimShip
+
+		for _, ship := range sim.ships {
+			if ship.owner == game.Pid() {
+				my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
+			} else {
+				enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
+			}
+		}
+
+		genome.Init(len(my_sim_ship_ptrs))
+
+		for i := 0; i < len(my_sim_ship_ptrs); i++ {
+			speed := genome.genes[i].speed
+			angle := genome.genes[i].angle
+			vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
+			my_sim_ship_ptrs[i].vel_x = vel_x
+			my_sim_ship_ptrs[i].vel_y = vel_y
+		}
+
+		for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
+			enemy_sim_ship_ptrs[i].vel_x = 0				// FIXME
+			enemy_sim_ship_ptrs[i].vel_y = 0
+		}
+
+		sim.Step()
+
+		score := 0
+
+		for _, ship := range my_sim_ship_ptrs {
+			if ship.hp > 0 {
+				score += ship.hp
+			}
+		}
+
+		for _, ship := range enemy_sim_ship_ptrs {
+			if ship.hp > 0 {
+				score -= ship.hp
+			}
+		}
+
+		if score > best_score {
+			best_score = score
+			best_genome = genome.Copy()
 		}
 	}
-
-	genome.Init(len(my_sim_ship_ptrs))
-
-	for i := 0; i < len(my_sim_ship_ptrs); i++ {
-		speed := genome.genes[i].speed
-		angle := genome.genes[i].angle
-		vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
-		my_sim_ship_ptrs[i].vel_x = vel_x
-		my_sim_ship_ptrs[i].vel_y = vel_y
-	}
-
-	for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
-		enemy_sim_ship_ptrs[i].vel_x = 0				// FIXME
-		enemy_sim_ship_ptrs[i].vel_y = 0
-	}
-
-	sim.Step()
-
-	score := 0
-
-	for _, ship := range my_sim_ship_ptrs {
-		if ship.hp > 0 {
-			score += ship.hp
-		}
-	}
-
-	for _, ship := range enemy_sim_ship_ptrs {
-		if ship.hp > 0 {
-			score -= ship.hp
-		}
-	}
-
-	if score > best_score {
-		best_score = score
-		best_genome = genome.Copy()
-	}
-
-	// TODO: mutate, repeat
 
 	return best_genome
+}
 
+func Play3v3(game *hal.Game) {
+
+	genome := EvolveGenome(game)
+
+	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
+		game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)
+	}
 }
