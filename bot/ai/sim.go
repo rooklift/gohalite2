@@ -34,6 +34,7 @@ func (self *Sim) Copy() *Sim {
 	for _, ship := range self.ships {
 		new_ship := new(SimShip)
 		*new_ship = *ship
+		new_ship.actual_targets = nil
 		ret.ships = append(ret.ships, new_ship)
 	}
 	return ret
@@ -96,6 +97,10 @@ type EventType int; const (
 func (self *Sim) Step() {
 
 	var possible_events []*PossibleEvent
+
+	for _, ship := range self.ships {
+		ship.actual_targets = nil
+	}
 
 	// Possible attacks...
 
