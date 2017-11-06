@@ -2,6 +2,7 @@ package ai
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 	"strings"
@@ -59,6 +60,12 @@ type SimShip struct {
 	owner			int
 	hp				int
 	id				int
+}
+
+func (self *SimShip) Dist(e hal.Entity) float64 {
+	dx := self.x - e.GetX()
+	dy := self.y - e.GetY()
+	return math.Sqrt(dx * dx + dy * dy)
 }
 
 type PossibleEvent struct {
@@ -314,6 +321,8 @@ func EvolveGenome(game *hal.Game) *Genome {
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 
 	initial_sim := SetupSim(game)
+
+	// centre_of_gravity := game.AllShipsCentreOfGravity()
 
 	genome := new(Genome)
 	genome.Init(len(game.MyShips()))
