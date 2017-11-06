@@ -26,7 +26,15 @@ func NewTokenParser() *TokenParser {
 }
 
 func (self *TokenParser) Int() int {
-	self.scanner.Scan()
+	bl := self.scanner.Scan()
+	if bl == false {
+		err := self.scanner.Err()
+		if err != nil {
+			panic(fmt.Sprintf("%v", err))
+		} else {
+			panic(fmt.Sprintf("End of input."))
+		}
+	}
 	self.all_tokens = append(self.all_tokens, self.scanner.Text())
 	ret, err := strconv.Atoi(self.scanner.Text())
 	if err != nil {
@@ -41,7 +49,15 @@ func (self *TokenParser) DockedStatus() DockedStatus {
 }
 
 func (self *TokenParser) Float() float64 {
-	self.scanner.Scan()
+	bl := self.scanner.Scan()
+	if bl == false {
+		err := self.scanner.Err()
+		if err != nil {
+			panic(fmt.Sprintf("%v", err))
+		} else {
+			panic(fmt.Sprintf("End of input."))
+		}
+	}
 	self.all_tokens = append(self.all_tokens, self.scanner.Text())
 	ret, err := strconv.ParseFloat(self.scanner.Text(), 64)
 	if err != nil {

@@ -21,7 +21,7 @@ func Run() {
 
 	defer func() {
 		if p := recover(); p != nil {
-			game.Log("Panic: %v", p)
+			game.Log("Quitting: %v", p)
 		}
 	}()
 
