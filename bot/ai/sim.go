@@ -245,6 +245,16 @@ type Genome struct {
 	genes		[]*Gene
 }
 
+func (self *Genome) Copy() *Genome {
+	ret := new(Genome)
+	for _, gene := range self.genes {
+		new_gene := new(Gene)
+		*new_gene = *gene
+		ret.genes = append(ret.genes, new_gene)
+	}
+	return ret
+}
+
 func (self *Genome) Init(size int) {
 	self.genes = nil
 	for i := 0; i < size; i++ {
@@ -255,7 +265,7 @@ func (self *Genome) Init(size int) {
 	}
 }
 
-func EvolveGenome(game *hal.Game) {
+func EvolveGenome(game *hal.Game) *Genome {
 
 	// IN PROGRESS...
 
@@ -273,6 +283,8 @@ func EvolveGenome(game *hal.Game) {
 
 	sim := SetupSim(game)
 	genome := new(Genome)
+	best_score := -999999
+	best_genome := genome.Copy()
 
 	var my_sim_ship_ptrs []*SimShip
 	var enemy_sim_ship_ptrs []*SimShip
@@ -300,6 +312,29 @@ func EvolveGenome(game *hal.Game) {
 		enemy_sim_ship_ptrs[i].vel_y = 0
 	}
 
+	sim.Step()
 
+	score := 0
+
+	for _, ship := range my_sim_ship_ptrs {
+		if ship.hp > 0 {
+			score += ship.hp
+		}
+	}
+
+	for _, ship := range enemy_sim_ship_ptrs {
+		if ship.hp > 0 {
+			score -= ship.hp
+		}
+	}
+
+	if score > best_score {
+		best_score = score
+		best_genome = genome.Copy()
+	}
+
+	// TODO: mutate, repeat
+
+	return best_genome
 
 }
