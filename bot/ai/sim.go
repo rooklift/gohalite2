@@ -330,7 +330,7 @@ func (self *Genome) Mutate() {
 	}
 }
 
-func EvolveGenome(game *hal.Game) (*Genome, int) {
+func EvolveGenome(game *hal.Game, iterations int) (*Genome, int) {
 
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 
@@ -346,7 +346,7 @@ func EvolveGenome(game *hal.Game) (*Genome, int) {
 
 	steps := 0
 
-	for n := 0; n < 5000; n++ {
+	for n := 0; n < iterations; n++ {
 
 		genome = best_genome.Copy()
 		genome.Mutate()
@@ -426,9 +426,9 @@ func Play3v3(game *hal.Game) {
 
 	var all_scores []int
 
-	for n := 0; n < 10; n++ {
+	for n := 0; n < 20; n++ {
 
-		new_genome, score := EvolveGenome(game)
+		new_genome, score := EvolveGenome(game, 2500)
 
 		if score > best_score || genome == nil {
 			genome = new_genome

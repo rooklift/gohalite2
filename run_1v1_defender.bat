@@ -1,1 +1,1 @@
-halite.exe -q -i "replays" "bot.exe" "java -jar .\otherbots\rush_defender\MyBot.jar"
+halite.exe -i "replays" "bot.exe --timeseed" "java -jar .\otherbots\rush_defender\MyBot.jar"
