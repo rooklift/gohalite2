@@ -2,6 +2,7 @@ package ai
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -21,6 +22,13 @@ func Run() {
 	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
+
+
+	if StringSliceContains(os.Args, "--timeseed") {
+		seed := time.Now().UTC().UnixNano()
+		rand.Seed(seed)
+		game.LogWithoutTurn("Seeding own RNG: %v", seed)
+	}
 
 	if len(os.Args) < 2 {
 		fmt.Printf("%s %s\n", NAME, VERSION)
