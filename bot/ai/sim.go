@@ -239,8 +239,6 @@ func SetupSim(game *hal.Game) *Sim {
 
 			if planet.Dist(ship) < planet.Radius + 8 {		// Only include relevant planets
 
-				game.Log("Including planet %d", planet.Id)
-
 				sim.planets = append(sim.planets, &SimPlanet{
 					SimEntity{
 						x: planet.X,
@@ -272,14 +270,6 @@ func SetupSim(game *hal.Game) *Sim {
 
 	return sim
 }
-
-// In theory:
-//
-// 1. Pretend we will charge straight forward like madmen.
-// 2. Let the enemy evolve against that.
-// 3. Evolve against the enemy.
-//
-// However, to start with, maybe just expect the enemy to move like a madman.
 
 type Gene struct {			// A gene is an instruction to a ship.
 	speed		int
@@ -319,21 +309,9 @@ func (self *Genome) Mutate() {
 	}
 }
 
-func EvolveGenome(game *hal.Game) (*Genome, string, int) {
+func EvolveGenome(game *hal.Game) *Genome {
 
-	// IN PROGRESS...
-
-	/*
-		Have initial game state
-		Create genome
-		Set ship velocities
-		Update sim
-		Evaluate
-		Save genome
-		Mutate
-		Reset game state
-		Try again
-	*/
+	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 
 	initial_sim := SetupSim(game)
 
@@ -342,95 +320,85 @@ func EvolveGenome(game *hal.Game) (*Genome, string, int) {
 
 	best_score := -999999
 	best_genome := genome.Copy()
-	best_genome_index := -1
 
-	best_health_string := ""
+	for n := 0; n < 50000; n++ {
 
-	for n := 0; n < 10000; n++ {
-
-		sim := initial_sim.Copy()
 		genome = best_genome.Copy()
 		genome.Mutate()
 
-		if game.Turn() == 8 && n == 261 {
-			game.Log("%v", sim)
-		}
-
-		var my_sim_ship_ptrs []*SimShip
-		var enemy_sim_ship_ptrs []*SimShip
-
-		for _, ship := range sim.ships {
-			if ship.owner == game.Pid() {
-				my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
-			} else {
-				enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
-			}
-		}
-
-		for i := 0; i < len(my_sim_ship_ptrs); i++ {
-			speed := genome.genes[i].speed
-			angle := genome.genes[i].angle
-			vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
-			my_sim_ship_ptrs[i].vel_x = vel_x
-			my_sim_ship_ptrs[i].vel_y = vel_y
-		}
-
-		for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
-
-			last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
-
-			// FIXME: we need to assume sane moves from the enemy. Currently we can have crashes etc.
-
-			enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
-			enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
-		}
-
-		sim.Step()
-
-		if game.Turn() == 8 && n == 261 {
-			game.Log("%v", sim)
-		}
-
 		score := 0
 
-		var my_health_strings []string
-		var enemy_health_strings []string
+		for scenario := 0; scenario < 2; scenario++ {
 
-		for _, ship := range my_sim_ship_ptrs {
-			my_health_strings = append(my_health_strings, fmt.Sprintf("%d", ship.hp))
-			if ship.hp > 0 {
-				score += ship.hp
-				score += 1
+			sim := initial_sim.Copy()
+
+			var my_sim_ship_ptrs []*SimShip
+			var enemy_sim_ship_ptrs []*SimShip
+
+			for _, ship := range sim.ships {
+				if ship.owner == game.Pid() {
+					my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
+				} else {
+					enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
+				}
 			}
-		}
 
-		for _, ship := range enemy_sim_ship_ptrs {
-			enemy_health_strings = append(enemy_health_strings, fmt.Sprintf("%d", ship.hp))
-			if ship.hp > 0 {
-				score -= ship.hp
-				score -= 1
+			for i := 0; i < len(my_sim_ship_ptrs); i++ {
+				speed := genome.genes[i].speed
+				angle := genome.genes[i].angle
+				vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
+				my_sim_ship_ptrs[i].vel_x = vel_x
+				my_sim_ship_ptrs[i].vel_y = vel_y
+			}
+
+			for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
+
+				switch scenario {
+
+				case 0:
+					last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
+					enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
+					enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
+
+				case 1:
+					enemy_sim_ship_ptrs[i].vel_x = 0
+					enemy_sim_ship_ptrs[i].vel_y = 0
+				}
+			}
+
+			sim.Step()
+
+			for _, ship := range my_sim_ship_ptrs {
+				if ship.hp > 0 {
+					score += ship.hp
+					score += 1
+				}
+			}
+
+			for _, ship := range enemy_sim_ship_ptrs {
+				if ship.hp > 0 {
+					score -= ship.hp
+					score -= 1
+				}
 			}
 		}
 
 		if score > best_score {
 			best_score = score
 			best_genome = genome.Copy()
-			best_genome_index = n
-			best_health_string = fmt.Sprintf("%s vs %s", strings.Join(my_health_strings, "/"), strings.Join(enemy_health_strings, "/"))
 		}
 	}
 
-	return best_genome, best_health_string, best_genome_index
+	return best_genome
 }
 
 func Play3v3(game *hal.Game) {
 
 	start_time := time.Now()
 
-	genome, s, n := EvolveGenome(game)
+	genome := EvolveGenome(game)
 
-	game.Log("Evolving some moves! This took %v. Expecting: %s", time.Now().Sub(start_time), s)
-	game.Log("Best genome was %d", n)
+	game.Log("Evolving some moves! This took %v.", time.Now().Sub(start_time))
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
 		game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)
