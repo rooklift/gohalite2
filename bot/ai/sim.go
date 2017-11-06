@@ -315,7 +315,7 @@ func EvolveGenome(game *hal.Game) *Genome {
 	best_score := -999999
 	best_genome := genome.Copy()
 
-	for n := 0; n < 1000; n++ {
+	for n := 0; n < 10000; n++ {
 
 		sim := initial_sim.Copy()
 		genome.Mutate()
@@ -340,8 +340,11 @@ func EvolveGenome(game *hal.Game) *Genome {
 		}
 
 		for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
-			enemy_sim_ship_ptrs[i].vel_x = 0				// FIXME
-			enemy_sim_ship_ptrs[i].vel_y = 0
+
+			last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
+
+			enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
+			enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
 		}
 
 		sim.Step()
