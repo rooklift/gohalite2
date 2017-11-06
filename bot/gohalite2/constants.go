@@ -35,4 +35,4 @@ const (
 	UNDOCK
 )
 
-var backend_dev_log = NewLog("backend_dev_log.txt")
+var BackendDevLog = NewLog("backend_dev_log.txt")

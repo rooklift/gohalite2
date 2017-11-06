@@ -1,14 +1,26 @@
 package ai
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
+	"strings"
+	"time"
+
 	hal "../gohalite2"
 )
 
 type Sim struct {					// Using pointers, unlike in most of the code
 	planets			[]*SimPlanet
 	ships			[]*SimShip
+}
+
+func (self *Sim) String() string {
+	var s []string
+	for _, ship := range self.ships {
+		s = append(s, fmt.Sprintf("%d", ship.hp))
+	}
+	return fmt.Sprintf("len %d... ", len(self.ships)) + strings.Join(s, "/")
 }
 
 func (self *Sim) Copy() *Sim {
@@ -85,7 +97,7 @@ func (self *Sim) Step() {
 			for _, ship_b := range self.ships[i+1:] {
 				if ship_b.hp > 0 {
 					if ship_a.owner != ship_b.owner {
-						t, ok := CollisionTime(6.0, &ship_a.SimEntity, &ship_b.SimEntity)		// 6.0 since bugfixes around 6 Nov 2017.
+						t, ok := CollisionTime(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// Will be 6.0 since bugfixes around 6 Nov 2017.
 						if ok && t >= 0 && t <= 1 {
 							possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, ATTACK})
 						}
@@ -209,7 +221,10 @@ func (self *Sim) Step() {
 
 			if ship.hp <= 0 {
 				ship.ship_state = DEAD
+				ship.hp = 0
 			}
+
+			ship.actual_targets = nil
 		}
 	}
 }
@@ -219,16 +234,27 @@ func SetupSim(game *hal.Game) *Sim {
 	sim := new(Sim)
 
 	for _, planet := range game.AllPlanets() {
-		sim.planets = append(sim.planets, &SimPlanet{
-			SimEntity{
-				x: planet.X,
-				y: planet.Y,
-				radius: planet.Radius,
-			},
-		})
+
+		for _, ship := range game.AllShips() {
+
+			if planet.Dist(ship) < planet.Radius + 8 {		// Only include relevant planets
+
+				game.Log("Including planet %d", planet.Id)
+
+				sim.planets = append(sim.planets, &SimPlanet{
+					SimEntity{
+						x: planet.X,
+						y: planet.Y,
+						radius: planet.Radius,
+					},
+				})
+
+				break
+			}
+		}
 	}
 
-	for _, ship := range game.AllShips() {				// Guaranteed sorted by ship ID
+	for _, ship := range game.AllShips() {					// Guaranteed sorted by ship ID
 		sim.ships = append(sim.ships, &SimShip{
 			SimEntity: SimEntity{
 				x: ship.X,
@@ -293,7 +319,7 @@ func (self *Genome) Mutate() {
 	}
 }
 
-func EvolveGenome(game *hal.Game) *Genome {
+func EvolveGenome(game *hal.Game) (*Genome, string, int) {
 
 	// IN PROGRESS...
 
@@ -316,11 +342,19 @@ func EvolveGenome(game *hal.Game) *Genome {
 
 	best_score := -999999
 	best_genome := genome.Copy()
+	best_genome_index := -1
+
+	best_health_string := ""
 
 	for n := 0; n < 10000; n++ {
 
 		sim := initial_sim.Copy()
+		genome = best_genome.Copy()
 		genome.Mutate()
+
+		if game.Turn() == 8 && n == 261 {
+			game.Log("%v", sim)
+		}
 
 		var my_sim_ship_ptrs []*SimShip
 		var enemy_sim_ship_ptrs []*SimShip
@@ -345,38 +379,58 @@ func EvolveGenome(game *hal.Game) *Genome {
 
 			last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
 
+			// FIXME: we need to assume sane moves from the enemy. Currently we can have crashes etc.
+
 			enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
 			enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
 		}
 
 		sim.Step()
 
+		if game.Turn() == 8 && n == 261 {
+			game.Log("%v", sim)
+		}
+
 		score := 0
 
+		var my_health_strings []string
+		var enemy_health_strings []string
+
 		for _, ship := range my_sim_ship_ptrs {
+			my_health_strings = append(my_health_strings, fmt.Sprintf("%d", ship.hp))
 			if ship.hp > 0 {
 				score += ship.hp
+				score += 1
 			}
 		}
 
 		for _, ship := range enemy_sim_ship_ptrs {
+			enemy_health_strings = append(enemy_health_strings, fmt.Sprintf("%d", ship.hp))
 			if ship.hp > 0 {
 				score -= ship.hp
+				score -= 1
 			}
 		}
 
 		if score > best_score {
 			best_score = score
 			best_genome = genome.Copy()
+			best_genome_index = n
+			best_health_string = fmt.Sprintf("%s vs %s", strings.Join(my_health_strings, "/"), strings.Join(enemy_health_strings, "/"))
 		}
 	}
 
-	return best_genome
+	return best_genome, best_health_string, best_genome_index
 }
 
 func Play3v3(game *hal.Game) {
 
-	genome := EvolveGenome(game)
+	start_time := time.Now()
+
+	genome, s, n := EvolveGenome(game)
+
+	game.Log("Evolving some moves! This took %v. Expecting: %s", time.Now().Sub(start_time), s)
+	game.Log("Best genome was %d", n)
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
 		game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)

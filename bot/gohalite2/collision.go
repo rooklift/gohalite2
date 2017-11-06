@@ -138,6 +138,6 @@ func DecideSide(ship Ship, target Entity, planet Entity) Side {
 		return RIGHT
 	}
 
-	backend_dev_log.Log("DecideSide() failed.")
+	BackendDevLog.Log("DecideSide() failed.")
 	return RIGHT
 }
