@@ -185,12 +185,12 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		planet := self.Target.(hal.Planet)
 
-		if self.ApproachDist(planet) <= 10.1 {		// If this is too low, we may get outside the action zone when navigating round allies.
+		if self.ApproachDist(planet) <= 10 {		// If this is too low, we may get outside the action zone when navigating round allies.
 			self.EngagePlanet(avoid_list)
 			return
 		}
 
-		speed, degrees, err := game.GetApproach(self.Ship, planet, 10, avoid_list, side)
+		speed, degrees, err := game.GetApproach(self.Ship, planet, 4.45, avoid_list, side)
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
