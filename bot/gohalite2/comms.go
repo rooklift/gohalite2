@@ -278,8 +278,15 @@ func (self *Game) Parse() {
 
 // ---------------------------------------
 
-func (self *Game) Thrust(ship Ship, speed, angle int) {
-	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, angle)
+func (self *Game) Thrust(ship Ship, speed, degrees int) {
+	for degrees < 0 { degrees += 360 }; degrees %= 360
+	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, degrees)
+}
+
+func (self *Game) ThrustWithMessage(ship Ship, speed, degrees int, message int) {
+	for degrees < 0 { degrees += 360 }; degrees %= 360
+	if message >= 0 && message <= 180 { degrees += (int(message) + 1) * 360 }
+	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, degrees)
 }
 
 func (self *Game) Dock(ship Ship, planet Planet) {

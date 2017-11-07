@@ -441,6 +441,6 @@ func Play3v3(game *hal.Game) {
 	game.Log("Rush Evo! Scores: %v ... %v", all_scores, time.Now().Sub(start_time))
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
-		game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)
+		game.ThrustWithMessage(ship, genome.genes[i].speed, genome.genes[i].angle, int(MSG_SECRET_SAUCE))
 	}
 }
