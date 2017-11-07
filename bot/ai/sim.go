@@ -330,7 +330,7 @@ func (self *Genome) Mutate() {
 	}
 }
 
-func EvolveGenome(game *hal.Game, iterations int) (*Genome, int) {
+func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 
@@ -338,17 +338,16 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int) {
 
 	centre_of_gravity := game.AllShipsCentreOfGravity()
 
-	genome := new(Genome)
-	genome.Init(len(game.MyShips()))
+	best_genome := new(Genome)
+	best_genome.Init(len(game.MyShips()))
 
 	best_score := -999999
-	best_genome := genome.Copy()
 
-	steps := 0
+	steps := 0		// Counted for info - how many successful mutations we make.
 
 	for n := 0; n < iterations; n++ {
 
-		genome = best_genome.Copy()
+		genome := best_genome.Copy()
 		genome.Mutate()
 
 		score := 0
@@ -414,7 +413,7 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int) {
 		}
 	}
 
-	return best_genome, best_score
+	return best_genome, best_score, steps
 }
 
 func FightRush(game *hal.Game) {
@@ -425,10 +424,11 @@ func FightRush(game *hal.Game) {
 	var best_score int
 
 	var all_scores []int
+	var all_steps []int			// Count of mutations used to produce each genome (for info only)
 
 	for n := 0; n < 20; n++ {
 
-		new_genome, score := EvolveGenome(game, 2500)
+		new_genome, score, steps := EvolveGenome(game, 2500)
 
 		if score > best_score || genome == nil {
 			genome = new_genome
@@ -436,9 +436,11 @@ func FightRush(game *hal.Game) {
 		}
 
 		all_scores = append(all_scores, score)
+		all_steps = append(all_steps, steps)
 	}
 
-	game.Log("Rush Evo! Scores: %v ... %v", all_scores, time.Now().Sub(start_time))
+	game.Log("Rush Evo! Scores: %v", all_scores)
+	game.Log("           Steps: %v ... total time: %v", all_steps, time.Now().Sub(start_time))
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
 		game.ThrustWithMessage(ship, genome.genes[i].speed, genome.genes[i].angle, int(MSG_SECRET_SAUCE))
