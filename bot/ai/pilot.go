@@ -203,7 +203,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		other_ship := self.Target.(hal.Ship)
 
-		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 4.45, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 4.5ish
+		speed, degrees, err := game.GetApproach(self.Ship, other_ship, 5.45, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 5.5ish
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
@@ -266,11 +266,14 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 		enemy_ship := enemies[0]
 		side := hal.DecideSide(self.Ship, enemy_ship, planet)
 
-		speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.45, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 4.5ish
+		speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 5.45, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 5.5ish
 		if err != nil {
-			self.Log("EngagePlanet(), while trying to engage siege ship: %v", err)
+			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
 		}
 		self.PlanThrust(speed, degrees, MSG_FIGHT_IN_ORBIT)
+		if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
+			self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
+		}
 		return
 	}
 
@@ -299,7 +302,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	enemy_ship := docked_targets[0]
 	side := hal.DecideSide(self.Ship, enemy_ship, planet)
 
-	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 4.45, avoid_list, side)			// GetApproach uses centre-to-edge distances, so 4.5ish
+	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 5.45, avoid_list, side)			// GetApproach uses centre-to-edge distances, so 5.5ish
 
 	if err != nil {
 		self.Log("EngagePlanet(): %v", err)

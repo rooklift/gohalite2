@@ -1,6 +1,5 @@
 TODO
 
-- Fix range in sim.
 - Apparently chasing nearby ships is good?
 - Maybe start with closest planet and *its* closest planet?
 - Distress calls / target overrides.
@@ -10,15 +9,7 @@ TODO
 - When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
 - Docking is OK for a few ships (select them somehow) if we have overwhelming force.
 - Maybe use our ship IDs to decide whether we are needed, if there are a lot more friendlies present.
-- 1v1 improvements.
 - Shummie's 2nd place shennanigans?
-
-
-1v1 note:
-- If the lead ship can close fast enough, it can both absorb all the shots and collide with an enemy (which is good).
-- i.e. the enemy will waste their shots. Hopefully our ships don't waste theirs.
-- The distances need to be right. All of the above needs to happen in 1 turn.
-- It very much relies on the enemy closing with us. If the enemy sits still we won't collide.
 
 Allocation idea:
 - Make a list of targets.
