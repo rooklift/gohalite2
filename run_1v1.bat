@@ -1,1 +1,1 @@
-halite.exe -i "replays" "bot.exe --timeseed" ".\otherbots\v21\mybot.exe"
+halite.exe -i "replays" ".\otherbots\v21\mybot.exe" "bot.exe --timeseed"
