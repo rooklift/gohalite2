@@ -185,12 +185,12 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		planet := self.Target.(hal.Planet)
 
-		if self.ApproachDist(planet) < 8 {		// If this is too low, we may get outside the action zone when navigating round allies.
+		if self.ApproachDist(planet) <= 10.1 {		// If this is too low, we may get outside the action zone when navigating round allies.
 			self.EngagePlanet(avoid_list)
 			return
 		}
 
-		speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid_list, side)
+		speed, degrees, err := game.GetApproach(self.Ship, planet, 10, avoid_list, side)
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
@@ -327,7 +327,7 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 	// Which side of objects to navigate around. At long range, use this arbitary choice...
 	var side hal.Side; if self.Id % 2 == 0 { side = hal.RIGHT } else { side = hal.LEFT }
 
-	speed, degrees, err := game.GetApproach(self.Ship, planet, 4, avoid_list, side)
+	speed, degrees, err := game.GetApproach(self.Ship, planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 
 	if err != nil {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)

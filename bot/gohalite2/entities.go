@@ -132,7 +132,7 @@ type Ship struct {
 
 func (s Ship) CanDock(p Planet) bool {
 	if s.Alive() && p.Alive() && p.IsFull() == false && (p.Owned == false || p.Owner == s.Owner) {
-		return s.ApproachDist(p) < DOCKING_RADIUS
+		return s.ApproachDist(p) < DOCKING_RADIUS + SHIP_RADIUS
 	}
 	return false
 }
