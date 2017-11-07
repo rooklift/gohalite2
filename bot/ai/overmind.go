@@ -169,7 +169,7 @@ func (self *Overmind) DetectRushFight() bool {
 
 	// <= 3 ships each
 	// All ships near each other
-	// No docked ships on map
+	// My ships all undocked
 
 	players := self.Game.SurvivingPlayerIDs()
 
@@ -185,7 +185,7 @@ func (self *Overmind) DetectRushFight() bool {
 			return false
 		}
 		for _, ship := range ships {
-			if ship.DockedStatus != hal.UNDOCKED {
+			if ship.DockedStatus != hal.UNDOCKED && ship.Owner == self.Game.Pid() {
 				return false
 			}
 		}
