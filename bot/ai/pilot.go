@@ -396,3 +396,16 @@ func (self *Pilot) ExecutePlanWithATC(atc *AirTrafficControl) bool {
 
 	}
 }
+
+func (self *Pilot) SlowPlanDown() {
+
+	speed, degrees := hal.CourseFromString(self.Plan)
+
+	if speed < 1 {
+		return
+	}
+
+	speed--
+
+	self.PlanThrust(speed, degrees, MSG_ATC_SLOWED)
+}

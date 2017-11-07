@@ -109,7 +109,7 @@ func (self *Sim) Step() {
 			for _, ship_b := range self.ships[i+1:] {
 				if ship_b.hp > 0 {
 					if ship_a.owner != ship_b.owner {
-						t, ok := CollisionTime(5.0, &ship_a.SimEntity, &ship_b.SimEntity)		// Will be 6.0 since bugfixes around 6 Nov 2017.
+						t, ok := CollisionTime(6.0, &ship_a.SimEntity, &ship_b.SimEntity)		// Should be 6.0 since bugfixes around 6 Nov 2017.
 						if ok && t >= 0 && t <= 1 {
 							possible_events = append(possible_events, &PossibleEvent{ship_a, ship_b, nil, t, ATTACK})
 						}
@@ -417,7 +417,7 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int) {
 	return best_genome, best_score
 }
 
-func Play3v3(game *hal.Game) {
+func FightRush(game *hal.Game) {
 
 	start_time := time.Now()
 

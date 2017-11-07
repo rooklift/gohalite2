@@ -97,6 +97,19 @@ func (self *Overmind) ExecuteMoves() {
 		}
 	}
 
+	// As a special case, at game start, allow retry with lower velocity...
+
+	if len(self.Pilots) == 3 {
+		for n := 0; n < 2; n++ {
+			for _, pilot := range mobile_pilots {
+				if pilot.HasExecuted == false {
+					pilot.SlowPlanDown()
+					pilot.ExecutePlanWithATC(self.ATC)
+				}
+			}
+		}
+	}
+
 	// Randomly give up for half the ships that still aren't moving, and
 	// retry the pathfinding with the other half.
 

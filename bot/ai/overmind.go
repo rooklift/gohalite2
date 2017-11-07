@@ -31,32 +31,41 @@ func (self *Overmind) Step() {
 	self.ATC.Clear()
 
 	if self.Game.Turn() == 0 {
-		self.ChooseInitialTargets()
+		assassin := self.ChooseInitialTargets()
+		if assassin {
+			self.TurnZeroCluster()
+		} else {
+			self.ExecuteMoves()
+		}
+		return
 	}
 
 	if self.DetectRushFight() {
 		self.Game.LogOnce("Entering dangerous 3v3!")
-		self.ExecuteMoves()
+		FightRush(self.Game)
 	} else {
 		self.ExecuteMoves()
 	}
 }
 
-func (self *Overmind) ChooseInitialTargets() {
+func (self *Overmind) ChooseInitialTargets() bool {		// Returns: are we assassinating?
 
 	// As a good default...
 
 	self.ChooseThreeDocks()
 
 	if StringSliceContains(os.Args, "--conservative") {
-		return
+		return false
 	}
 
 	if self.Game.InitialPlayers() == 2 {
 		if self.Game.MyShips()[0].Dist(self.Game.EnemyShips()[0]) < 150 {
 			self.ChooseAssassinateTargets()
+			return true
 		}
 	}
+
+	return false
 }
 
 func (self *Overmind) ChooseAssassinateTargets() {
@@ -201,11 +210,20 @@ func (self *Overmind) DetectRushFight() bool {
 	return true
 }
 
-/*
-
 func (self *Overmind) TurnZeroCluster() {
 
 	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+/*
+	if centre_of_gravity.X > self.Pilots[0].X {
+		self.Cluster(7, 10, 6, 0, 7, 350)
+	} else if centre_of_gravity.X < self.Pilots[0].X {
+		self.Cluster(7, 170, 6, 180, 7, 190)
+	} else if centre_of_gravity.Y > self.Pilots[0].Y {
+		self.Cluster(7, 90, 6, 100, 3, 60)
+	} else if centre_of_gravity.Y < self.Pilots[0].Y {
+		self.Cluster(3, 240, 6, 280, 7, 270)
+	}
+*/
 
 	if centre_of_gravity.X > self.Pilots[0].X {
 		self.Cluster(7, 15, 6, 0, 7, 345)
@@ -216,6 +234,7 @@ func (self *Overmind) TurnZeroCluster() {
 	} else if centre_of_gravity.Y < self.Pilots[0].Y {
 		self.Cluster(2, 240, 5, 280, 7, 270)
 	}
+
 }
 
 func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
@@ -235,4 +254,3 @@ func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
 	}
 }
 
-*/
