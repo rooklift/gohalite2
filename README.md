@@ -12,7 +12,7 @@ That's about it - everything else is implementation details.
 
 # 1v1 Genetic Algorithm
 
-In 2-player games it's sometimes sensible to rush the enemy, ignoring planets and going straight at 'em. In this case, the bot uses a genetic algorithm to find which moves are best, i.e. we generate a random "genome" (list of moves) and then do the following:
+In 2-player games it's sometimes sensible to rush the enemy, ignoring planets and going straight at 'em. In this case, when the ships are close to the enemy, the bot uses a genetic algorithm to find which moves are best, i.e. we generate a random "genome" (list of moves) and then do the following:
 
 * Mutate the genome randomly.
 * Simulate the results.
