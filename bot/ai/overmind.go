@@ -59,7 +59,7 @@ func (self *Overmind) ChooseInitialTargets() bool {		// Returns: are we assassin
 	}
 
 	if self.Game.InitialPlayers() == 2 {
-		if self.Game.MyShips()[0].Dist(self.Game.EnemyShips()[0]) < 150 {
+		if self.Game.MyShips()[0].Dist(self.Game.EnemyShips()[0]) < 135 {
 			self.ChooseAssassinateTargets()
 			return true
 		}
@@ -254,3 +254,44 @@ func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
 	}
 }
 
+/*
+
+func (self *Overmind) DetectFailedRush() bool {
+
+	if len(self.Pilots) != 3 {
+		return false
+	}
+
+	for _, pilot := range self.Pilots {
+		if pilot.Target.Type() != hal.SHIP {
+			return false
+		}
+	}
+
+	mid_point := hal.Point{
+		X: float64(self.Game.Width()) / 2,
+		Y: float64(self.Game.Height()) / 2,
+	}
+
+	sort.Slice(self.Pilots, func(a, b int) bool {
+		return self.Pilots[a].Dist(mid_point) < self.Pilots[b].Dist(mid_point)
+	})
+
+	if self.Pilots[0].Dist(mid_point) > 20 {
+		return false
+	}
+
+	enemy_ships := self.Game.EnemyShips()
+
+	sort.Slice(enemy_ships, func(a, b int) bool {
+		return enemy_ships[a].Dist(mid_point) < enemy_ships[b].Dist(mid_point)
+	})
+
+	if enemy_ships[0].Dist(mid_point) < 50 {
+		return false
+	}
+
+	return true
+}
+
+*/

@@ -1,1 +1,1 @@
-halite.exe -i "replays" ".\otherbots\v21\mybot.exe" "bot.exe --timeseed"
+halite.exe -i "replays" "bot.exe" "bot.exe --conservative"
