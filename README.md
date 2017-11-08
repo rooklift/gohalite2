@@ -4,10 +4,10 @@ At a strategic level there's not much to the bot. In most games, the bot acts on
 
 * Don't crash our ships into each other.
 * Send new ships to the nearest target, which is either an enemy ship, or a planet that *needs help*, defined as:
-  - Not fully docked by us, or
+  - Not fully docked by us, or:
   - Under threat of attack.
 * When at a planet:
-  - Attack the nearest ship that needs attacking, if there are any...
+  - Attack the nearest ship that needs attacking, if there are any.
   - Otherwise, dock if possible.
   - Otherwise, choose a new destination as above.
 
