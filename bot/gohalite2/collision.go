@@ -66,25 +66,32 @@ func (self *Game) GetCourseRecursive(ship Ship, target Entity, avoid_list []Enti
 
 	degrees := Angle(ship.X, ship.Y, target.GetX(), target.GetY())
 
-	c, does_hit := self.FirstCollision(ship, distance, degrees, avoid_list)
+	c, ok := self.FirstCollision(ship, distance, degrees, avoid_list)
 
-	if does_hit == false {
+	if ok == false {		// There is no collision
 		speed := Min(Round(distance), MAX_SPEED)
 		return speed, degrees, nil
 	}
 
-	if depth > 0 {
-		var waypoint_angle int
-		if side == RIGHT {
-			waypoint_angle = degrees + 90
-		} else {
-			waypoint_angle = degrees - 90
-		}
-		waypointx, waypointy := Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
-		return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, avoid_list, depth - 1, side)
+	if depth < 1 {
+		return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
 	}
 
-	return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
+	// Reset our nav side iff the colliding object is a planet...
+
+	if c.Type() == PLANET {
+		side = DecideSide(ship, target, c)
+	}
+
+	var waypoint_angle int
+
+	if side == RIGHT {
+		waypoint_angle = degrees + 90
+	} else {
+		waypoint_angle = degrees - 90
+	}
+	waypointx, waypointy := Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
+	return self.GetCourseRecursive(ship, Point{waypointx, waypointy}, avoid_list, depth - 1, side)
 }
 
 func (self *Game) GetApproach(ship Ship, target Entity, margin float64, avoid_list []Entity, side Side) (int, int, error) {
