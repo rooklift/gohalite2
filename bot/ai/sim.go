@@ -426,8 +426,6 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 func FightRush(game *hal.Game) {
 
-	start_time := time.Now()
-
 	var genome *Genome
 	var best_score int
 
@@ -445,10 +443,17 @@ func FightRush(game *hal.Game) {
 
 		all_scores = append(all_scores, score)
 		all_steps = append(all_steps, steps)
+
+		// Hopefully the following is adequate to prevent timeouts...
+
+		if time.Now().Sub(game.ParseTime()) > 1500 * time.Millisecond {
+			game.Log("Emergency timeout in FightRush() after %d genomes.", n)
+			break
+		}
 	}
 
 	game.Log("Rush Evo! Scores: %v", all_scores)
-	game.Log("           Steps: %v ... total time: %v", all_steps, time.Now().Sub(start_time))
+	game.Log("           Steps: %v", all_steps)
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
 		game.ThrustWithMessage(ship, genome.genes[i].speed, genome.genes[i].angle, int(MSG_SECRET_SAUCE))

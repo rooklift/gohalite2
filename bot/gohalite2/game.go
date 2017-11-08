@@ -2,6 +2,7 @@ package gohalite2
 
 import (
 	"fmt"
+	"time"
 )
 
 type MoveInfo struct {
@@ -43,6 +44,8 @@ type Game struct {
 	token_parser			*TokenParser
 	raw						string
 
+	parse_time				time.Time
+
 	// These slices are kept as answers to common queries...
 
 	all_ships_cache			[]Ship
@@ -75,3 +78,4 @@ func (self *Game) Width() int { return self.width }
 func (self *Game) Height() int { return self.height }
 func (self *Game) InitialPlayers() int { return self.initialPlayers }
 func (self *Game) CurrentPlayers() int { return self.currentPlayers }
+func (self *Game) ParseTime() time.Time { return self.parse_time }
