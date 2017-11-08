@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // ---------------------------------------
@@ -95,7 +96,7 @@ func (self *TokenParser) ClearTokens() {
 
 func (self *Game) Parse() {
 
-	self.orders = make(map[int]string)								// Clear all orders.
+	self.orders = make(map[int]string)			// Clear all orders.
 
 	if self.inited {
 		self.turn++
@@ -103,7 +104,7 @@ func (self *Game) Parse() {
 
 	// Clear some info maps. We will recreate them during parsing.
 
-	old_shipmap := self.shipMap		// We need last turn's ship info for inferring movement / birth.
+	old_shipmap := self.shipMap					// We need last turn's ship info for inferring movement / birth.
 
 	self.shipMap = make(map[int]Ship)
 	self.planetMap = make(map[int]Planet)
@@ -115,8 +116,10 @@ func (self *Game) Parse() {
 
 	player_count := self.token_parser.Int()
 
+	self.parse_time = time.Now()				// MUST happen AFTER the first token parse. <------------------------------------- important
+
 	if self.initialPlayers == 0 {
-		self.initialPlayers = player_count							// Only save this at init stage.
+		self.initialPlayers = player_count		// Only save this at init stage.
 	}
 
 	players_with_ships := 0
