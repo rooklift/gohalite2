@@ -90,6 +90,8 @@ func (self *Overmind) ChooseAssassinateTargets() {
 	}
 }
 
+/*
+
 func (self *Overmind) ChooseThreePlanets() {
 
 	// Sort our pilots by Y...
@@ -121,6 +123,8 @@ func (self *Overmind) ChooseThreePlanets() {
 	}
 }
 
+*/
+
 func (self *Overmind) ChooseThreeDocks() {
 
 	// Sort all planets by distance to our fleet...
@@ -128,7 +132,7 @@ func (self *Overmind) ChooseThreeDocks() {
 	all_planets := self.Game.AllPlanets()
 
 	sort.Slice(all_planets, func(a, b int) bool {
-		return all_planets[a].Dist(self.Pilots[0]) < all_planets[b].Dist(self.Pilots[0])
+		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
 	})
 
 	closest_three := all_planets[:3]
