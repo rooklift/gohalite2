@@ -382,6 +382,9 @@ func (self *Pilot) PlanUndock() {
 // ----------------------------------------------
 
 func (self *Pilot) ExecutePlan() {
+	if self.Plan == "" {
+		self.PlanThrust(0, 0, MSG_EXECUTED_NO_PLAN)
+	}
 	self.Game.RawOrder(self.Id, self.Plan)
 	self.HasExecuted = true
 }
