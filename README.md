@@ -3,7 +3,7 @@ My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
 At a strategic level there's not much to the bot. In most games, the bot acts on these principles:
 
 * Don't crash our ships into each other.
-* Send new ships to the nearest target, which is either an enemy ship, or a planet that *needs help*, defined as: not fully owned by us, or under threat of attack. (Enemy planets count as *needing help*.)
+* Send new ships to the nearest target, which is either an enemy ship, or a planet that *needs help*, defined as: not fully docked by us, or under threat of attack. (Enemy planets count as *needing help*.)
 * When at a planet, attack the nearest ship that needs attacking, if there are any...
 * ...otherwise dock if possible.
 * ...otherwise choose a new destination as above.
