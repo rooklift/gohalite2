@@ -21,7 +21,7 @@ In 2-player games it's sometimes sensible to rush the enemy, ignoring planets an
 
 The problem is, the simulation needs to know what the opponent will do. I currently do very crude guessing. A more advanced technique would be to evolve the *opponent's* moves as above, and only then evolve our own moves to counteract them.
 
-# Global strategy - Conceptual breakthroughs
+# Global Strategy - Conceptual Breakthroughs
 
 I suspect implementation details are less important than overall strategy. I only made a couple of conceptual breakthroughs:
 
