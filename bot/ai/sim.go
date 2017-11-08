@@ -377,16 +377,24 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 			for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
 
-				switch scenario {
+				if enemy_sim_ship_ptrs[i].dockedstatus != hal.UNDOCKED {
 
-				case 0:
-					last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
-					enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
-					enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
-
-				case 1:
 					enemy_sim_ship_ptrs[i].vel_x = 0
 					enemy_sim_ship_ptrs[i].vel_y = 0
+
+				} else {
+
+					switch scenario {
+
+					case 0:
+						last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
+						enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
+						enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
+
+					case 1:
+						enemy_sim_ship_ptrs[i].vel_x = 0
+						enemy_sim_ship_ptrs[i].vel_y = 0
+					}
 				}
 			}
 
