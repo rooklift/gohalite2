@@ -109,7 +109,7 @@ func (self *Pilot) PlanDockIfWise() (hal.Planet, bool) {
 	return closest_planet, true
 }
 
-func (self *Pilot) ChooseTarget() {
+func (self *Pilot) ChooseTarget(all_enemy_ships []hal.Ship) {	// We pass all_enemy_ships for speed. It does get sorted in place, caller beware.
 	game := self.Game
 
 	all_planets := game.AllPlanets()
@@ -134,8 +134,20 @@ func (self *Pilot) ChooseTarget() {
 		return self.Dist(target_planets[a]) < self.Dist(target_planets[b])
 	})
 
-	if len(target_planets) > 0 {
+	sort.Slice(all_enemy_ships, func(a, b int) bool {
+		return self.Dist(all_enemy_ships[a]) < self.Dist(all_enemy_ships[b])
+	})
+
+	if len(all_enemy_ships) > 0 && len(target_planets) > 0 {
+		if self.Dist(all_enemy_ships[0]) < self.Dist(target_planets[0]) {
+			self.Target = all_enemy_ships[0]
+		} else {
+			self.Target = target_planets[0]
+		}
+	} else if len(target_planets) > 0 {
 		self.Target = target_planets[0]
+	} else if len(all_enemy_ships) > 0 {
+		self.Target = all_enemy_ships[0]
 	}
 }
 
@@ -210,7 +222,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			self.Target = hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees, MSG_ASSASSINATE)
-			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE {
+			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
 				self.Log("PlanChase(): not moving but not in range!")
 			}
 		}

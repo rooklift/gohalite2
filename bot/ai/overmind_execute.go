@@ -45,6 +45,8 @@ func (self *Overmind) ExecuteMoves() {
 		stateless = true
 	}
 
+	all_enemy_ships := self.Game.EnemyShips()		// Cached for speed reasons.
+
 	for _, pilot := range mobile_pilots {
 
 		var valid bool
@@ -54,7 +56,7 @@ func (self *Overmind) ExecuteMoves() {
 		}
 
 		if valid == false {
-			pilot.ChooseTarget()
+			pilot.ChooseTarget(all_enemy_ships)
 		}
 	}
 
