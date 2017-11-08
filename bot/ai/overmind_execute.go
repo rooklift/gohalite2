@@ -3,6 +3,7 @@ package ai
 import (
 	"math/rand"
 	"os"
+	"sort"
 
 	hal "../gohalite2"
 )
@@ -20,6 +21,17 @@ func (self *Overmind) ExecuteMoves() {
 		if pilot.DockedStatus == hal.UNDOCKED {
 			mobile_pilots = append(mobile_pilots, pilot)
 		}
+	}
+
+	// As a special case (relevant for 1v1 rushes) sort 3 ships by distance to centre...
+
+	if len(mobile_pilots) == 3 {
+
+		centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+
+		sort.Slice(mobile_pilots, func(a, b int) bool {
+			return mobile_pilots[a].Dist(centre_of_gravity) < mobile_pilots[b].Dist(centre_of_gravity)
+		})
 	}
 
 	// Plan a Dock if possible. (And we're not chasing a ship.)

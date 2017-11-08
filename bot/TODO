@@ -1,7 +1,6 @@
 TODO
 
-- Pathing fix.
-- Maybe assign 1 ship only per target ship?
+- Deal with decoy enemies - Maybe assign 1 ship only per target ship?
 - Maybe start with closest planet and *its* closest planet?
 - Distress calls / target overrides.
 - On turn 1, is the enemy coming for me? If yes, go aggro. If no, land...
