@@ -86,10 +86,10 @@ func (self *Pilot) ValidateTarget() bool {
 
 		if target.Alive() == false {
 			self.SetTarget(hal.Nothing{})
-		} else if game.DesiredSpots(target) == 0 && len(self.Overmind.EnemyMap[target.Id]) == 0 {		// Planet fully owned, and safe
-			self.SetTarget(hal.Nothing{})
-		} else if self.Overmind.ShipsDockingMap[target.Id] >= game.DesiredSpots(target) {					// We've enough of guys trying to dock
-			self.SetTarget(hal.Nothing{})
+		} else if self.Overmind.ShipsDockingMap[target.Id] >= game.DesiredSpots(target) {		// We've enough guys (maybe 0) trying to dock...
+			if len(self.Overmind.EnemyMap[target.Id]) == 0 {									// ...and the planet is safe
+				self.SetTarget(hal.Nothing{})
+			}
 		}
 	}
 
