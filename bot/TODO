@@ -1,6 +1,6 @@
 TODO
 
-- Deal with decoy enemies - Maybe assign 1 ship only per target ship?
+- Docking is OK for a few ships (select them somehow) if we have overwhelming force.
 - Sim should consider non-existance of enemies to prevent planet crashes.
 - Maybe start with closest planet and *its* closest planet?
 - Distress calls / target overrides.
@@ -8,7 +8,6 @@ TODO
 - Or alternatively, if the other player flees, take the centre planets?
 - Should use does_collide() for perfect ATC.
 - When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
-- Docking is OK for a few ships (select them somehow) if we have overwhelming force.
 - Maybe use our ship IDs to decide whether we are needed, if there are a lot more friendlies present.
 - Shummie's 2nd place shennanigans?
 

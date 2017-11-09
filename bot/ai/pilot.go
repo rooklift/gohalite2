@@ -10,7 +10,7 @@ import (
 type Pilot struct {
 	hal.Ship
 	Plan			string				// Our planned order, valid for 1 turn only
-	HasExecuted		bool				// Have we actually sent the order?
+	HasExecuted		bool				// Have we actually "sent" the order? (Placed it in the game.orders map.)
 	Overmind		*Overmind
 	Game			*hal.Game
 	Target			hal.Entity			// Use a hal.Nothing{} struct for no target.
@@ -276,9 +276,9 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	planet := self.Target.(hal.Planet)
 
-	// Are there mobile enemy ships near the planet?
+	// Are there enemy ships near the planet?
 
-	if len(overmind.EnemyMap[planet.Id]) > 0 {
+	if len(overmind.EnemyMap[planet.Id]) > 0 || (planet.Owner != game.Pid() && planet.DockedShips > 0) {
 
 		// We directly plan our move without changing our stored (planet) target.
 
@@ -302,11 +302,13 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 		speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 5.45, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 5.5ish
 		if err != nil {
+			self.PlanThrust(speed, degrees, MSG_RECURSION)
 			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
-		}
-		self.PlanThrust(speed, degrees, MSG_FIGHT_IN_ORBIT)
-		if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-			self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
+		} else {
+			self.PlanThrust(speed, degrees, MSG_FIGHT_IN_ORBIT)
+			if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
+				self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
+			}
 		}
 		return
 	}
@@ -318,32 +320,10 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 		return
 	}
 
-	// So it's owned by sitting ducks... (since otherwise our target would have been cleared earlier)
+	// This function shouldn't have been called at all.
 
-	if planet.Owner == game.Pid() {
-		self.Log("EngagePlanet(): entered attack mode at friendly planet not under siege!")
-		return
-	}
-
-	// We directly plan our move without changing our stored (planet) target.
-
-	docked_targets := game.ShipsDockedAt(planet)
-
-	sort.Slice(docked_targets, func(a, b int) bool {
-		return docked_targets[a].Dist(self.Ship) < docked_targets[b].Dist(self.Ship)
-	})
-
-	enemy_ship := docked_targets[0]
-	side := hal.DecideSide(self.Ship, enemy_ship, planet)
-
-	speed, degrees, err := game.GetApproach(self.Ship, enemy_ship, 5.45, avoid_list, side)			// GetApproach uses centre-to-edge distances, so 5.5ish
-
-	if err != nil {
-		self.Log("EngagePlanet(): %v", err)
-		return
-	}
-
-	self.PlanThrust(speed, degrees, MSG_ATTACK_DOCKED)
+	self.Log("EngagePlanet() called but there's nothing to do here.")
+	return
 }
 
 func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
