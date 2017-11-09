@@ -236,3 +236,13 @@ func (self *Overmind) UpdateProximityMap() {
 		}
 	}
 }
+
+func (self *Overmind) UpdateShipChases() {
+	self.EnemyShipsChased = make(map[int][]int)
+	for _, pilot := range self.Pilots {
+		if pilot.Target.Type() == hal.SHIP {
+			target := pilot.Target.(hal.Ship)
+			self.EnemyShipsChased[target.Id] = append(self.EnemyShipsChased[target.Id], pilot.Id)
+		}
+	}
+}

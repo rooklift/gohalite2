@@ -14,6 +14,7 @@ type Overmind struct {
 	ATC						*AirTrafficControl
 	EnemyMap				map[int][]hal.Ship		// Planet ID --> Enemy ships near the planet
 	ShipsDockingMap			map[int]int				// Planet ID --> My ship count docking this turn
+	EnemyShipsChased		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -27,6 +28,7 @@ func (self *Overmind) Step() {
 
 	self.UpdatePilots()
 	self.UpdateProximityMap()
+	self.UpdateShipChases()							// Must happen after self.Pilots is updated
 	self.ShipsDockingMap = make(map[int]int)
 	self.ATC.Clear()
 
@@ -86,7 +88,7 @@ func (self *Overmind) ChooseAssassinateTargets() {
 	// Pair pilots with enemies...
 
 	for index, pilot := range self.Pilots {
-		pilot.Target = enemies[index]
+		pilot.SetTarget(enemies[index])
 	}
 }
 
@@ -119,7 +121,7 @@ func (self *Overmind) ChooseThreePlanets() {
 	// Pair pilots with planets...
 
 	for index, pilot := range self.Pilots {
-		pilot.Target = closest_three[index]
+		pilot.SetTarget(closest_three[index])
 	}
 }
 
@@ -158,9 +160,9 @@ func (self *Overmind) ChooseThreeDocks() {
 
 	for _, perm := range permutations {		// Find a non-crossing solution...
 
-		self.Pilots[0].Target = docks[perm[0]]
-		self.Pilots[1].Target = docks[perm[1]]
-		self.Pilots[2].Target = docks[perm[2]]
+		self.Pilots[0].SetTarget(docks[perm[0]])
+		self.Pilots[1].SetTarget(docks[perm[1]])
+		self.Pilots[2].SetTarget(docks[perm[2]])
 
 		if Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
 			continue

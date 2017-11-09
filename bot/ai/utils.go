@@ -96,3 +96,16 @@ func StringSliceIndex(slice []string, s string) int {
 func StringSliceContains(slice []string, s string) bool {
 	return StringSliceIndex(slice, s) != -1
 }
+
+func IntSliceWithout(slice []int, remove int) []int {
+
+	var ret []int
+
+	for _, n := range(slice) {
+		if n != remove {
+			ret = append(ret, n)
+		}
+	}
+
+	return ret
+}

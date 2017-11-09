@@ -49,6 +49,21 @@ func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g
 	return self.Target.Type() != hal.NOTHING
 }
 
+func (self *Pilot) SetTarget(e hal.Entity) {		// So we can update Overmind's info.
+
+	overmind := self.Overmind
+
+	if self.Target.Type() == hal.SHIP {
+		overmind.EnemyShipsChased[self.Target.(hal.Ship).Id] = IntSliceWithout(overmind.EnemyShipsChased[self.Target.(hal.Ship).Id], self.Id)
+	}
+
+	self.Target = e
+
+	if self.Target.Type() == hal.SHIP {
+		overmind.EnemyShipsChased[self.Target.(hal.Ship).Id] = append(overmind.EnemyShipsChased[self.Target.(hal.Ship).Id], self.Id)
+	}
+}
+
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
 }
@@ -62,7 +77,7 @@ func (self *Pilot) ValidateTarget() bool {
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		}
 
 	case hal.PLANET:
@@ -70,11 +85,11 @@ func (self *Pilot) ValidateTarget() bool {
 		target := self.Target.(hal.Planet)
 
 		if target.Alive() == false {
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else if game.DesiredSpots(target) == 0 && len(self.Overmind.EnemyMap[target.Id]) == 0 {		// Planet fully owned, and safe
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else if self.Overmind.ShipsDockingMap[target.Id] >= game.DesiredSpots(target) {					// We've enough of guys trying to dock
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		}
 	}
 
@@ -139,15 +154,22 @@ func (self *Pilot) ChooseTarget(all_enemy_ships []hal.Ship) {	// We pass all_ene
 	})
 
 	if len(all_enemy_ships) > 0 && len(target_planets) > 0 {
+
+		cm := self.Overmind.EnemyShipsChased
+
 		if self.Dist(all_enemy_ships[0]) < self.Dist(target_planets[0]) {
-			self.Target = all_enemy_ships[0]
+			if len(cm[all_enemy_ships[0].Id]) == 0 {
+				self.SetTarget(all_enemy_ships[0])
+			} else {
+				self.SetTarget(target_planets[0])
+			}
 		} else {
-			self.Target = target_planets[0]
+			self.SetTarget(target_planets[0])
 		}
 	} else if len(target_planets) > 0 {
-		self.Target = target_planets[0]
+		self.SetTarget(target_planets[0])
 	} else if len(all_enemy_ships) > 0 {
-		self.Target = all_enemy_ships[0]
+		self.SetTarget(all_enemy_ships[0])
 	}
 }
 
@@ -206,7 +228,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
 		}
@@ -219,7 +241,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MSG_ASSASSINATE)
 			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
@@ -234,7 +256,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := game.GetCourse(self.Ship, point, avoid_list, side)
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MSG_POINT_TARGET)
 		}
