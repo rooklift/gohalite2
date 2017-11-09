@@ -333,6 +333,7 @@ func (self *Genome) Mutate() {
 func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
+	// Perhaps another should be the enemy ships blinking out of existence, so we don't crash into planets.
 
 	initial_sim := SetupSim(game)
 
