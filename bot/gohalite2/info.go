@@ -6,12 +6,14 @@ import (
 
 // ----------------------------------------------
 
-func (self *Game) GetShip(sid int) Ship {
-	return self.shipMap[sid]
+func (self *Game) GetShip(sid int) (Ship, bool) {
+	ret, ok := self.shipMap[sid]
+	return ret, ok
 }
 
-func (self *Game) GetPlanet(plid int) Planet {
-	return self.planetMap[plid]
+func (self *Game) GetPlanet(plid int) (Planet, bool) {
+	ret, ok := self.planetMap[plid]
+	return ret, ok
 }
 
 // ----------------------------------------------

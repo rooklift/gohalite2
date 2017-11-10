@@ -221,7 +221,11 @@ func (self *Game) Parse() {
 			// This relies on the fact that we've already been given info about the ships...
 
 			sid := self.token_parser.Int()
-			self.dockMap[plid] = append(self.dockMap[plid], self.GetShip(sid))
+			ship, ok := self.GetShip(sid)
+			if ok == false {
+				panic("Parser choked on GetShip(sid)")
+			}
+			self.dockMap[plid] = append(self.dockMap[plid], ship)
 		}
 		sort.Slice(self.dockMap[plid], func(a, b int) bool {
 			return self.dockMap[plid][a].Id < self.dockMap[plid][b].Id

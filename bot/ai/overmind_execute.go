@@ -190,23 +190,18 @@ func (self *Overmind) UpdatePilots() {
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
-	// Set various variables to initial state (Target info is untouched by this).
-	// Also updates target info from the Game...
-
-	for _, pilot := range self.Pilots {
-		pilot.ResetAndUpdate()
-		if pilot.Target == nil {
-			panic("nil pilot.Target")
-		}
-	}
-
-	// Delete AIs with dead ships from the slice...
+	// Set various variables to initial state, but keeping current target.
+	// Also update target info from the Game. Also delete pilot if the ship is dead.
 
 	for i := 0; i < len(self.Pilots); i++ {
 		pilot := self.Pilots[i]
-		if pilot.Alive() == false {
+		alive := pilot.ResetAndUpdate()
+		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
+		}
+		if pilot.Target == nil {
+			panic("nil pilot.Target")
 		}
 	}
 }

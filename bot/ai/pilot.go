@@ -21,16 +21,41 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 	self.Game.Log(format_string, args...)
 }
 
-func (self *Pilot) ResetAndUpdate() {				// Doesn't clear Target
-	self.Ship = self.Game.GetShip(self.Id)
+func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.
+
+	var ok bool
+	self.Ship, ok = self.Game.GetShip(self.Id)
+
+	if ok == false {
+		return false
+	}
+
 	self.Plan = ""
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
 
+	// Update the info about our target.
+
 	switch self.Target.Type() {
-		case   hal.SHIP: self.Target = self.Game.GetShip(self.Target.GetId())
-		case hal.PLANET: self.Target = self.Game.GetPlanet(self.Target.GetId())
+
+	case hal.SHIP:
+
+		var ok bool
+		self.Target, ok = self.Game.GetShip(self.Target.GetId())
+		if ok == false {
+			self.Target = hal.Nothing{}
+		}
+
+	case hal.PLANET:
+
+		var ok bool
+		self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
+		if ok == false {
+			self.Target = hal.Nothing{}
+		}
 	}
+
+	return true
 }
 
 func (self *Pilot) HasStationaryPlan() bool {		// true iff we DO have a plan, which doesn't move us.
@@ -205,7 +230,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			blocking_planet = collision_entity.(hal.Planet)
 		} else {
 			s := collision_entity.(hal.Ship)
-			blocking_planet = game.GetPlanet(s.DockedPlanet)
+			blocking_planet, _ = game.GetPlanet(s.DockedPlanet)
 		}
 
 		if self.Target.Type() != hal.PLANET || blocking_planet.Id != self.Target.GetId() {
