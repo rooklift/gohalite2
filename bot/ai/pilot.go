@@ -40,18 +40,26 @@ func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return tru
 
 	case hal.SHIP:
 
-		var ok bool
-		self.Target, ok = self.Game.GetShip(self.Target.GetId())
-		if ok == false {
+		if self.Target.Alive() == false {
 			self.Target = hal.Nothing{}
+		} else {
+			var ok bool
+			self.Target, ok = self.Game.GetShip(self.Target.GetId())
+			if ok == false {
+				self.Target = hal.Nothing{}
+			}
 		}
 
 	case hal.PLANET:
 
-		var ok bool
-		self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
-		if ok == false {
+		if self.Target.Alive() == false {
 			self.Target = hal.Nothing{}
+		} else {
+			var ok bool
+			self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
+			if ok == false {
+				self.Target = hal.Nothing{}
+			}
 		}
 	}
 
