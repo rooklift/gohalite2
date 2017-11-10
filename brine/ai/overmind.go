@@ -115,6 +115,16 @@ func (self *Overmind) Step() {
 		}
 	}
 
+	for _, ship := range game.EnemyShips() {
+		problem := &Problem{
+			Entity: ship,
+			X: ship.X,
+			Y: ship.Y,
+			Need: 1,
+		}
+		all_problems = append(all_problems, problem)
+	}
+
 	for _, pilot := range self.Pilots {
 
 		if len(all_problems) == 0 {

@@ -12,7 +12,7 @@ import (
 
 const (
 	NAME = "brine"
-	VERSION = "1"
+	VERSION = "2"
 )
 
 func Run() {
