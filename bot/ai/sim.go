@@ -337,6 +337,14 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 	initial_sim := SetupSim(game)
 
+	sim_without_enemies := initial_sim.Copy()
+	for i := 0; i < len(sim_without_enemies.ships); i++ {
+		if sim_without_enemies.ships[i].owner != game.Pid() {
+			sim_without_enemies.ships = append(sim_without_enemies.ships[:i], sim_without_enemies.ships[i+1:]...)
+			i--
+		}
+	}
+
 	centre_of_gravity := game.AllShipsCentreOfGravity()
 
 	best_genome := new(Genome)
@@ -353,9 +361,15 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 		score := 0
 
-		for scenario := 0; scenario < 2; scenario++ {
+		for scenario := 0; scenario < 3; scenario++ {
 
-			sim := initial_sim.Copy()
+			var sim *Sim
+
+			if scenario == 0 {						// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
+				sim = sim_without_enemies.Copy()
+			} else {
+				sim = initial_sim.Copy()
+			}
 
 			var my_sim_ship_ptrs []*SimShip
 			var enemy_sim_ship_ptrs []*SimShip
@@ -388,13 +402,17 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 					switch scenario {
 
 					case 0:
+						// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
+
+					case 1:
 						last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
 						enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
 						enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
 
-					case 1:
+					case 2:
 						enemy_sim_ship_ptrs[i].vel_x = 0
 						enemy_sim_ship_ptrs[i].vel_y = 0
+
 					}
 				}
 			}
