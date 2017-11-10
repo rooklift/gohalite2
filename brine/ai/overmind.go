@@ -99,36 +99,17 @@ func (self *Problem) String() string {
 
 func (self *Overmind) Step() {
 
-	game := self.Game
-
 	self.ResetPilots()
 	self.UpdateProximityMaps()
 	self.ShipsDockingMap = make(map[int]int)
 	self.ATC.Clear()
 
-	var all_problems []*Problem
-
-	for _, planet := range game.AllPlanets() {
-		problem := self.GenerateProblem(planet)
-		if problem != nil {
-			all_problems = append(all_problems, problem)
-		}
-	}
-
-	for _, ship := range game.EnemyShips() {
-		problem := &Problem{
-			Entity: ship,
-			X: ship.X,
-			Y: ship.Y,
-			Need: 1,
-		}
-		all_problems = append(all_problems, problem)
-	}
+	all_problems := self.AllProblems()
 
 	for _, pilot := range self.Pilots {
 
 		if len(all_problems) == 0 {
-			break
+			all_problems = self.AllProblems()
 		}
 
 		if pilot.DockedStatus != hal.UNDOCKED {
@@ -149,7 +130,31 @@ func (self *Overmind) Step() {
 	self.ExecuteMoves()
 }
 
-func (self *Overmind) GenerateProblem(planet hal.Planet) *Problem {
+func (self *Overmind) AllProblems() []*Problem {
+
+	var all_problems []*Problem
+
+	for _, planet := range self.Game.AllPlanets() {
+		problem := self.PlanetProblem(planet)
+		if problem != nil {
+			all_problems = append(all_problems, problem)
+		}
+	}
+
+	for _, ship := range self.Game.EnemyShips() {
+		problem := &Problem{
+			Entity: ship,
+			X: ship.X,
+			Y: ship.Y,
+			Need: 1,
+		}
+		all_problems = append(all_problems, problem)
+	}
+
+	return all_problems
+}
+
+func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
 
 	game := self.Game
 
