@@ -1,1 +1,1 @@
-halite.exe --no-compression "bot.exe" ".\otherbots\v26\mybot.exe"
+halite.exe "bot.exe --conservative" "brine.exe"

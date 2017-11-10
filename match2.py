@@ -1,8 +1,8 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe --timeseed",
-	".\\otherbots\\v26\\mybot.exe --timeseed",
+	"bot.exe --conservative",
+	"brine.exe",
 ]
 
 scores = [0,0]
@@ -16,7 +16,7 @@ while 1:
 	random.shuffle(positions)
 
 	output = subprocess.check_output(
-		"halite.exe -s 3619548536 --no-compression -q \"{}\" \"{}\"".format(processes[positions[0]], processes[positions[1]])
+		"halite.exe --no-compression -q \"{}\" \"{}\"".format(processes[positions[0]], processes[positions[1]])
 		).decode("ascii")
 
 	result = json.loads(output)

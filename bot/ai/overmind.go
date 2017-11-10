@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"os"
 	"sort"
 	hal "../gohalite2"
 )
@@ -43,7 +42,7 @@ func (self *Overmind) Step() {
 		return
 	}
 
-	if self.DetectRushFight() {
+	if CONFIG.Conservative == false && self.DetectRushFight() {
 		self.Game.LogOnce("Entering dangerous 3v3!")
 		FightRush(self.Game)
 	} else {
@@ -57,7 +56,7 @@ func (self *Overmind) ChooseInitialTargets() bool {		// Returns: are we assassin
 
 	self.ChooseThreeDocks()
 
-	if StringSliceContains(os.Args, "--conservative") {
+	if CONFIG.Conservative {
 		return false
 	}
 

@@ -2,7 +2,6 @@ package ai
 
 import (
 	"math/rand"
-	"os"
 	"sort"
 
 	hal "../gohalite2"
@@ -52,19 +51,13 @@ func (self *Overmind) ExecuteMoves() {
 
 	// Choose target if needed... (i.e. we don't have a valid target already).
 
-	var stateless bool
-
-	if StringSliceContains(os.Args, "--stateless") {
-		stateless = true
-	}
-
 	all_enemy_ships := self.Game.EnemyShips()		// Cached for speed reasons.
 
 	for _, pilot := range mobile_pilots {
 
 		var valid bool
 
-		if stateless == false {
+		if CONFIG.Stateless == false {
 			valid = pilot.ValidateTarget()
 		}
 
