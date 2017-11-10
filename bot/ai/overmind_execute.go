@@ -211,7 +211,7 @@ func (self *Overmind) UpdatePilots() {
 	}
 }
 
-func (self *Overmind) UpdateProximityMap() {
+func (self *Overmind) UpdateProximityMaps() {
 
 	// Currently only includes non-docked ships.
 
@@ -220,6 +220,7 @@ func (self *Overmind) UpdateProximityMap() {
 	)
 
 	self.EnemyMap = make(map[int][]hal.Ship)
+	self.FriendlyMap = make(map[int][]hal.Ship)
 
 	all_ships := self.Game.AllShips()
 	all_planets := self.Game.AllPlanets()
@@ -230,6 +231,8 @@ func (self *Overmind) UpdateProximityMap() {
 				if ship.ApproachDist(planet) < THREAT_RANGE {
 					if ship.Owner != self.Game.Pid() {
 						self.EnemyMap[planet.Id] = append(self.EnemyMap[planet.Id], ship)
+					} else {
+						self.FriendlyMap[planet.Id] = append(self.FriendlyMap[planet.Id], ship)
 					}
 				}
 			}

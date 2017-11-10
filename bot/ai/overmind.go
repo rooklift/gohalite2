@@ -12,7 +12,8 @@ type Overmind struct {
 	Pilots					[]*Pilot
 	Game					*hal.Game
 	ATC						*AirTrafficControl
-	EnemyMap				map[int][]hal.Ship		// Planet ID --> Enemy ships near the planet
+	EnemyMap				map[int][]hal.Ship		// Planet ID --> Enemy ships near the planet (not docked)
+	FriendlyMap				map[int][]hal.Ship		// Planet ID --> Friendly ships near the planet (not docked)
 	ShipsDockingMap			map[int]int				// Planet ID --> My ship count docking this turn
 	EnemyShipsChased		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
 }
@@ -27,7 +28,7 @@ func NewOvermind(game *hal.Game) *Overmind {
 func (self *Overmind) Step() {
 
 	self.UpdatePilots()
-	self.UpdateProximityMap()
+	self.UpdateProximityMaps()
 	self.UpdateShipChases()							// Must happen after self.Pilots is updated
 	self.ShipsDockingMap = make(map[int]int)
 	self.ATC.Clear()
