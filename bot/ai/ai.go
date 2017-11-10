@@ -12,7 +12,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "27 dev"			// (winner hash) ?? -- log ??
+	VERSION = "27 final"
 )
 
 func Run() {
