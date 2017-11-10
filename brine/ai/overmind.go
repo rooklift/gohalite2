@@ -106,10 +106,15 @@ func (self *Overmind) Step() {
 
 	all_problems := self.AllProblems()
 
+	// Initial assignment of problems to pilots...
+
 	for _, pilot := range self.Pilots {
 
 		if len(all_problems) == 0 {
 			all_problems = self.AllProblems()
+			if len(all_problems) == 0 {
+				break
+			}
 		}
 
 		if pilot.DockedStatus != hal.UNDOCKED {
@@ -124,6 +129,36 @@ func (self *Overmind) Step() {
 		all_problems[0].Need--
 		if all_problems[0].Need <= 0 {
 			all_problems = all_problems[1:]
+		}
+	}
+
+	// See if we can optimise a bit...
+
+	swaps := 0
+
+	for i := 0; i < len(self.Pilots); i++ {
+
+		pilot_a := self.Pilots[i]
+
+		if pilot_a.DockedStatus != hal.UNDOCKED {
+			continue
+		}
+
+		for j := i + 1; j < len(self.Pilots); j++ {
+
+			pilot_b := self.Pilots[j]
+
+			if pilot_b.DockedStatus != hal.UNDOCKED {
+				continue
+			}
+
+			total_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
+			swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
+
+			if swap_dist < total_dist {
+				pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
+				swaps++
+			}
 		}
 	}
 
