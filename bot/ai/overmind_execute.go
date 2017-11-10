@@ -51,18 +51,11 @@ func (self *Overmind) ExecuteMoves() {
 
 	// Choose target if needed... (i.e. we don't have a valid target already).
 
-	all_enemy_ships := self.Game.EnemyShips()		// Cached for speed reasons.
+	all_enemy_ships := self.Game.EnemyShips()
 
 	for _, pilot := range mobile_pilots {
-
-		var valid bool
-
-		if CONFIG.Stateless == false {
-			valid = pilot.ValidateTarget()
-		}
-
-		if valid == false {
-			pilot.ChooseTarget(all_enemy_ships)
+		if CONFIG.Stateless || pilot.ValidateTarget() == false {
+			pilot.ChooseTarget(all_enemy_ships)		// Also chooses from planets. But we cache ships for speed.
 		}
 	}
 
@@ -107,7 +100,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	// As a special case, at game start, allow retry with lower velocity...
 
-	if len(self.Pilots) == 3 {
+	if len(self.Pilots) <= 3 {
 		for n := 0; n < 2; n++ {
 			for _, pilot := range mobile_pilots {
 				if pilot.HasExecuted == false {
