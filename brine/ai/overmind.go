@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 
@@ -92,6 +93,10 @@ type Problem struct {
 	Need		int
 }
 
+func (self *Problem) String() string {
+	return fmt.Sprintf("%v (%d)", self.Entity, self.Need)
+}
+
 func (self *Overmind) Step() {
 
 	game := self.Game
@@ -114,6 +119,10 @@ func (self *Overmind) Step() {
 
 		if len(all_problems) == 0 {
 			break
+		}
+
+		if pilot.DockedStatus != hal.UNDOCKED {
+			continue
 		}
 
 		sort.Slice(all_problems, func(a, b int) bool {
