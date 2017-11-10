@@ -25,7 +25,7 @@ func Run() {
 		}
 	}()
 
-	game.StartLog(fmt.Sprintf("%s%d.txt", NAME, game.Pid()))
+	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
 

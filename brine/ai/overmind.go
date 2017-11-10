@@ -194,11 +194,15 @@ func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
 	game := self.Game
 
 	if game.DesiredSpots(planet) > 0 || len(self.EnemyMap[planet.Id]) > 0 {
+
+		fight_strength := len(self.EnemyMap[planet.Id]) * 2
+		capture_strength := game.DesiredSpots(planet)
+
 		return &Problem{
 			Entity: planet,
 			X: planet.X,
 			Y: planet.Y,
-			Need: game.DesiredSpots(planet) + len(self.EnemyMap[planet.Id]),
+			Need: Max(fight_strength, capture_strength),
 		}
 	}
 
@@ -223,7 +227,7 @@ func (self *Overmind) ExecuteMoves() {
 	// As a special case (relevant for 1v1 rushes) sort 3 ships by distance to centre...
 	// This is helpful for the ATC slowdown below.
 
-	if len(mobile_pilots) == 3 {
+	if len(mobile_pilots) <= 3 {
 
 		centre_of_gravity := self.Game.AllShipsCentreOfGravity()
 

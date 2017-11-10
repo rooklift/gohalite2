@@ -22,3 +22,13 @@ func Dist(x1, y1, x2, y2 float64) float64 {
 	dy := y2 - y1
 	return math.Sqrt(dx * dx + dy * dy)
 }
+
+func Max(a, b int) int {
+	if a > b { return a }
+	return b
+}
+
+func Min(a, b int) int {
+	if a < b { return a }
+	return b
+}
