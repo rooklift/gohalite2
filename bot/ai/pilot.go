@@ -179,7 +179,7 @@ func (self *Pilot) ChooseTarget(all_enemy_ships []hal.Ship) {	// We pass all_ene
 	}
 
 	sort.Slice(target_planets, func(a, b int) bool {
-		return self.Dist(target_planets[a]) < self.Dist(target_planets[b])
+		return self.ApproachDist(target_planets[a]) < self.ApproachDist(target_planets[b])
 	})
 
 	sort.Slice(all_enemy_ships, func(a, b int) bool {
