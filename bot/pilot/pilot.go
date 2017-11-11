@@ -59,14 +59,14 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 
 func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.
 
-	var alive bool
-	self.Ship, alive = self.Game.GetShip(self.Id)
+	current_ship, alive := self.Game.GetShip(self.Id)
 
 	if alive == false {
 		self.SetTarget(hal.Nothing{})				// Means the overmind will be notified about our lack of target.
 		return false
 	}
 
+	self.Ship = current_ship
 	self.Plan = ""
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
