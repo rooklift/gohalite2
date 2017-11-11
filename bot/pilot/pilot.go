@@ -244,6 +244,10 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 		})
 
+		if game.Turn() == 52 && self.Id == 76 {
+			self.Log("planet: %d, ship: %d", planet.Id, enemies[0].Id)
+		}
+
 		enemy_ship := enemies[0]
 		side := hal.DecideSide(self.Ship, enemy_ship, planet)
 
