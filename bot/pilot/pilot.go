@@ -37,8 +37,6 @@ type Pilot struct {
 type Overmind interface {
 	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
 	NotifyDock(planet hal.Planet)
-	ShipsDockingAt(planet hal.Planet) 												int
-	ShipsChasing(ship hal.Ship) 													int
 	EnemiesNearPlanet(planet hal.Planet) 											[]hal.Ship
 }
 
@@ -46,7 +44,7 @@ func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
 	ret := new(Pilot)
 	ret.Overmind = overmind
 	ret.Game = game
-	ret.Id = sid								// This has to be set so pilot.Reset() can work.
+	ret.Id = sid
 	ret.Target = hal.Nothing{}
 	return ret
 }
@@ -58,10 +56,11 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 
 func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.
 
-	var ok bool
-	self.Ship, ok = self.Game.GetShip(self.Id)
+	var alive bool
+	self.Ship, alive = self.Game.GetShip(self.Id)
 
-	if ok == false {
+	if alive == false {
+		self.SetTarget(hal.Nothing{})				// Means the overmind will be notified about our lack of target.
 		return false
 	}
 
@@ -125,110 +124,6 @@ func (self *Pilot) SetTarget(e hal.Entity) {		// So we can update Overmind's inf
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
-}
-
-func (self *Pilot) ValidateTarget() bool {
-
-	game := self.Game
-
-	switch self.Target.Type() {
-
-	case hal.SHIP:
-
-		if self.Target.Alive() == false {
-			self.SetTarget(hal.Nothing{})
-		}
-
-	case hal.PLANET:
-
-		target := self.Target.(hal.Planet)
-
-		if target.Alive() == false {
-			self.SetTarget(hal.Nothing{})
-		} else if self.Overmind.ShipsDockingAt(target) >= game.DesiredSpots(target) {			// We've enough guys (maybe 0) trying to dock...
-			if len(self.Overmind.EnemiesNearPlanet(target)) == 0 {								// ...and the planet is safe
-				self.SetTarget(hal.Nothing{})
-			}
-		}
-	}
-
-	if self.Target == (hal.Nothing{}) {
-		return false
-	}
-
-	return true
-}
-
-func (self *Pilot) PlanDockIfWise() (hal.Planet, bool) {
-
-	closest_planet := self.ClosestPlanet()
-
-	if self.DockedStatus != hal.UNDOCKED {
-		return hal.Planet{}, false
-	}
-
-	if self.CanDock(closest_planet) == false {
-		return hal.Planet{}, false
-	}
-
-	if len(self.Overmind.EnemiesNearPlanet(closest_planet)) > 0 {
-		return hal.Planet{}, false
-	}
-
-	if self.Overmind.ShipsDockingAt(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
-		return hal.Planet{}, false
-	}
-
-	self.PlanDock(closest_planet)
-	return closest_planet, true
-}
-
-func (self *Pilot) ChooseTarget(all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
-
-	// We pass all_planets and all_enemy_ships for speed. They do get sorted in place, caller beware.
-
-	game := self.Game
-
-	var target_planets []hal.Planet
-
-	for _, planet := range all_planets {
-
-		ok := false
-
-		if game.DesiredSpots(planet) > 0 && self.Overmind.ShipsDockingAt(planet) < game.DesiredSpots(planet) {
-			ok = true
-		} else if len(self.Overmind.EnemiesNearPlanet(planet)) > 0 {
-			ok = true
-		}
-
-		if ok {
-			target_planets = append(target_planets, planet)
-		}
-	}
-
-	sort.Slice(target_planets, func(a, b int) bool {
-		return self.ApproachDist(target_planets[a]) < self.ApproachDist(target_planets[b])
-	})
-
-	sort.Slice(all_enemy_ships, func(a, b int) bool {
-		return self.Dist(all_enemy_ships[a]) < self.Dist(all_enemy_ships[b])
-	})
-
-	if len(all_enemy_ships) > 0 && len(target_planets) > 0 {
-		if self.Dist(all_enemy_ships[0]) < self.Dist(target_planets[0]) {
-			if self.Overmind.ShipsChasing(all_enemy_ships[0]) == 0 {
-				self.SetTarget(all_enemy_ships[0])
-			} else {
-				self.SetTarget(target_planets[0])
-			}
-		} else {
-			self.SetTarget(target_planets[0])
-		}
-	} else if len(target_planets) > 0 {
-		self.SetTarget(target_planets[0])
-	} else if len(all_enemy_ships) > 0 {
-		self.SetTarget(all_enemy_ships[0])
-	}
 }
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
