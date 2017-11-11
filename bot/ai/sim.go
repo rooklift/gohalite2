@@ -9,6 +9,7 @@ import (
 	"time"
 
 	hal "../gohalite2"
+	pil "../pilot"					// Just for message constants
 )
 
 type Sim struct {					// Using pointers, unlike in most of the code
@@ -475,6 +476,6 @@ func FightRush(game *hal.Game) {
 	game.Log("           Steps: %v", all_steps)
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
-		game.ThrustWithMessage(ship, genome.genes[i].speed, genome.genes[i].angle, int(MSG_SECRET_SAUCE))
+		game.ThrustWithMessage(ship, genome.genes[i].speed, genome.genes[i].angle, int(pil.MSG_SECRET_SAUCE))
 	}
 }

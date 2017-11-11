@@ -1,19 +1,54 @@
-package ai
+package pilot
 
 import (
 	"fmt"
 	"sort"
 
+	atc "../atc"
 	hal "../gohalite2"
+)
+
+type MessageInt int
+
+const (
+	MSG_ATTACK_DOCKED = 121
+	MSG_FIGHT_IN_ORBIT = 122
+	MSG_ASSASSINATE = 123
+	MSG_ATC_DEACTIVATED = 150
+	MSG_ATC_RESTRICT = 151
+	MSG_ATC_SLOWED = 152
+	MSG_RECURSION = 175
+	MSG_EXECUTED_NO_PLAN = 176
+	MSG_SECRET_SAUCE = 177
+	MSG_POINT_TARGET = 178
+	MSG_DOCK_APPROACH = 179
+	MSG_NO_TARGET = 180
 )
 
 type Pilot struct {
 	hal.Ship
 	Plan			string				// Our planned order, valid for 1 turn only
 	HasExecuted		bool				// Have we actually "sent" the order? (Placed it in the game.orders map.)
-	Overmind		*Overmind
+	Overmind		Overmind
 	Game			*hal.Game
 	Target			hal.Entity			// Use a hal.Nothing{} struct for no target.
+}
+
+type Overmind interface {
+	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
+	NotifyDock(planet hal.Planet)
+	ShipsDockingAt(planet hal.Planet) 												int
+	ShipsChasing(ship hal.Ship) 													int
+	EnemiesNearPlanet(planet hal.Planet) 											[]hal.Ship
+}
+
+func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
+	ret := new(Pilot)
+	ret.Overmind = overmind
+	ret.Game = game
+	ret.Id = sid								// This has to be set so pilot.Reset() can work.
+	ret.Target = hal.Nothing{}
+	return ret
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
@@ -83,18 +118,9 @@ func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g
 }
 
 func (self *Pilot) SetTarget(e hal.Entity) {		// So we can update Overmind's info.
-
-	overmind := self.Overmind
-
-	if self.Target.Type() == hal.SHIP {
-		overmind.EnemyShipsChased[self.Target.(hal.Ship).Id] = IntSliceWithout(overmind.EnemyShipsChased[self.Target.(hal.Ship).Id], self.Id)
-	}
-
+	old_target := self.Target
 	self.Target = e
-
-	if self.Target.Type() == hal.SHIP {
-		overmind.EnemyShipsChased[self.Target.(hal.Ship).Id] = append(overmind.EnemyShipsChased[self.Target.(hal.Ship).Id], self.Id)
-	}
+	self.Overmind.NotifyTargetChange(self, old_target, e)
 }
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
@@ -119,8 +145,8 @@ func (self *Pilot) ValidateTarget() bool {
 
 		if target.Alive() == false {
 			self.SetTarget(hal.Nothing{})
-		} else if self.Overmind.ShipsDockingMap[target.Id] >= game.DesiredSpots(target) {		// We've enough guys (maybe 0) trying to dock...
-			if len(self.Overmind.EnemyMap[target.Id]) == 0 {									// ...and the planet is safe
+		} else if self.Overmind.ShipsDockingAt(target) >= game.DesiredSpots(target) {			// We've enough guys (maybe 0) trying to dock...
+			if len(self.Overmind.EnemiesNearPlanet(target)) == 0 {								// ...and the planet is safe
 				self.SetTarget(hal.Nothing{})
 			}
 		}
@@ -145,11 +171,11 @@ func (self *Pilot) PlanDockIfWise() (hal.Planet, bool) {
 		return hal.Planet{}, false
 	}
 
-	if len(self.Overmind.EnemyMap[closest_planet.Id]) > 0 {
+	if len(self.Overmind.EnemiesNearPlanet(closest_planet)) > 0 {
 		return hal.Planet{}, false
 	}
 
-	if self.Overmind.ShipsDockingMap[closest_planet.Id] >= self.Game.DesiredSpots(closest_planet) {
+	if self.Overmind.ShipsDockingAt(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
 		return hal.Planet{}, false
 	}
 
@@ -157,19 +183,21 @@ func (self *Pilot) PlanDockIfWise() (hal.Planet, bool) {
 	return closest_planet, true
 }
 
-func (self *Pilot) ChooseTarget(all_enemy_ships []hal.Ship) {	// We pass all_enemy_ships for speed. It does get sorted in place, caller beware.
+func (self *Pilot) ChooseTarget(all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
+
+	// We pass all_planets and all_enemy_ships for speed. They do get sorted in place, caller beware.
+
 	game := self.Game
 
-	all_planets := game.AllPlanets()
 	var target_planets []hal.Planet
 
 	for _, planet := range all_planets {
 
 		ok := false
 
-		if game.DesiredSpots(planet) > 0 && self.Overmind.ShipsDockingMap[planet.Id] < game.DesiredSpots(planet) {
+		if game.DesiredSpots(planet) > 0 && self.Overmind.ShipsDockingAt(planet) < game.DesiredSpots(planet) {
 			ok = true
-		} else if len(self.Overmind.EnemyMap[planet.Id]) > 0 {
+		} else if len(self.Overmind.EnemiesNearPlanet(planet)) > 0 {
 			ok = true
 		}
 
@@ -187,11 +215,8 @@ func (self *Pilot) ChooseTarget(all_enemy_ships []hal.Ship) {	// We pass all_ene
 	})
 
 	if len(all_enemy_ships) > 0 && len(target_planets) > 0 {
-
-		cm := self.Overmind.EnemyShipsChased
-
 		if self.Dist(all_enemy_ships[0]) < self.Dist(target_planets[0]) {
-			if len(cm[all_enemy_ships[0].Id]) == 0 {
+			if self.Overmind.ShipsChasing(all_enemy_ships[0]) == 0 {
 				self.SetTarget(all_enemy_ships[0])
 			} else {
 				self.SetTarget(target_planets[0])
@@ -311,12 +336,12 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	// Are there enemy ships near the planet?
 
-	if len(overmind.EnemyMap[planet.Id]) > 0 || (planet.Owner != game.Pid() && planet.DockedShips > 0) {
+	if len(overmind.EnemiesNearPlanet(planet)) > 0 || (planet.Owner != game.Pid() && planet.DockedShips > 0) {
 
 		// We directly plan our move without changing our stored (planet) target.
 
 		var enemies []hal.Ship
-		enemies = append(enemies, overmind.EnemyMap[planet.Id]...)
+		enemies = append(enemies, overmind.EnemiesNearPlanet(planet)...)
 
 		// Our target can also be one of the docked ships...
 
@@ -407,7 +432,7 @@ func (self *Pilot) PlanThrust(speed, degrees int, message MessageInt) {		// Send
 
 func (self *Pilot) PlanDock(planet hal.Planet) {
 	self.Plan = fmt.Sprintf("d %d %d", self.Id, planet.Id)
-	self.Overmind.ShipsDockingMap[planet.Id]++
+	self.Overmind.NotifyDock(planet)
 }
 
 func (self *Pilot) PlanUndock() {
@@ -431,7 +456,7 @@ func (self *Pilot) ExecutePlanIfStationary() {
 	}
 }
 
-func (self *Pilot) ExecutePlanWithATC(atc *AirTrafficControl) bool {
+func (self *Pilot) ExecutePlanWithATC(atc *atc.AirTrafficControl) bool {
 
 	speed, degrees := hal.CourseFromString(self.Plan)
 	atc.Unrestrict(self.Ship, 0, 0)							// Unrestruct our preliminary null course so it doesn't block us.

@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	hal "../gohalite2"
+	pil "../pilot"
 )
 
 func (self *Overmind) ExecuteMoves() {
@@ -13,8 +14,8 @@ func (self *Overmind) ExecuteMoves() {
 
 	// Setup data structures...
 
-	var mobile_pilots []*Pilot
-	var frozen_pilots []*Pilot		// Note that this doesn't include docked / docking / undocking ships.
+	var mobile_pilots []*pil.Pilot
+	var frozen_pilots []*pil.Pilot				// Note that this doesn't include docked / docking / undocking ships.
 
 	for _, pilot := range self.Pilots {
 		if pilot.DockedStatus == hal.UNDOCKED {
@@ -52,10 +53,11 @@ func (self *Overmind) ExecuteMoves() {
 	// Choose target if needed... (i.e. we don't have a valid target already).
 
 	all_enemy_ships := self.Game.EnemyShips()
+	all_planets := self.Game.AllPlanets()
 
 	for _, pilot := range mobile_pilots {
 		if CONFIG.Stateless || pilot.ValidateTarget() == false {
-			pilot.ChooseTarget(all_enemy_ships)		// Also chooses from planets. But we cache ships for speed.
+			pilot.ChooseTarget(all_planets, all_enemy_ships)
 		}
 	}
 
@@ -120,7 +122,7 @@ func (self *Overmind) ExecuteMoves() {
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
 		if pilot.HasExecuted == false && rand.Intn(2) == 0 {
-			pilot.PlanThrust(0, 0, MSG_ATC_DEACTIVATED)
+			pilot.PlanThrust(0, 0, pil.MSG_ATC_DEACTIVATED)
 			self.ATC.Unrestrict(pilot.Ship, 0, 0)
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
@@ -146,7 +148,7 @@ func (self *Overmind) ExecuteMoves() {
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
 			if pilot.Plan != "" {
-				pilot.PlanThrust(0, 0, MSG_ATC_RESTRICT)
+				pilot.PlanThrust(0, 0, pil.MSG_ATC_RESTRICT)
 				pilot.ExecutePlan()
 			}
 		}
@@ -168,11 +170,7 @@ func (self *Overmind) UpdatePilots() {
 	my_new_ships := game.MyNewShipIDs()
 
 	for _, sid := range my_new_ships {
-		pilot := new(Pilot)
-		pilot.Overmind = self
-		pilot.Game = game
-		pilot.Id = sid								// This has to be set so pilot.Reset() can work.
-		pilot.Target = hal.Nothing{}				// The null target. We don't ever use nil here.
+		pilot := pil.NewPilot(sid, game, self)
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
@@ -222,11 +220,11 @@ func (self *Overmind) UpdateProximityMaps() {
 }
 
 func (self *Overmind) UpdateShipChases() {
-	self.EnemyShipsChased = make(map[int][]int)
+	self.EnemyShipChasers = make(map[int][]int)
 	for _, pilot := range self.Pilots {
 		if pilot.Target.Type() == hal.SHIP {
 			target := pilot.Target.(hal.Ship)
-			self.EnemyShipsChased[target.Id] = append(self.EnemyShipsChased[target.Id], pilot.Id)
+			self.EnemyShipChasers[target.Id] = append(self.EnemyShipChasers[target.Id], pilot.Id)
 		}
 	}
 }
