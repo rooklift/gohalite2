@@ -10,7 +10,7 @@ import (
 
 func (self *Overmind) Step() {
 	self.UpdatePilots()
-	self.UpdateShipChases()							// Must happen after self.Pilots is updated
+	self.UpdateShipChases()						// Must happen after self.Pilots is updated
 	self.ShipsDockingCount = make(map[int]int)
 	self.ATC.Clear()
 
@@ -55,7 +55,7 @@ func (self *Overmind) NormalStep() {
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		if /* pilot.HasTarget() == false || */ pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {			// FIXME
+		if /* pilot.HasTarget() == false || */ pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {		// exact v27 behaviour
 			if self.DockIfWise(pilot) {
 				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 				frozen_pilots = append(frozen_pilots, pilot)
