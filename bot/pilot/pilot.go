@@ -1,5 +1,10 @@
 package pilot
 
+// The point of making Pilot its own module is that the logic of dealing with targets
+// is mostly independent of grand strategy. Still, there are a few things we need
+// the Overmind to be able to do, or info the Overmind requires back from us, hence
+// the Overmind interface below...
+
 import (
 	"fmt"
 	"sort"
@@ -231,12 +236,9 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	// Are there enemy ships near the planet?
 
-	if len(overmind.EnemiesNearPlanet(planet)) > 0 || (planet.Owner != game.Pid() && planet.DockedShips > 0) {
+	enemies := overmind.EnemiesNearPlanet(planet)		// This is only flying enemies.
 
-		// We directly plan our move without changing our stored (planet) target.
-
-		var enemies []hal.Ship
-		enemies = append(enemies, overmind.EnemiesNearPlanet(planet)...)
+	if len(enemies) > 0 || (planet.Owner != game.Pid() && planet.DockedShips > 0) {
 
 		// Our target can also be one of the docked ships...
 
