@@ -83,6 +83,9 @@ func (self *Game) CurrentPlayers() int { return self.currentPlayers }
 func (self *Game) ParseTime() time.Time { return self.parse_time }
 
 func (self *Game) UpdateProximityMap() {
+
+	// Returns mobile enemies, or enemies docked at the planet, but NOT enemies docked at other planets.
+
 	const (
 		THREAT_RANGE = 10
 	)
