@@ -162,3 +162,11 @@ func (self *Game) EnemiesNearPlanet(planet Planet) []Ship {
 	copy(ret, self.enemies_near_planet[planet.Id])
 	return ret
 }
+
+func (self *Game) LastOwner(planet Planet) int {
+	val, ok := self.lastownerMap[planet.Id]
+	if ok == false {
+		return -1
+	}
+	return val
+}

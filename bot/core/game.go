@@ -37,6 +37,7 @@ type Game struct {
 	lastmoveMap				map[int]MoveInfo	// Ship ID --> MoveInfo struct
 	playershipMap			map[int][]Ship		// Player ID --> Ship slice
 	cumulativeShips			map[int]int			// Player ID --> Count
+	lastownerMap			map[int]int			// Planet ID --> Last owner (check OK for never owned)
 
 	orders					map[int]string
 
@@ -54,6 +55,7 @@ type Game struct {
 	all_immobile_cache		[]Entity
 
 	enemies_near_planet		map[int][]Ship
+	threat_range			float64
 }
 
 func NewGame() *Game {
@@ -68,7 +70,9 @@ func NewGame() *Game {
 	game.dockMap = make(map[int][]Ship)
 	game.lastmoveMap = make(map[int]MoveInfo)
 	game.cumulativeShips = make(map[int]int)
-	game.token_parser.ClearTokens()			// This is just clearing the token_parser's "log".
+	game.lastownerMap = make(map[int]int)
+	game.threat_range = 10						// Default value, can be changed.
+	game.token_parser.ClearTokens()				// This is just clearing the token_parser's "log".
 	game.Parse()
 	game.inited = true		// Just means Parse() will increment the turn value before parsing.
 	return game
@@ -86,10 +90,6 @@ func (self *Game) UpdateProximityMap() {
 
 	// Returns mobile enemies, or enemies docked at the planet, but NOT enemies docked at other planets.
 
-	const (
-		THREAT_RANGE = 10
-	)
-
 	self.enemies_near_planet = make(map[int][]Ship)
 
 	all_ships := self.AllShips()
@@ -98,12 +98,19 @@ func (self *Game) UpdateProximityMap() {
 	for _, ship := range all_ships {
 		for _, planet := range all_planets {
 			if ship.CanMove() || ship.DockedPlanet == planet.Id {
-				if ship.ApproachDist(planet) < THREAT_RANGE {
+				if ship.ApproachDist(planet) < self.threat_range {
 					if ship.Owner != self.Pid() {
 						self.enemies_near_planet[planet.Id] = append(self.enemies_near_planet[planet.Id], ship)
 					}
 				}
 			}
 		}
+	}
+}
+
+func (self *Game) SetThreatRange(d float64) {
+	if d != self.threat_range {
+		self.threat_range = d
+		self.UpdateProximityMap()
 	}
 }

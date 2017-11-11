@@ -203,6 +203,8 @@ func (self *Game) Parse() {
 
 		if planet.Owned == false {
 			planet.Owner = -1
+		} else {
+			self.lastownerMap[planet.Id] = planet.Owner
 		}
 
 		planet.DockedShips = self.token_parser.Int()
