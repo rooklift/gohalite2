@@ -1,10 +1,5 @@
 package pilot
 
-// The point of making Pilot its own module is that the logic of dealing with targets
-// is mostly independent of grand strategy. Still, there are a few things we need
-// the Overmind to be able to do, or info the Overmind requires back from us, hence
-// the Overmind interface below...
-
 import (
 	"fmt"
 	"sort"
@@ -12,6 +7,15 @@ import (
 	atc "../atc"
 	hal "../core"
 )
+
+// The point of making Pilot its own module is that the logic of dealing with targets
+// is mostly independent of grand strategy. Still, there are a few things we the Overmind
+// may beed back from us, hence the Overmind interface below which allows us to update it.
+
+type Overmind interface {
+	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
+	NotifyDock(planet hal.Planet)
+}
 
 type MessageInt int
 
@@ -37,11 +41,6 @@ type Pilot struct {
 	Overmind		Overmind
 	Game			*hal.Game
 	Target			hal.Entity			// Use a hal.Nothing{} struct for no target.
-}
-
-type Overmind interface {
-	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
-	NotifyDock(planet hal.Planet)
 }
 
 func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
