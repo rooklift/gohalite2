@@ -6,7 +6,7 @@ import (
 
 	hal "../core"
 	pil "../pilot"
-	sim "../sim"
+	gen "../genetic"
 )
 
 func (self *Overmind) Step() {
@@ -29,7 +29,7 @@ func (self *Overmind) Step() {
 
 	if CONFIG.Conservative == false && self.DetectRushFight() {
 		self.Game.LogOnce("Entering dangerous 3v3!")
-		sim.FightRush(self.Game)
+		gen.FightRush(self.Game)
 	} else {
 		self.NormalStep()
 	}
