@@ -9,7 +9,7 @@ import (
 
 func (self *Overmind) ChooseTarget(pilot *pil.Pilot, all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
 
-	// We pass all_planets and all_enemy_ships for speed. They do get sorted in place, caller beware.
+	// We pass all_planets and all_enemy_ships for speed. They may get sorted in place, caller beware.
 
 	game := self.Game
 
