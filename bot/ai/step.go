@@ -55,7 +55,7 @@ func (self *Overmind) NormalStep() {
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		if pilot.HasTarget() == false || pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {
+		if /* pilot.HasTarget() == false || */ pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {			// FIXME
 			if self.DockIfWise(pilot) {
 				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 				frozen_pilots = append(frozen_pilots, pilot)
