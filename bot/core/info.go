@@ -153,3 +153,9 @@ func (self *Game) DesiredSpots(planet Planet) int {
 
 	return planet.OpenSpots()
 }
+
+func (self *Game) EnemiesNearPlanet(planet Planet) []Ship {
+	ret := make([]Ship, len(self.enemies_near_planet[planet.Id]))
+	copy(ret, self.enemies_near_planet[planet.Id])
+	return ret
+}

@@ -42,7 +42,6 @@ type Pilot struct {
 type Overmind interface {
 	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
 	NotifyDock(planet hal.Planet)
-	EnemiesNearPlanet(planet hal.Planet) 											[]hal.Ship
 }
 
 func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
@@ -223,7 +222,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	game := self.Game
-	overmind := self.Overmind
 
 	// We are very close to our target planet. Do something about this.
 
@@ -234,23 +232,21 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	planet := self.Target.(hal.Planet)
 
-	// Are there enemy ships near the planet?
+	// Are there enemy ships near the planet? Includes docked enemies.
 
-	enemies := overmind.EnemiesNearPlanet(planet)		// This is only flying enemies.
+	enemies := game.EnemiesNearPlanet(planet)
 
-	if len(enemies) > 0 || (planet.Owner != game.Pid() && planet.DockedShips > 0) {
-
-		// Our target can also be one of the docked ships...
-
-		if planet.Owner != game.Pid() {
-			enemies = append(enemies, game.ShipsDockedAt(planet)...)
-		}
+	if len(enemies) > 0 {
 
 		// Find closest...
 
 		sort.Slice(enemies, func(a, b int) bool {
 			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 		})
+
+		if game.Turn() == 52 && self.Id == 76 {
+			self.Log("planet: %d, ship: %d", planet.Id, enemies[0].Id)
+		}
 
 		enemy_ship := enemies[0]
 		side := hal.DecideSide(self.Ship, enemy_ship, planet)
