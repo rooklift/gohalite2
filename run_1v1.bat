@@ -1,1 +1,1 @@
-halite.exe "bot.exe --timeseed" "bot.exe --timeseed"
+halite.exe "bot.exe --conservative" "bot.exe --conservative"
