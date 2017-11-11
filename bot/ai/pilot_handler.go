@@ -21,7 +21,7 @@ func (self *Overmind) ChooseTarget(pilot *pil.Pilot, all_planets []hal.Planet, a
 
 		if game.DesiredSpots(planet) > 0 && self.ShipsDockingAt(planet) < game.DesiredSpots(planet) {
 			ok = true
-		} else if len(self.EnemiesNearPlanet(planet)) > 0 {
+		} else if len(game.EnemiesNearPlanet(planet)) > 0 {
 			ok = true
 		}
 
@@ -73,8 +73,8 @@ func (self *Overmind) ValidateTarget(pilot *pil.Pilot) bool {
 
 		if target.Alive() == false {
 			pilot.SetTarget(hal.Nothing{})
-		} else if self.ShipsDockingAt(target) >= game.DesiredSpots(target) {			// We've enough guys (maybe 0) trying to dock...
-			if len(pilot.Overmind.EnemiesNearPlanet(target)) == 0 {						// ...and the planet is safe
+		} else if self.ShipsDockingAt(target) >= game.DesiredSpots(target) {		// We've enough guys (maybe 0) trying to dock...
+			if len(game.EnemiesNearPlanet(target)) == 0 {							// ...and the planet is safe
 				pilot.SetTarget(hal.Nothing{})
 			}
 		}
@@ -99,7 +99,7 @@ func (self *Overmind) DockIfWise(pilot *pil.Pilot) bool {
 		return false
 	}
 
-	if len(self.EnemiesNearPlanet(closest_planet)) > 0 {
+	if len(self.Game.EnemiesNearPlanet(closest_planet)) > 0 {
 		return false
 	}
 

@@ -12,8 +12,6 @@ type Overmind struct {
 	Pilots					[]*pil.Pilot
 	Game					*hal.Game
 	ATC						*atc.AirTrafficControl
-	EnemyMap				map[int][]hal.Ship		// Planet ID --> Enemy ships near the planet (not docked)
-	FriendlyMap				map[int][]hal.Ship		// Planet ID --> Friendly ships near the planet (not docked)
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
 	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
 }
@@ -40,12 +38,6 @@ func (self *Overmind) NotifyTargetChange(pilot *pil.Pilot, old_target, new_targe
 
 func (self *Overmind) NotifyDock(planet hal.Planet) {
 	self.ShipsDockingCount[planet.Id]++
-}
-
-func (self *Overmind) EnemiesNearPlanet(planet hal.Planet) []hal.Ship {
-	ret := make([]hal.Ship, len(self.EnemyMap[planet.Id]))
-	copy(ret, self.EnemyMap[planet.Id])
-	return ret
 }
 
 // Other useful utilities...
@@ -85,35 +77,6 @@ func (self *Overmind) UpdatePilots() {
 		}
 		if pilot.Target == nil {
 			panic("nil pilot.Target")
-		}
-	}
-}
-
-func (self *Overmind) UpdateProximityMaps() {
-
-	// Currently only includes non-docked ships.
-
-	const (
-		THREAT_RANGE = 10
-	)
-
-	self.EnemyMap = make(map[int][]hal.Ship)
-	self.FriendlyMap = make(map[int][]hal.Ship)
-
-	all_ships := self.Game.AllShips()
-	all_planets := self.Game.AllPlanets()
-
-	for _, ship := range all_ships {
-		if ship.CanMove() {
-			for _, planet := range all_planets {
-				if ship.ApproachDist(planet) < THREAT_RANGE {
-					if ship.Owner != self.Game.Pid() {
-						self.EnemyMap[planet.Id] = append(self.EnemyMap[planet.Id], ship)
-					} else {
-						self.FriendlyMap[planet.Id] = append(self.FriendlyMap[planet.Id], ship)
-					}
-				}
-			}
 		}
 	}
 }
