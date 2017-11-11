@@ -94,9 +94,11 @@ func (self *Game) UpdateProximityMap() {
 
 	for _, ship := range all_ships {
 		for _, planet := range all_planets {
-			if ship.ApproachDist(planet) < THREAT_RANGE {
-				if ship.Owner != self.Pid() {
-					self.enemies_near_planet[planet.Id] = append(self.enemies_near_planet[planet.Id], ship)
+			if ship.CanMove() || ship.DockedPlanet == planet.Id {
+				if ship.ApproachDist(planet) < THREAT_RANGE {
+					if ship.Owner != self.Pid() {
+						self.enemies_near_planet[planet.Id] = append(self.enemies_near_planet[planet.Id], ship)
+					}
 				}
 			}
 		}
