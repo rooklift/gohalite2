@@ -4,11 +4,38 @@ import (
 	"math/rand"
 	"sort"
 
-	hal "../gohalite2"
+	hal "../core"
 	pil "../pilot"
+	sim "../sim"
 )
 
-func (self *Overmind) ExecuteMoves() {
+func (self *Overmind) Step() {
+
+	self.UpdatePilots()
+	self.UpdateProximityMaps()
+	self.UpdateShipChases()							// Must happen after self.Pilots is updated
+	self.ShipsDockingCount = make(map[int]int)
+	self.ATC.Clear()
+
+	if self.Game.Turn() == 0 {
+		assassin := self.ChooseInitialTargets()
+		if assassin {
+			self.TurnZeroCluster()
+		} else {
+			self.NormalStep()
+		}
+		return
+	}
+
+	if CONFIG.Conservative == false && self.DetectRushFight() {
+		self.Game.LogOnce("Entering dangerous 3v3!")
+		sim.FightRush(self.Game)
+	} else {
+		self.NormalStep()
+	}
+}
+
+func (self *Overmind) NormalStep() {
 
 	avoid_list := self.Game.AllImmobile()		// To start with. AllImmobile() is planets + docked ships.
 

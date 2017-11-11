@@ -1,4 +1,4 @@
-package ai
+package sim
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	hal "../gohalite2"
+	hal "../core"
 	pil "../pilot"					// Just for message constants
 )
 

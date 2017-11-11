@@ -1,12 +1,8 @@
 package atc
 
 import (
-	hal "../gohalite2"
+	hal "../core"
 )
-
-// Possible changes (FIXME?):
-//
-// -- Reset target on failure (possibly after failing for n turns)
 
 const (
 	TIME_STEPS = 21			// The true value for resolution. Higher is more exact. Can be safely changed.

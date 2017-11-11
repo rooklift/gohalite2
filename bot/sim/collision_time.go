@@ -1,8 +1,8 @@
-package ai
+package sim
 
 import (
 	"math"
-	hal "../gohalite2"
+	hal "../core"
 )
 
 func CollisionTime(r float64, e1 * SimEntity, e2 * SimEntity) (float64, bool) {
@@ -52,60 +52,13 @@ func CollisionTime(r float64, e1 * SimEntity, e2 * SimEntity) (float64, bool) {
 		t2 := -b - math.Sqrt(disc)
 
 		if (t1 >= 0.0 && t2 >= 0.0) {
-			return MinFloat(t1, t2) / (2 * a), true
+			return hal.MinFloat(t1, t2) / (2 * a), true
 		} else if (t1 <= 0.0 && t2 <= 0.0) {
-			return MaxFloat(t1, t2) / (2 * a), true
+			return hal.MaxFloat(t1, t2) / (2 * a), true
 		} else {
 			return 0.0, true
 		}
 	} else {
 		return 0.0, false
 	}
-}
-
-// Line segment intersection helpers...
-// https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
-
-func CCW(a, b, c hal.Entity) bool {
-	return (c.GetY() - a.GetY()) * (b.GetX() - a.GetX()) > (b.GetY() - a.GetY()) * (c.GetX() - a.GetX())
-}
-
-func Intersect(a, b, c, d hal.Entity) bool {							// Return true if line segments AB and CD intersect
-	return (CCW(a, c, d) != CCW(b, c, d)) && (CCW(a, b, c) != CCW(a, b, d))
-}
-
-func MaxFloat(a, b float64) float64 {
-	if a > b { return a }
-	return b
-}
-
-func MinFloat(a, b float64) float64 {
-	if a < b { return a }
-	return b
-}
-
-func StringSliceIndex(slice []string, s string) int {
-	for i, item := range slice {
-		if item == s {
-			return i
-		}
-	}
-	return -1
-}
-
-func StringSliceContains(slice []string, s string) bool {
-	return StringSliceIndex(slice, s) != -1
-}
-
-func IntSliceWithout(slice []int, remove int) []int {
-
-	var ret []int
-
-	for _, n := range(slice) {
-		if n != remove {
-			ret = append(ret, n)
-		}
-	}
-
-	return ret
 }

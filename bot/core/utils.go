@@ -1,4 +1,4 @@
-package gohalite2
+package core
 
 import (
 	"crypto/sha1"
@@ -173,4 +173,40 @@ func HashFromString(datastring string) string {
     data := []byte(datastring)
     sum := sha1.Sum(data)
     return fmt.Sprintf("%x", sum)
+}
+
+func IntSliceWithout(slice []int, remove int) []int {
+	var ret []int
+
+	for _, n := range(slice) {
+		if n != remove {
+			ret = append(ret, n)
+		}
+	}
+
+	return ret
+}
+
+func StringSliceIndex(slice []string, s string) int {
+	for i, item := range slice {
+		if item == s {
+			return i
+		}
+	}
+	return -1
+}
+
+func StringSliceContains(slice []string, s string) bool {
+	return StringSliceIndex(slice, s) != -1
+}
+
+// Line segment intersection helpers...
+// https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
+
+func Intersect(a, b, c, d Entity) bool {							// Return true if line segments AB and CD intersect
+	return (CCW(a, c, d) != CCW(b, c, d)) && (CCW(a, b, c) != CCW(a, b, d))
+}
+
+func CCW(a, b, c Entity) bool {
+	return (c.GetY() - a.GetY()) * (b.GetX() - a.GetX()) > (b.GetY() - a.GetY()) * (c.GetX() - a.GetX())
 }

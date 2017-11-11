@@ -1,4 +1,4 @@
-package gohalite2
+package core
 
 import (
 	"fmt"

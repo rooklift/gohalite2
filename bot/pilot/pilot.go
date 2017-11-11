@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	atc "../atc"
-	hal "../gohalite2"
+	hal "../core"
 )
 
 type MessageInt int
@@ -76,24 +76,24 @@ func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return tru
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else {
 			var ok bool
 			self.Target, ok = self.Game.GetShip(self.Target.GetId())
 			if ok == false {
-				self.Target = hal.Nothing{}
+				self.SetTarget(hal.Nothing{})
 			}
 		}
 
 	case hal.PLANET:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else {
 			var ok bool
 			self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
 			if ok == false {
-				self.Target = hal.Nothing{}
+				self.SetTarget(hal.Nothing{})
 			}
 		}
 	}
