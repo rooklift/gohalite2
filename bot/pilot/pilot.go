@@ -66,7 +66,7 @@ func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return tru
 		return false
 	}
 
-	self.Ship = current_ship
+	self.Ship = current_ship						// Don't do this until after the (possible) self.SetTarget() above.
 	self.Plan = ""
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
