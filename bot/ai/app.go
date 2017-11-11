@@ -13,7 +13,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "29 final"		// Much like v27
+	VERSION = "29 final"		// Much like v27... discrepancies can be caused by len(self.Pilots) vs len(mobile_pilots) in NormalStep()
 )
 
 type Config struct {
