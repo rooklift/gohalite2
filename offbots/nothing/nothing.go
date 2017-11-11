@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	hal "../../bot/gohalite2"
+	hal "../../bot/core"
 )
 
 func main() {

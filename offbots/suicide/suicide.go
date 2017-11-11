@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	hal "../../bot/gohalite2"
+	hal "../../bot/core"
 )
 
 func main() {
@@ -19,11 +19,11 @@ func main() {
 		for _, ship := range my_ships {
 
 			if ship.Id % 3 == 1 {
-				game.Thrust(ship.Id, 7, 90)
+				game.Thrust(ship, 7, 90)
 			}
 
 			if ship.Id % 3 == 2 {
-				game.Thrust(ship.Id, 7, 270)
+				game.Thrust(ship, 7, 270)
 			}
 		}
 

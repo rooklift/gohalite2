@@ -1,1 +1,1 @@
-halite.exe --no-compression -q "bot.exe" "bot.exe" ".\offbots\brine\mybot.exe" ".\offbots\brine\mybot.exe"
+halite.exe --no-compression -q "bot.exe" "bot.exe" ".\offbots\brine\brine.exe" ".\offbots\brine\brine.exe"
