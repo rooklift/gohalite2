@@ -42,7 +42,7 @@ func (self *Overmind) NotifyDock(planet hal.Planet) {
 
 // --------------------------------------------
 
-func (self *Overmind) ShipsDockingAt(planet hal.Planet) int {
+func (self *Overmind) ShipsAboutToDock(planet hal.Planet) int {
 	return self.ShipsDockingCount[planet.Id]
 }
 
@@ -75,7 +75,10 @@ func (self *Overmind) ResetPilots() {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
 		}
-		pilot.Target = hal.Nothing{}				// Brine has no long term targets.
+
+		if pilot.Target.Type() != hal.POINT {
+			pilot.Target = hal.Nothing{}				// Brine has no long term targets, except points during the opening.
+		}
 	}
 }
 
@@ -92,10 +95,16 @@ func (self *Problem) String() string {
 
 func (self *Overmind) Step() {
 
+	self.Game.SetThreatRange(20)
+
 	self.ResetPilots()
 	self.EnemyShipChasers = make(map[int][]int)
 	self.ShipsDockingCount = make(map[int]int)
 	self.ATC.Clear()
+
+	if self.Game.Turn() == 0 {
+		self.ChooseThreeDocks()
+	}
 
 	all_problems := self.AllProblems()
 
@@ -110,7 +119,7 @@ func (self *Overmind) Step() {
 			}
 		}
 
-		if pilot.DockedStatus != hal.UNDOCKED {
+		if pilot.DockedStatus != hal.UNDOCKED || pilot.Target.Type() == hal.POINT {
 			continue
 		}
 
@@ -356,14 +365,77 @@ func (self *Overmind) DockIfWise(pilot *pil.Pilot) bool {
 		return false
 	}
 
+	// Pilots with point targets should always succeed in docking...
+
+	if pilot.Target.Type() == hal.POINT {
+		pilot.SetTarget(closest_planet)			// It would be sad to stay with a Point target forever...
+		pilot.PlanDock(closest_planet)
+		return true
+	}
+
+	// Otherwise we check some things...
+
 	if len(self.Game.EnemiesNearPlanet(closest_planet)) > 0 {
 		return false
 	}
 
-	if self.ShipsDockingAt(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
+	if self.ShipsAboutToDock(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
 		return false
 	}
 
 	pilot.PlanDock(closest_planet)
 	return true
+}
+
+func (self *Overmind) ChooseThreeDocks() {
+
+	// Sort all planets by distance to our fleet...
+
+	all_planets := self.Game.AllPlanets()
+
+	sort.Slice(all_planets, func(a, b int) bool {
+		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
+	})
+
+	closest_three := all_planets[:3]
+
+	// Get docks...
+
+	var docks []hal.Point
+
+	for _, planet := range closest_three {
+		docks = append(docks, planet.OpeningDockHelper(self.Pilots[0].Ship)...)
+	}
+
+	docks = docks[:3]
+
+	var permutations = [][]int{
+		[]int{0,1,2},
+		[]int{0,2,1},
+		[]int{1,0,2},
+		[]int{1,2,0},
+		[]int{2,0,1},
+		[]int{2,1,0},
+	}
+
+	for _, perm := range permutations {		// Find a non-crossing solution...
+
+		self.Pilots[0].SetTarget(docks[perm[0]])
+		self.Pilots[1].SetTarget(docks[perm[1]])
+		self.Pilots[2].SetTarget(docks[perm[2]])
+
+		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
+			continue
+		}
+
+		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+			continue
+		}
+
+		if hal.Intersect(self.Pilots[1].Ship, self.Pilots[1].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+			continue
+		}
+
+		break
+	}
 }
