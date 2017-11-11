@@ -69,17 +69,11 @@ func (self *TokenParser) Float() float64 {
 }
 
 func (self *TokenParser) Bool() bool {
-	self.scanner.Scan()
-	self.all_tokens = append(self.all_tokens, self.scanner.Text())
-	s := self.scanner.Text()
-	self.count++
-	if s == "0" {
-		return false
-	} else if s == "1" {
-		return true
+	val := self.Int()
+	if val != 0 && val != 1 {
+		panic(fmt.Sprintf("TokenReader.Bool(): Value wasn't 0 or 1 (was: \"%d\")", val))
 	}
-
-	panic(fmt.Sprintf("TokenReader.Bool(): Value wasn't 0 or 1 (was: \"%s\")", s))
+	return val == 1
 }
 
 func (self *TokenParser) Tokens(sep string) string {
