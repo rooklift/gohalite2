@@ -228,9 +228,6 @@ func (self *Game) Parse() {
 		self.planetMap[plid] = planet
 	}
 
-	self.currentPlayers = players_with_ships
-	self.raw = self.token_parser.Tokens(" ")
-
 	// Query responses (see info.go)... while these could be done interleaved with the above, they are separated for clarity.
 
 	self.all_ships_cache = nil
@@ -276,8 +273,10 @@ func (self *Game) Parse() {
 		return self.all_immobile_cache[a].GetId() < self.all_immobile_cache[b].GetId()
 	})
 
-	// Update info about enemies near planets...
+	// Some meta info...
 
+	self.currentPlayers = players_with_ships
+	self.raw = self.token_parser.Tokens(" ")
 	self.UpdateProximityMap()
 }
 
