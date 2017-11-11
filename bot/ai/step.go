@@ -50,12 +50,14 @@ func (self *Overmind) NormalStep() {
 		})
 	}
 
-	// Plan a Dock if possible. (And we're not chasing a ship.)
+	// Plan a Dock if possible. Not allowed if:
+	//     - We have no target because our target just died. (Empirically, this seems a bad time to dock.)
+	//     - We are chasing a ship.
 	// If we do, remove this pilot from the mobile pilots list and make it frozen.
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		if pilot.HasTarget() == false || pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {
+		if (pilot.HasTarget() == false && pilot.Birth == self.Game.Turn()) || pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {
 			if self.DockIfWise(pilot) {
 				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 				frozen_pilots = append(frozen_pilots, pilot)
