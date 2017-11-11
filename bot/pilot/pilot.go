@@ -8,9 +8,9 @@ import (
 	hal "../core"
 )
 
-// The point of making Pilot its own module is that the logic of dealing with targets
-// is mostly independent of grand strategy. Still, there are a few things we the Overmind
-// may beed back from us, hence the Overmind interface below which allows us to update it.
+// The point of making Pilot its own module is that the logic of dealing with targets is
+// mostly independent of grand strategy. Still, there are a few things the Overmind may
+// need back from us, hence the Overmind interface below which allows us to update it.
 
 type Overmind interface {
 	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
