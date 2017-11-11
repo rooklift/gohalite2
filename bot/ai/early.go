@@ -3,8 +3,18 @@ package ai
 import (
 	"sort"
 
+	gen "../genetic"
 	hal "../core"
 )
+
+func (self *Overmind) TurnZero() {
+	assassin := self.ChooseInitialTargets()
+	if assassin {
+		self.TurnZeroCluster()
+	} else {
+		self.NormalStep()
+	}
+}
 
 func (self *Overmind) ChooseInitialTargets() bool {		// Returns: are we assassinating?
 
@@ -167,5 +177,13 @@ func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
 
 	for _, pilot := range self.Pilots {
 		pilot.ExecutePlan()
+	}
+}
+
+func (self *Overmind) HandleRushFight() {
+	if CONFIG.Conservative {
+		self.NormalStep()
+	} else {
+		gen.FightRush(self.Game)
 	}
 }

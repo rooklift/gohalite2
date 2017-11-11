@@ -165,6 +165,8 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 func FightRush(game *hal.Game) {
 
+	game.LogOnce("Entering dangerous rush situation!")
+
 	var genome *Genome
 	var best_score int
 

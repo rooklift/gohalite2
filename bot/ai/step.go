@@ -6,29 +6,18 @@ import (
 
 	hal "../core"
 	pil "../pilot"
-	gen "../genetic"
 )
 
 func (self *Overmind) Step() {
-
 	self.UpdatePilots()
 	self.UpdateShipChases()							// Must happen after self.Pilots is updated
 	self.ShipsDockingCount = make(map[int]int)
 	self.ATC.Clear()
 
 	if self.Game.Turn() == 0 {
-		assassin := self.ChooseInitialTargets()
-		if assassin {
-			self.TurnZeroCluster()
-		} else {
-			self.NormalStep()
-		}
-		return
-	}
-
-	if CONFIG.Conservative == false && self.DetectRushFight() {
-		self.Game.LogOnce("Entering dangerous 3v3!")
-		gen.FightRush(self.Game)
+		self.TurnZero()
+	} else if self.DetectRushFight() {
+		self.HandleRushFight()
 	} else {
 		self.NormalStep()
 	}
