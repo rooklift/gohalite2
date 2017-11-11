@@ -19,10 +19,19 @@ func (self *Overmind) ChooseTarget(pilot *pil.Pilot, all_planets []hal.Planet, a
 
 		ok := false
 
-		if game.DesiredSpots(planet) > 0 && self.ShipsDockingAt(planet) < game.DesiredSpots(planet) {
+		// It's always valid to go to threatened / enemy planets...
+
+		if len(game.EnemiesNearPlanet(planet)) > 0 {
 			ok = true
-		} else if len(game.EnemiesNearPlanet(planet)) > 0 {
-			ok = true
+		}
+
+		// We can go to neutral or friendly planet sometimes...
+
+		if game.DesiredSpots(planet) > 0 {
+			commitment := self.ShipsAboutToDock(planet) + len(self.PlanetChasers[planet.Id])
+			if commitment < game.DesiredSpots(planet) {
+				ok = true
+			}
 		}
 
 		if ok {
@@ -73,7 +82,7 @@ func (self *Overmind) ValidateTarget(pilot *pil.Pilot) bool {
 
 		if target.Alive() == false {
 			pilot.SetTarget(hal.Nothing{})
-		} else if self.ShipsDockingAt(target) >= game.DesiredSpots(target) {		// We've enough guys (maybe 0) trying to dock...
+		} else if self.ShipsAboutToDock(target) >= game.DesiredSpots(target) {		// We've enough guys (maybe 0) trying to dock...
 			if len(game.EnemiesNearPlanet(target)) == 0 {							// ...and the planet is safe
 				pilot.SetTarget(hal.Nothing{})
 			}
@@ -99,11 +108,21 @@ func (self *Overmind) DockIfWise(pilot *pil.Pilot) bool {
 		return false
 	}
 
+	// Pilots with point targets should always succeed in docking...
+
+	if pilot.Target.Type() == hal.POINT {
+		pilot.SetTarget(closest_planet)			// It would be sad to stay with a Point target forever...
+		pilot.PlanDock(closest_planet)
+		return true
+	}
+
+	// Otherwise we check some things...
+
 	if len(self.Game.EnemiesNearPlanet(closest_planet)) > 0 {
 		return false
 	}
 
-	if self.ShipsDockingAt(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
+	if self.ShipsAboutToDock(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
 		return false
 	}
 

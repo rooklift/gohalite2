@@ -9,8 +9,11 @@ import (
 )
 
 func (self *Overmind) Step() {
+
+	self.Game.SetThreatRange(20)
+
 	self.UpdatePilots()
-	self.UpdateShipChases()						// Must happen after self.Pilots is updated
+	self.UpdateChasers()						// Must happen after self.Pilots is updated
 	self.ShipsDockingCount = make(map[int]int)
 	self.ATC.Clear()
 
