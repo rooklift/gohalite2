@@ -17,23 +17,6 @@ type Overmind interface {
 	NotifyDock(planet hal.Planet)
 }
 
-type MessageInt int
-
-const (
-	MSG_ATTACK_DOCKED = 121
-	MSG_FIGHT_IN_ORBIT = 122
-	MSG_ASSASSINATE = 123
-	MSG_ATC_DEACTIVATED = 150
-	MSG_ATC_RESTRICT = 151
-	MSG_ATC_SLOWED = 152
-	MSG_RECURSION = 175
-	MSG_EXECUTED_NO_PLAN = 176
-	MSG_SECRET_SAUCE = 177
-	MSG_POINT_TARGET = 178
-	MSG_DOCK_APPROACH = 179
-	MSG_NO_TARGET = 180
-)
-
 type Pilot struct {
 	hal.Ship
 	Plan			string				// Our planned order, valid for 1 turn only
@@ -251,7 +234,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 			self.PlanThrust(speed, degrees, MSG_RECURSION)
 			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
 		} else {
-			self.PlanThrust(speed, degrees, MSG_FIGHT_IN_ORBIT)
+			self.PlanThrust(speed, degrees, MSG_ORBIT_FIGHT)
 			if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
 				self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
 			}
