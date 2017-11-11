@@ -21,6 +21,13 @@ func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
 	ret.ATC = atc.NewATC(game)
+
+	if ret.Game.InitialPlayers() == 2 {
+		ret.Game.SetThreatRange(20)
+	} else {
+		ret.Game.SetThreatRange(10)
+	}
+
 	return ret
 }
 
