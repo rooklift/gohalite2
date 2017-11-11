@@ -31,7 +31,7 @@ func (self *Overmind) ChooseTarget(pilot *pil.Pilot, all_planets []hal.Planet, a
 	}
 
 	sort.Slice(target_planets, func(a, b int) bool {
-		return pilot.Dist(target_planets[a]) < pilot.Dist(target_planets[b])	// <-------------------------------------------------------------------------------------- FIXME
+		return pilot.Dist(target_planets[a]) < pilot.Dist(target_planets[b])	// Could use ApproachDist
 	})
 
 	sort.Slice(all_enemy_ships, func(a, b int) bool {
