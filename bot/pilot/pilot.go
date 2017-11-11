@@ -56,6 +56,10 @@ func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return tru
 
 	// Update the info about our target.
 
+	if self.DockedStatus != hal.UNDOCKED {
+		self.SetTarget(hal.Nothing{})
+	}
+
 	switch self.Target.Type() {
 
 	case hal.SHIP:
