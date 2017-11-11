@@ -4,17 +4,44 @@ import (
 	"math/rand"
 	"sort"
 
-	hal "../gohalite2"
+	hal "../core"
+	pil "../pilot"
+	gen "../genetic"
 )
 
-func (self *Overmind) ExecuteMoves() {
+func (self *Overmind) Step() {
+
+	self.UpdatePilots()
+	self.UpdateShipChases()							// Must happen after self.Pilots is updated
+	self.ShipsDockingCount = make(map[int]int)
+	self.ATC.Clear()
+
+	if self.Game.Turn() == 0 {
+		assassin := self.ChooseInitialTargets()
+		if assassin {
+			self.TurnZeroCluster()
+		} else {
+			self.NormalStep()
+		}
+		return
+	}
+
+	if CONFIG.Conservative == false && self.DetectRushFight() {
+		self.Game.LogOnce("Entering dangerous 3v3!")
+		gen.FightRush(self.Game)
+	} else {
+		self.NormalStep()
+	}
+}
+
+func (self *Overmind) NormalStep() {
 
 	avoid_list := self.Game.AllImmobile()		// To start with. AllImmobile() is planets + docked ships.
 
 	// Setup data structures...
 
-	var mobile_pilots []*Pilot
-	var frozen_pilots []*Pilot		// Note that this doesn't include docked / docking / undocking ships.
+	var mobile_pilots []*pil.Pilot
+	var frozen_pilots []*pil.Pilot				// Note that this doesn't include docked / docking / undocking ships.
 
 	for _, pilot := range self.Pilots {
 		if pilot.DockedStatus == hal.UNDOCKED {
@@ -40,8 +67,7 @@ func (self *Overmind) ExecuteMoves() {
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
 		if pilot.HasTarget() == false || pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {
-			_, ok := pilot.PlanDockIfWise()
-			if ok {
+			if self.DockIfWise(pilot) {
 				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 				frozen_pilots = append(frozen_pilots, pilot)
 				i--
@@ -52,10 +78,11 @@ func (self *Overmind) ExecuteMoves() {
 	// Choose target if needed... (i.e. we don't have a valid target already).
 
 	all_enemy_ships := self.Game.EnemyShips()
+	all_planets := self.Game.AllPlanets()
 
 	for _, pilot := range mobile_pilots {
-		if CONFIG.Stateless || pilot.ValidateTarget() == false {
-			pilot.ChooseTarget(all_enemy_ships)		// Also chooses from planets. But we cache ships for speed.
+		if CONFIG.Stateless || self.ValidateTarget(pilot) == false {
+			self.ChooseTarget(pilot, all_planets, all_enemy_ships)
 		}
 	}
 
@@ -120,7 +147,7 @@ func (self *Overmind) ExecuteMoves() {
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
 		if pilot.HasExecuted == false && rand.Intn(2) == 0 {
-			pilot.PlanThrust(0, 0, MSG_ATC_DEACTIVATED)
+			pilot.PlanThrust(0, 0, pil.MSG_ATC_DEACTIVATED)
 			self.ATC.Unrestrict(pilot.Ship, 0, 0)
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
@@ -146,7 +173,7 @@ func (self *Overmind) ExecuteMoves() {
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
 			if pilot.Plan != "" {
-				pilot.PlanThrust(0, 0, MSG_ATC_RESTRICT)
+				pilot.PlanThrust(0, 0, pil.MSG_ATC_RESTRICT)
 				pilot.ExecutePlan()
 			}
 		}
@@ -156,77 +183,5 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
-	}
-}
-
-func (self *Overmind) UpdatePilots() {
-
-	game := self.Game
-
-	// Add new AIs for new ships...
-
-	my_new_ships := game.MyNewShipIDs()
-
-	for _, sid := range my_new_ships {
-		pilot := new(Pilot)
-		pilot.Overmind = self
-		pilot.Game = game
-		pilot.Id = sid								// This has to be set so pilot.Reset() can work.
-		pilot.Target = hal.Nothing{}				// The null target. We don't ever use nil here.
-		self.Pilots = append(self.Pilots, pilot)
-	}
-
-	// Set various variables to initial state, but keeping current target.
-	// Also update target info from the Game. Also delete pilot if the ship is dead.
-
-	for i := 0; i < len(self.Pilots); i++ {
-		pilot := self.Pilots[i]
-		alive := pilot.ResetAndUpdate()
-		if alive == false {
-			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
-			i--
-		}
-		if pilot.Target == nil {
-			panic("nil pilot.Target")
-		}
-	}
-}
-
-func (self *Overmind) UpdateProximityMaps() {
-
-	// Currently only includes non-docked ships.
-
-	const (
-		THREAT_RANGE = 10
-	)
-
-	self.EnemyMap = make(map[int][]hal.Ship)
-	self.FriendlyMap = make(map[int][]hal.Ship)
-
-	all_ships := self.Game.AllShips()
-	all_planets := self.Game.AllPlanets()
-
-	for _, ship := range all_ships {
-		if ship.CanMove() {
-			for _, planet := range all_planets {
-				if ship.ApproachDist(planet) < THREAT_RANGE {
-					if ship.Owner != self.Game.Pid() {
-						self.EnemyMap[planet.Id] = append(self.EnemyMap[planet.Id], ship)
-					} else {
-						self.FriendlyMap[planet.Id] = append(self.FriendlyMap[planet.Id], ship)
-					}
-				}
-			}
-		}
-	}
-}
-
-func (self *Overmind) UpdateShipChases() {
-	self.EnemyShipsChased = make(map[int][]int)
-	for _, pilot := range self.Pilots {
-		if pilot.Target.Type() == hal.SHIP {
-			target := pilot.Target.(hal.Ship)
-			self.EnemyShipsChased[target.Id] = append(self.EnemyShipsChased[target.Id], pilot.Id)
-		}
 	}
 }

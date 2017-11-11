@@ -1,35 +1,19 @@
-package ai
+package brine
 
 import (
-	"flag"
 	"fmt"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
 
-	hal "../gohalite2"
+	hal "../../../bot/core"
 )
 
 const (
-	NAME = "Fohristiwhirl"
-	VERSION = "28 dev"
+	NAME = "brine"
+	VERSION = "2"
 )
-
-type Config struct {
-	Conservative	bool
-	Stateless		bool
-	Timeseed		bool
-}
-
-var CONFIG Config
-
-func init() {
-	flag.BoolVar(&CONFIG.Conservative, "conservative", false, "no rushing")
-	flag.BoolVar(&CONFIG.Stateless, "stateless", false, "clear target each turn")
-	flag.BoolVar(&CONFIG.Timeseed, "timeseed", false, "seed RNG with time")
-	flag.Parse()
-}
 
 func Run() {
 
@@ -45,7 +29,7 @@ func Run() {
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
 
-	if CONFIG.Timeseed {
+	if hal.StringSliceContains(os.Args, "--timeseed") {
 		seed := time.Now().UTC().UnixNano()
 		rand.Seed(seed)
 		game.LogWithoutTurn("Seeding own RNG: %v", seed)

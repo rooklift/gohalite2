@@ -1,10 +1,10 @@
 package main
 
 import (
-	"./ai"
+	"./brine"
 )
 
 func main() {
-	ai.Run()
+	brine.Run()
 }
 

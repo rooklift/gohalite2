@@ -1,30 +1,64 @@
-package ai
+package brine
 
 import (
 	"fmt"
 	"math/rand"
 	"sort"
 
-	hal "../../bot/gohalite2"
+	atc "../../../bot/atc"
+	hal "../../../bot/core"
+	pil "../../../bot/pilot"
 )
 
 // --------------------------------------------
 
 type Overmind struct {
+	Pilots					[]*pil.Pilot
 	Game					*hal.Game
-	ATC						*AirTrafficControl
+	ATC						*atc.AirTrafficControl
 	EnemyMap				map[int][]hal.Ship		// Planet ID --> Enemy ships near the planet (not docked)
 	FriendlyMap				map[int][]hal.Ship		// Planet ID --> Friendly ships near the planet (not docked)
-	ShipsDockingMap			map[int]int				// Planet ID --> My ship count docking this turn
-	Pilots					[]*Pilot
+	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
+	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
-	ret.ATC = NewATC(game)
+	ret.ATC = atc.NewATC(game)
 	return ret
 }
+
+func (self *Overmind) NotifyTargetChange(pilot *pil.Pilot, old_target, new_target hal.Entity) {
+	if old_target.Type() == hal.SHIP {
+		self.EnemyShipChasers[old_target.(hal.Ship).Id] = hal.IntSliceWithout(self.EnemyShipChasers[old_target.(hal.Ship).Id], pilot.Id)
+	}
+	if new_target.Type() == hal.SHIP {
+		self.EnemyShipChasers[new_target.(hal.Ship).Id] = append(self.EnemyShipChasers[new_target.(hal.Ship).Id], pilot.Id)
+	}
+}
+
+func (self *Overmind) NotifyDock(planet hal.Planet) {
+	self.ShipsDockingCount[planet.Id]++
+}
+
+func (self *Overmind) EnemiesNearPlanet(planet hal.Planet) []hal.Ship {
+	ret := make([]hal.Ship, len(self.EnemyMap[planet.Id]))
+	copy(ret, self.EnemyMap[planet.Id])
+	return ret
+}
+
+// --------------------------------------------
+
+func (self *Overmind) ShipsDockingAt(planet hal.Planet) int {
+	return self.ShipsDockingCount[planet.Id]
+}
+
+func (self *Overmind) ShipsChasing(ship hal.Ship) int {
+	return len(self.EnemyShipChasers[ship.Id])
+}
+
+// --------------------------------------------
 
 func (self *Overmind) ResetPilots() {
 
@@ -35,11 +69,7 @@ func (self *Overmind) ResetPilots() {
 	my_new_ships := game.MyNewShipIDs()
 
 	for _, sid := range my_new_ships {
-		pilot := new(Pilot)
-		pilot.Overmind = self
-		pilot.Game = game
-		pilot.Id = sid								// This has to be set so pilot.Reset() can work.
-		pilot.Target = hal.Nothing{}				// The null target. We don't ever use nil here.
+		pilot := pil.NewPilot(sid, game, self)
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
@@ -101,7 +131,8 @@ func (self *Overmind) Step() {
 
 	self.ResetPilots()
 	self.UpdateProximityMaps()
-	self.ShipsDockingMap = make(map[int]int)
+	self.EnemyShipChasers = make(map[int][]int)
+	self.ShipsDockingCount = make(map[int]int)
 	self.ATC.Clear()
 
 	all_problems := self.AllProblems()
@@ -122,7 +153,7 @@ func (self *Overmind) Step() {
 		}
 
 		sort.Slice(all_problems, func(a, b int) bool {
-			return Dist(pilot.X, pilot.Y, all_problems[a].X, all_problems[a].Y) < Dist(pilot.X, pilot.Y, all_problems[b].X, all_problems[b].Y)
+			return hal.Dist(pilot.X, pilot.Y, all_problems[a].X, all_problems[a].Y) < hal.Dist(pilot.X, pilot.Y, all_problems[b].X, all_problems[b].Y)
 		})
 
 		pilot.SetTarget(all_problems[0].Entity)
@@ -202,7 +233,7 @@ func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
 			Entity: planet,
 			X: planet.X,
 			Y: planet.Y,
-			Need: Max(fight_strength, capture_strength),
+			Need: hal.Max(fight_strength, capture_strength),
 		}
 	}
 
@@ -215,8 +246,8 @@ func (self *Overmind) ExecuteMoves() {
 
 	// Setup data structures...
 
-	var mobile_pilots []*Pilot
-	var frozen_pilots []*Pilot		// Note that this doesn't include docked / docking / undocking ships.
+	var mobile_pilots []*pil.Pilot
+	var frozen_pilots []*pil.Pilot				// Note that this doesn't include docked / docking / undocking ships.
 
 	for _, pilot := range self.Pilots {
 		if pilot.DockedStatus == hal.UNDOCKED {
@@ -242,7 +273,7 @@ func (self *Overmind) ExecuteMoves() {
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
 		if pilot.HasTarget() == false || pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {
-			_, ok := pilot.PlanDockIfWise()
+			ok := self.DockIfWise(pilot)
 			if ok {
 				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 				frozen_pilots = append(frozen_pilots, pilot)
@@ -312,7 +343,7 @@ func (self *Overmind) ExecuteMoves() {
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
 		if pilot.HasExecuted == false && rand.Intn(2) == 0 {
-			pilot.PlanThrust(0, 0, MSG_ATC_DEACTIVATED)
+			pilot.PlanThrust(0, 0, pil.MSG_ATC_DEACTIVATED)
 			self.ATC.Unrestrict(pilot.Ship, 0, 0)
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
@@ -338,7 +369,7 @@ func (self *Overmind) ExecuteMoves() {
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
 			if pilot.Plan != "" {
-				pilot.PlanThrust(0, 0, MSG_ATC_RESTRICT)
+				pilot.PlanThrust(0, 0, pil.MSG_ATC_RESTRICT)
 				pilot.ExecutePlan()
 			}
 		}
@@ -349,4 +380,28 @@ func (self *Overmind) ExecuteMoves() {
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
 	}
+}
+
+func (self *Overmind) DockIfWise(pilot *pil.Pilot) bool {
+
+	if pilot.DockedStatus != hal.UNDOCKED {
+		return false
+	}
+
+	closest_planet := pilot.ClosestPlanet()
+
+	if pilot.CanDock(closest_planet) == false {
+		return false
+	}
+
+	if len(self.EnemiesNearPlanet(closest_planet)) > 0 {
+		return false
+	}
+
+	if self.ShipsDockingAt(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
+		return false
+	}
+
+	pilot.PlanDock(closest_planet)
+	return true
 }

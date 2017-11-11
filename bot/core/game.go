@@ -1,4 +1,4 @@
-package gohalite2
+package core
 
 import (
 	"fmt"
@@ -52,6 +52,8 @@ type Game struct {
 	enemy_ships_cache		[]Ship
 	all_planets_cache		[]Planet
 	all_immobile_cache		[]Entity
+
+	enemies_near_planet		map[int][]Ship
 }
 
 func NewGame() *Game {
@@ -79,3 +81,26 @@ func (self *Game) Height() int { return self.height }
 func (self *Game) InitialPlayers() int { return self.initialPlayers }
 func (self *Game) CurrentPlayers() int { return self.currentPlayers }
 func (self *Game) ParseTime() time.Time { return self.parse_time }
+
+func (self *Game) UpdateProximityMap() {
+	const (
+		THREAT_RANGE = 10
+	)
+
+	self.enemies_near_planet = make(map[int][]Ship)
+
+	all_ships := self.AllShips()
+	all_planets := self.AllPlanets()
+
+	for _, ship := range all_ships {
+		for _, planet := range all_planets {
+			if ship.CanMove() || ship.DockedPlanet == planet.Id {
+				if ship.ApproachDist(planet) < THREAT_RANGE {
+					if ship.Owner != self.Pid() {
+						self.enemies_near_planet[planet.Id] = append(self.enemies_near_planet[planet.Id], ship)
+					}
+				}
+			}
+		}
+	}
+}

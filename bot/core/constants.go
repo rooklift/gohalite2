@@ -1,4 +1,4 @@
-package gohalite2
+package core
 
 const (
 	SHIP_RADIUS = 0.5

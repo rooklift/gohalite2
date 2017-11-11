@@ -1,4 +1,4 @@
-package gohalite2
+package core
 
 import (
 	"sort"
@@ -152,4 +152,10 @@ func (self *Game) DesiredSpots(planet Planet) int {
 	// If we do, we want to fill it up...
 
 	return planet.OpenSpots()
+}
+
+func (self *Game) EnemiesNearPlanet(planet Planet) []Ship {
+	ret := make([]Ship, len(self.enemies_near_planet[planet.Id]))
+	copy(ret, self.enemies_near_planet[planet.Id])
+	return ret
 }

@@ -1,4 +1,4 @@
-package gohalite2
+package core
 
 import (
 	"bufio"
@@ -281,6 +281,10 @@ func (self *Game) Parse() {
 		}
 		return self.all_immobile_cache[a].GetId() < self.all_immobile_cache[b].GetId()
 	})
+
+	// Update info about enemies near planets...
+
+	self.UpdateProximityMap()
 }
 
 // ---------------------------------------

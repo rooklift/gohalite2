@@ -1,19 +1,56 @@
-package ai
+package pilot
+
+// The point of making Pilot its own module is that the logic of dealing with targets
+// is mostly independent of grand strategy. Still, there are a few things we need
+// the Overmind to be able to do, or info the Overmind requires back from us, hence
+// the Overmind interface below...
 
 import (
 	"fmt"
 	"sort"
 
-	hal "../gohalite2"
+	atc "../atc"
+	hal "../core"
+)
+
+type MessageInt int
+
+const (
+	MSG_ATTACK_DOCKED = 121
+	MSG_FIGHT_IN_ORBIT = 122
+	MSG_ASSASSINATE = 123
+	MSG_ATC_DEACTIVATED = 150
+	MSG_ATC_RESTRICT = 151
+	MSG_ATC_SLOWED = 152
+	MSG_RECURSION = 175
+	MSG_EXECUTED_NO_PLAN = 176
+	MSG_SECRET_SAUCE = 177
+	MSG_POINT_TARGET = 178
+	MSG_DOCK_APPROACH = 179
+	MSG_NO_TARGET = 180
 )
 
 type Pilot struct {
 	hal.Ship
 	Plan			string				// Our planned order, valid for 1 turn only
 	HasExecuted		bool				// Have we actually "sent" the order? (Placed it in the game.orders map.)
-	Overmind		*Overmind
+	Overmind		Overmind
 	Game			*hal.Game
 	Target			hal.Entity			// Use a hal.Nothing{} struct for no target.
+}
+
+type Overmind interface {
+	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
+	NotifyDock(planet hal.Planet)
+}
+
+func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
+	ret := new(Pilot)
+	ret.Overmind = overmind
+	ret.Game = game
+	ret.Id = sid
+	ret.Target = hal.Nothing{}
+	return ret
 }
 
 func (self *Pilot) Log(format_string string, args ...interface{}) {
@@ -23,10 +60,11 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 
 func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.
 
-	var ok bool
-	self.Ship, ok = self.Game.GetShip(self.Id)
+	var alive bool
+	self.Ship, alive = self.Game.GetShip(self.Id)
 
-	if ok == false {
+	if alive == false {
+		self.SetTarget(hal.Nothing{})				// Means the overmind will be notified about our lack of target.
 		return false
 	}
 
@@ -41,24 +79,24 @@ func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return tru
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else {
 			var ok bool
 			self.Target, ok = self.Game.GetShip(self.Target.GetId())
 			if ok == false {
-				self.Target = hal.Nothing{}
+				self.SetTarget(hal.Nothing{})
 			}
 		}
 
 	case hal.PLANET:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
+			self.SetTarget(hal.Nothing{})
 		} else {
 			var ok bool
 			self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
 			if ok == false {
-				self.Target = hal.Nothing{}
+				self.SetTarget(hal.Nothing{})
 			}
 		}
 	}
@@ -83,127 +121,13 @@ func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g
 }
 
 func (self *Pilot) SetTarget(e hal.Entity) {		// So we can update Overmind's info.
-
-	overmind := self.Overmind
-
-	if self.Target.Type() == hal.SHIP {
-		overmind.EnemyShipsChased[self.Target.(hal.Ship).Id] = IntSliceWithout(overmind.EnemyShipsChased[self.Target.(hal.Ship).Id], self.Id)
-	}
-
+	old_target := self.Target
 	self.Target = e
-
-	if self.Target.Type() == hal.SHIP {
-		overmind.EnemyShipsChased[self.Target.(hal.Ship).Id] = append(overmind.EnemyShipsChased[self.Target.(hal.Ship).Id], self.Id)
-	}
+	self.Overmind.NotifyTargetChange(self, old_target, e)
 }
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
-}
-
-func (self *Pilot) ValidateTarget() bool {
-
-	game := self.Game
-
-	switch self.Target.Type() {
-
-	case hal.SHIP:
-
-		if self.Target.Alive() == false {
-			self.SetTarget(hal.Nothing{})
-		}
-
-	case hal.PLANET:
-
-		target := self.Target.(hal.Planet)
-
-		if target.Alive() == false {
-			self.SetTarget(hal.Nothing{})
-		} else if self.Overmind.ShipsDockingMap[target.Id] >= game.DesiredSpots(target) {		// We've enough guys (maybe 0) trying to dock...
-			if len(self.Overmind.EnemyMap[target.Id]) == 0 {									// ...and the planet is safe
-				self.SetTarget(hal.Nothing{})
-			}
-		}
-	}
-
-	if self.Target == (hal.Nothing{}) {
-		return false
-	}
-
-	return true
-}
-
-func (self *Pilot) PlanDockIfWise() (hal.Planet, bool) {
-
-	closest_planet := self.ClosestPlanet()
-
-	if self.DockedStatus != hal.UNDOCKED {
-		return hal.Planet{}, false
-	}
-
-	if self.CanDock(closest_planet) == false {
-		return hal.Planet{}, false
-	}
-
-	if len(self.Overmind.EnemyMap[closest_planet.Id]) > 0 {
-		return hal.Planet{}, false
-	}
-
-	if self.Overmind.ShipsDockingMap[closest_planet.Id] >= self.Game.DesiredSpots(closest_planet) {
-		return hal.Planet{}, false
-	}
-
-	self.PlanDock(closest_planet)
-	return closest_planet, true
-}
-
-func (self *Pilot) ChooseTarget(all_enemy_ships []hal.Ship) {	// We pass all_enemy_ships for speed. It does get sorted in place, caller beware.
-	game := self.Game
-
-	all_planets := game.AllPlanets()
-	var target_planets []hal.Planet
-
-	for _, planet := range all_planets {
-
-		ok := false
-
-		if game.DesiredSpots(planet) > 0 && self.Overmind.ShipsDockingMap[planet.Id] < game.DesiredSpots(planet) {
-			ok = true
-		} else if len(self.Overmind.EnemyMap[planet.Id]) > 0 {
-			ok = true
-		}
-
-		if ok {
-			target_planets = append(target_planets, planet)
-		}
-	}
-
-	sort.Slice(target_planets, func(a, b int) bool {
-		return self.ApproachDist(target_planets[a]) < self.ApproachDist(target_planets[b])
-	})
-
-	sort.Slice(all_enemy_ships, func(a, b int) bool {
-		return self.Dist(all_enemy_ships[a]) < self.Dist(all_enemy_ships[b])
-	})
-
-	if len(all_enemy_ships) > 0 && len(target_planets) > 0 {
-
-		cm := self.Overmind.EnemyShipsChased
-
-		if self.Dist(all_enemy_ships[0]) < self.Dist(target_planets[0]) {
-			if len(cm[all_enemy_ships[0].Id]) == 0 {
-				self.SetTarget(all_enemy_ships[0])
-			} else {
-				self.SetTarget(target_planets[0])
-			}
-		} else {
-			self.SetTarget(target_planets[0])
-		}
-	} else if len(target_planets) > 0 {
-		self.SetTarget(target_planets[0])
-	} else if len(all_enemy_ships) > 0 {
-		self.SetTarget(all_enemy_ships[0])
-	}
 }
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
@@ -298,7 +222,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	game := self.Game
-	overmind := self.Overmind
 
 	// We are very close to our target planet. Do something about this.
 
@@ -309,26 +232,21 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	planet := self.Target.(hal.Planet)
 
-	// Are there enemy ships near the planet?
+	// Are there enemy ships near the planet? Includes docked enemies.
 
-	if len(overmind.EnemyMap[planet.Id]) > 0 || (planet.Owner != game.Pid() && planet.DockedShips > 0) {
+	enemies := game.EnemiesNearPlanet(planet)
 
-		// We directly plan our move without changing our stored (planet) target.
-
-		var enemies []hal.Ship
-		enemies = append(enemies, overmind.EnemyMap[planet.Id]...)
-
-		// Our target can also be one of the docked ships...
-
-		if planet.Owner != game.Pid() {
-			enemies = append(enemies, game.ShipsDockedAt(planet)...)
-		}
+	if len(enemies) > 0 {
 
 		// Find closest...
 
 		sort.Slice(enemies, func(a, b int) bool {
 			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 		})
+
+		if game.Turn() == 52 && self.Id == 76 {
+			self.Log("planet: %d, ship: %d", planet.Id, enemies[0].Id)
+		}
 
 		enemy_ship := enemies[0]
 		side := hal.DecideSide(self.Ship, enemy_ship, planet)
@@ -407,7 +325,7 @@ func (self *Pilot) PlanThrust(speed, degrees int, message MessageInt) {		// Send
 
 func (self *Pilot) PlanDock(planet hal.Planet) {
 	self.Plan = fmt.Sprintf("d %d %d", self.Id, planet.Id)
-	self.Overmind.ShipsDockingMap[planet.Id]++
+	self.Overmind.NotifyDock(planet)
 }
 
 func (self *Pilot) PlanUndock() {
@@ -431,7 +349,7 @@ func (self *Pilot) ExecutePlanIfStationary() {
 	}
 }
 
-func (self *Pilot) ExecutePlanWithATC(atc *AirTrafficControl) bool {
+func (self *Pilot) ExecutePlanWithATC(atc *atc.AirTrafficControl) bool {
 
 	speed, degrees := hal.CourseFromString(self.Plan)
 	atc.Unrestrict(self.Ship, 0, 0)							// Unrestruct our preliminary null course so it doesn't block us.
