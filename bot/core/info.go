@@ -155,6 +155,10 @@ func (self *Game) DesiredSpots(planet Planet) int {
 }
 
 func (self *Game) EnemiesNearPlanet(planet Planet) []Ship {
+
+	// Currently (11 Nov):
+	// Returns mobile enemies, or enemies docked at the planet, but NOT enemies docked at other planets.
+
 	ret := make([]Ship, len(self.enemies_near_planet[planet.Id]))
 	copy(ret, self.enemies_near_planet[planet.Id])
 	return ret
