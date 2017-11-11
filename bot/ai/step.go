@@ -41,7 +41,7 @@ func (self *Overmind) NormalStep() {
 	// As a special case (relevant for 1v1 rushes) sort 3 ships by distance to centre...
 	// This is helpful for the ATC slowdown below.
 
-	if len(mobile_pilots) == 3 {		// <-------------------------------------------------------------------------------------- FIXME
+	if len(self.Pilots) <= 3 {
 
 		centre_of_gravity := self.Game.AllShipsCentreOfGravity()
 
@@ -116,7 +116,7 @@ func (self *Overmind) NormalStep() {
 
 	// As a special case, at game start, allow retry with lower velocity...
 
-	if len(self.Pilots) == 3 {			// <-------------------------------------------------------------------------------------- FIXME
+	if len(self.Pilots) <= 3 {
 		for n := 0; n < 2; n++ {
 			for _, pilot := range mobile_pilots {
 				if pilot.HasExecuted == false {
