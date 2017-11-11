@@ -1,1 +1,1 @@
-halite.exe "bot.exe --conservative" ".\otherbots\brine\mybot.exe"
+halite.exe "bot.exe --timeseed" "bot.exe --timeseed"
