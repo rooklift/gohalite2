@@ -28,7 +28,7 @@ func (self *Overmind) ChooseTarget(pilot *pil.Pilot, all_planets []hal.Planet, a
 		// We can go to neutral or friendly planet sometimes...
 
 		if game.DesiredSpots(planet) > 0 {
-			commitment := self.ShipsAboutToDock(planet) + len(self.PlanetChasers[planet.Id])
+			commitment := len(self.PlanetChasers[planet.Id])
 			if commitment < game.DesiredSpots(planet) {
 				ok = true
 			}

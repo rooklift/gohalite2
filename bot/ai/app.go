@@ -13,7 +13,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "29 final"		// Much like v27... discrepancies can be caused by len(self.Pilots) vs len(mobile_pilots) in NormalStep()
+	VERSION = "30 final"			// Increase threat range in 2 player. Also, use PlanetChasers map to avoid wasted effort.
 )
 
 type Config struct {

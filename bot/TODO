@@ -1,5 +1,6 @@
 TODO
 
+- Investigate what happens when an enemy is ~20 from our target planet.
 - Opening sim
 - Continue initial assassinating when ships die on one side or the other.
 - When trying to execute a move with ATC, sort the ships somehow in order of most-likely-to-succeed.
