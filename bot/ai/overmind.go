@@ -14,6 +14,7 @@ type Overmind struct {
 	ATC						*atc.AirTrafficControl
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
 	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
+	PlanetChasers			map[int][]int			// Planet ID --> slice of my IDs going there
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -34,6 +35,14 @@ func (self *Overmind) NotifyTargetChange(pilot *pil.Pilot, old_target, new_targe
 	if new_target.Type() == hal.SHIP {
 		self.EnemyShipChasers[new_target.(hal.Ship).Id] = append(self.EnemyShipChasers[new_target.(hal.Ship).Id], pilot.Id)
 	}
+
+	if old_target.Type() == hal.PLANET {
+		self.PlanetChasers[old_target.(hal.Planet).Id] = hal.IntSliceWithout(self.PlanetChasers[old_target.(hal.Planet).Id], pilot.Id)
+	}
+
+	if new_target.Type() == hal.PLANET {
+		self.PlanetChasers[new_target.(hal.Planet).Id] = append(self.PlanetChasers[new_target.(hal.Planet).Id], pilot.Id)
+	}
 }
 
 func (self *Overmind) NotifyDock(planet hal.Planet) {
@@ -46,7 +55,7 @@ func (self *Overmind) ShipsChasing(ship hal.Ship) int {
 	return len(self.EnemyShipChasers[ship.Id])
 }
 
-func (self *Overmind) ShipsDockingAt(planet hal.Planet) int {
+func (self *Overmind) ShipsAboutToDock(planet hal.Planet) int {
 	return self.ShipsDockingCount[planet.Id]
 }
 
@@ -81,12 +90,27 @@ func (self *Overmind) UpdatePilots() {
 	}
 }
 
-func (self *Overmind) UpdateShipChases() {
+func (self *Overmind) UpdateChasers() {
+
 	self.EnemyShipChasers = make(map[int][]int)
+	self.PlanetChasers = make(map[int][]int)
+
 	for _, pilot := range self.Pilots {
+
+		if pilot.DockedStatus != hal.UNDOCKED {
+			continue
+		}
+
 		if pilot.Target.Type() == hal.SHIP {
+
 			target := pilot.Target.(hal.Ship)
 			self.EnemyShipChasers[target.Id] = append(self.EnemyShipChasers[target.Id], pilot.Id)
+
+		} else if pilot.Target.Type() == hal.PLANET {
+
+			target := pilot.Target.(hal.Planet)
+			self.PlanetChasers[target.Id] = append(self.PlanetChasers[target.Id], pilot.Id)
+
 		}
 	}
 }
