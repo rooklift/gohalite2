@@ -168,7 +168,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		planet := self.Target.(hal.Planet)
 
-		if self.ApproachDist(planet) <= 10 {		// If this is too low, we may get outside the action zone when navigating round allies.
+		if self.ApproachDist(planet) <= 100 {		// FIXME? But what's wrong with this?
 			self.EngagePlanet(avoid_list)
 			return
 		}
