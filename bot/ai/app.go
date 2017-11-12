@@ -13,7 +13,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "30 final"			// Increase threat range in 2 player. Also, use PlanetChasers map to avoid wasted effort.
+	VERSION = "31 final"
 )
 
 type Config struct {

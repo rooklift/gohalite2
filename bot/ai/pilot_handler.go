@@ -11,6 +11,72 @@ func (self *Overmind) ChooseTarget(pilot *pil.Pilot, all_planets []hal.Planet, a
 
 	// We pass all_planets and all_enemy_ships for speed. They may get sorted in place, caller beware.
 
+	if self.Game.InitialPlayers() == 2 {
+		self.ChooseTarget2(pilot, all_planets, all_enemy_ships)
+	} else {
+		self.ChooseTarget4(pilot, all_planets, all_enemy_ships)
+	}
+}
+
+func (self *Overmind) ChooseTarget2(pilot *pil.Pilot, all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
+
+	type TargetPlanet struct {
+		planet					hal.Planet
+		score					float64
+	}
+
+	game := self.Game
+
+	var target_planets []TargetPlanet
+
+	for _, planet := range all_planets {					// Could use ApproachDist in the things below?
+
+		// It's always valid to go to threatened / enemy planets...
+
+		if len(game.EnemiesNearPlanet(planet)) > 0 {
+			target_planets = append(target_planets, TargetPlanet{planet, 1 / pilot.Dist(planet)})
+			continue
+		}
+
+		// We can go to neutral or friendly planet sometimes...
+		// (The planet is known to be one or the other, since no enemies were near it.)
+
+		if game.DesiredSpots(planet) > 0 {
+			commitment := len(self.PlanetChasers[planet.Id])
+			if commitment < game.DesiredSpots(planet) {
+				target_planets = append(target_planets, TargetPlanet{planet, 1 / (pilot.Dist(planet) * 1.4)})		// Lower score for these.
+				continue
+			}
+		}
+	}
+
+	sort.Slice(target_planets, func(a, b int) bool {
+		return target_planets[a].score > target_planets[b].score		// Note the reversal of the sort here
+	})
+
+	sort.Slice(all_enemy_ships, func(a, b int) bool {
+		return pilot.Dist(all_enemy_ships[a]) < pilot.Dist(all_enemy_ships[b])
+	})
+
+	if len(all_enemy_ships) > 0 && len(target_planets) > 0 {
+		if pilot.Dist(all_enemy_ships[0]) < pilot.Dist(target_planets[0].planet) {
+			if self.ShipsChasing(all_enemy_ships[0]) == 0 {
+				pilot.SetTarget(all_enemy_ships[0])
+			} else {
+				pilot.SetTarget(target_planets[0].planet)
+			}
+		} else {
+			pilot.SetTarget(target_planets[0].planet)
+		}
+	} else if len(target_planets) > 0 {
+		pilot.SetTarget(target_planets[0].planet)
+	} else if len(all_enemy_ships) > 0 {
+		pilot.SetTarget(all_enemy_ships[0])
+	}
+}
+
+func (self *Overmind) ChooseTarget4(pilot *pil.Pilot, all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
+
 	game := self.Game
 
 	var target_planets []hal.Planet
