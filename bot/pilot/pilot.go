@@ -17,13 +17,19 @@ type Overmind interface {
 	NotifyDock(planet hal.Planet)
 }
 
+var ENEMY_SHIP_APPROACH_DIST float64 = 5.45			// GetApproach uses centre-to-edge distances, so 5.5ish
+
+func SetEnemyShipApproachDist(d float64) {
+	ENEMY_SHIP_APPROACH_DIST = d
+}
+
 type Pilot struct {
 	hal.Ship
-	Plan			string				// Our planned order, valid for 1 turn only
-	HasExecuted		bool				// Have we actually "sent" the order? (Placed it in the game.orders map.)
+	Plan			string							// Our planned order, valid for 1 turn only
+	HasExecuted		bool							// Have we actually "sent" the order? (Placed it in the game.orders map.)
 	Overmind		Overmind
 	Game			*hal.Game
-	Target			hal.Entity			// Use a hal.Nothing{} struct for no target.
+	Target			hal.Entity						// Use a hal.Nothing{} struct for no target.
 }
 
 func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
@@ -180,7 +186,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		other_ship := self.Target.(hal.Ship)
 
-		speed, degrees, err := self.GetApproach(other_ship, 5.45, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 5.5ish
+		speed, degrees, err := self.GetApproach(other_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
 
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
@@ -233,7 +239,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 		enemy_ship := enemies[0]
 		side := self.DecideSide(enemy_ship, planet)
 
-		speed, degrees, err := self.GetApproach(enemy_ship, 5.45, avoid_list, side)		// GetApproach uses centre-to-edge distances, so 5.5ish
+		speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
 		if err != nil {
 			self.PlanThrust(speed, degrees, MSG_RECURSION)
 			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
