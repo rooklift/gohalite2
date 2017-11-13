@@ -41,11 +41,11 @@ func (self *Pilot) FirstCollision(distance float64, degrees int, possibles []hal
 	return closest_ent, true
 }
 
-func (self *Pilot) GetCourse(target hal.Entity, avoid_list []hal.Entity, nav_side Side) (int, int, error) {
-	return self.GetCourseRecursive(target, avoid_list, 10, nav_side)
+func (self *Pilot) GetCourse(target hal.Entity, avoid_list []hal.Entity, side Side) (int, int, error) {
+	return self.GetCourseRecursive(target, avoid_list, 10, side)
 }
 
-func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity, depth int, nav_side Side) (int, int, error) {		// speed, angle, error
+func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity, depth int, side Side) (int, int, error) {		// speed, angle, error
 
 	// Try to navigate to (collide with) the target, but avoiding the list of entites,
 	// which could include the target.
@@ -82,21 +82,21 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 	// Reset our nav side iff the colliding object is a planet...
 
 	if c.Type() == hal.PLANET {
-		nav_side = self.DecideSide(target, c.(hal.Planet))
+		side = self.DecideSide(target, c)
 	}
 
 	var waypoint_angle int
 
-	if nav_side == RIGHT {
+	if side == RIGHT {
 		waypoint_angle = degrees + 90
 	} else {
 		waypoint_angle = degrees - 90
 	}
 	waypointx, waypointy := hal.Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
-	return self.GetCourseRecursive(hal.Point{waypointx, waypointy}, avoid_list, depth - 1, nav_side)
+	return self.GetCourseRecursive(hal.Point{waypointx, waypointy}, avoid_list, depth - 1, side)
 }
 
-func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []hal.Entity) (int, int, error) {
+func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []hal.Entity, side Side) (int, int, error) {
 
 	// Navigate so that the ship's centre is definitely within <margin> of the target's edge.
 
@@ -104,14 +104,12 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 		return 0, 0, nil
 	}
 
-	nav_side := self.DecideSideFromTarget(target)
-
 	// We add 0.51 in the calculation below to compensate for approximate navigation.
 	// i.e. the GetCourseRecursive() call will put us within 0.5 of our requested point.
 
 	travel_distance := self.ApproachDist(target) + 0.51 - margin
 	target_point_x, target_point_y := hal.Projection(self.X, self.Y, travel_distance, self.Angle(target))
-	return self.GetCourse(hal.Point{target_point_x, target_point_y}, avoid_list, nav_side)
+	return self.GetCourse(hal.Point{target_point_x, target_point_y}, avoid_list, side)
 }
 
 // ---------------------------------------------------------------------
@@ -126,7 +124,7 @@ const (
 // Given a ship and some target, and some planet to navigate around,
 // which side should we go?
 
-func (self *Pilot) DecideSide(target hal.Entity, planet hal.Planet) Side {
+func (self *Pilot) DecideSide(target hal.Entity, planet hal.Entity) Side {
 
 	to_planet := self.Angle(planet)
 	to_target := self.Angle(target)
@@ -150,36 +148,4 @@ func (self *Pilot) DecideSide(target hal.Entity, planet hal.Planet) Side {
 	}
 
 	return RIGHT
-}
-
-func (self *Pilot) DecideSideFromTarget(target hal.Entity) Side {
-
-	// As a default, use this arbitrary choice...
-
-	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }
-
-	// If the first planet in our path isn't our target planet, we choose a side to navigate around.
-	// By using AllImmobile() as the avoid_list, any collision will be with a planet or docked ship.
-
-	collision_entity, ok := self.FirstCollision(1000, self.Angle(self.Target), self.Game.AllImmobile())
-
-	if ok {
-
-		var blocking_planet hal.Planet
-
-		// We also consider docked ships to be "part of the planet" for these purposes -+- we must use self.Game.AllImmobile() above
-
-		if collision_entity.Type() == hal.PLANET {
-			blocking_planet = collision_entity.(hal.Planet)
-		} else {
-			s := collision_entity.(hal.Ship)
-			blocking_planet, _ = self.Game.GetPlanet(s.DockedPlanet)
-		}
-
-		if self.Target.Type() != hal.PLANET || blocking_planet.Id != self.Target.GetId() {
-			side = self.DecideSide(self.Target, blocking_planet)
-		}
-	}
-
-	return side
 }
