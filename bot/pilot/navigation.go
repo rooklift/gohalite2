@@ -82,7 +82,7 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 	// Reset our nav side iff the colliding object is a planet...
 
 	if c.Type() == hal.PLANET {
-		nav_side = self.DecideSide(target, c)
+		nav_side = self.DecideSide(target, c.(hal.Planet))
 	}
 
 	var waypoint_angle int
@@ -126,7 +126,7 @@ const (
 // Given a ship and some target, and some planet to navigate around,
 // which side should we go?
 
-func (self *Pilot) DecideSide(target hal.Entity, planet hal.Entity) Side {
+func (self *Pilot) DecideSide(target hal.Entity, planet hal.Planet) Side {
 
 	to_planet := self.Angle(planet)
 	to_target := self.Angle(target)
