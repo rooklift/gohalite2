@@ -124,8 +124,6 @@ func (self *Pilot) ClosestPlanet() hal.Planet {
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
-	game := self.Game
-
 	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
@@ -135,74 +133,25 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		return
 	}
 
-	// Which side of objects to navigate around? As a default, use this arbitrary choice...
-
-	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }
-
-	// If the first planet in our path isn't our target planet, we choose a side to navigate around.
-	// By using AllImmobile() as the avoid_list, any collision will be with a planet or docked ship.
-
-	collision_entity, ok := self.FirstCollision(1000, self.Angle(self.Target), game.AllImmobile())
-
-	if ok {
-
-		var blocking_planet hal.Planet
-
-		// We also consider docked ships to be "part of the planet" for these purposes -+- we must use game.AllImmobile() above
-
-		if collision_entity.Type() == hal.PLANET {
-			blocking_planet = collision_entity.(hal.Planet)
-		} else {
-			s := collision_entity.(hal.Ship)
-			blocking_planet, _ = game.GetPlanet(s.DockedPlanet)
-		}
-
-		if self.Target.Type() != hal.PLANET || blocking_planet.Id != self.Target.GetId() {
-			side = self.DecideSide(self.Target, blocking_planet)
-		}
-	}
-
 	switch self.Target.Type() {
 
 	case hal.PLANET:
 
-		planet := self.Target.(hal.Planet)
-
-		if self.ApproachDist(planet) <= 100 {		// FIXME? But what's wrong with this?
-			self.EngagePlanet(avoid_list)
-			return
-		}
-
-		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
-
-		if err != nil {
-			self.Log("PlanChase(): %v", err)
-			self.SetTarget(hal.Nothing{})
-		} else {
-			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
-		}
+		self.EngagePlanet(self.Target.(hal.Planet), avoid_list)
+		return
 
 	case hal.SHIP:
 
 		other_ship := self.Target.(hal.Ship)
-
-		speed, degrees, err := self.GetApproach(other_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
-
-		if err != nil {
-			self.Log("PlanChase(): %v", err)
-			self.SetTarget(hal.Nothing{})
-		} else {
-			self.PlanThrust(speed, degrees, MSG_ASSASSINATE)
-			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-				self.Log("PlanChase(): not moving but not in range!")
-			}
-		}
+		self.EngageShip(other_ship, avoid_list)
+		return
 
 	case hal.POINT:
 
 		point := self.Target.(hal.Point)
+		nav_side := self.DecideSideFromTarget(point)
 
-		speed, degrees, err := self.GetCourse(point, avoid_list, side)
+		speed, degrees, err := self.GetCourse(point, avoid_list, nav_side)
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
 			self.SetTarget(hal.Nothing{})
@@ -212,17 +161,9 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	}
 }
 
-func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
+func (self *Pilot) EngagePlanet(planet hal.Planet, avoid_list []hal.Entity) {			// Now called at any range.
+
 	game := self.Game
-
-	// We are very close to our target planet. Do something about this.
-
-	if self.Target.Type() != hal.PLANET {
-		self.Log("EngagePlanet() called but target wasn't a planet.")
-		return
-	}
-
-	planet := self.Target.(hal.Planet)
 
 	// Are there enemy ships near the planet? Includes docked enemies.
 
@@ -237,58 +178,66 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 		})
 
 		enemy_ship := enemies[0]
-		side := self.DecideSide(enemy_ship, planet)
-
-		speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
-		if err != nil {
-			self.PlanThrust(speed, degrees, MSG_RECURSION)
-			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
-		} else {
-			self.PlanThrust(speed, degrees, MSG_ORBIT_FIGHT)
-			if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-				self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
-			}
-		}
+		self.EngageShip(enemy_ship, avoid_list)
 		return
 	}
 
 	// Is it available for us to dock?
 
 	if planet.Owned == false || (planet.Owner == game.Pid() && planet.IsFull() == false) {
-		self.FinalPlanetApproachForDock(avoid_list)
+		self.FinalPlanetApproachForDock(planet, avoid_list)
 		return
 	}
 
 	// This function shouldn't have been called at all.
 
-	self.Log("EngagePlanet() called but there's nothing to do here.")
+	self.Log("EngagePlanet() called but there's nothing to do there.")
 	return
 }
 
-func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
+func (self *Pilot) EngageShip(target_ship hal.Ship, avoid_list []hal.Entity) {
 
-	if self.Target.Type() != hal.PLANET {
-		self.Log("FinalPlanetApproachForDock() called but target wasn't a planet.", self.Id)
-		return
+	msg := MessageInt(MSG_ASSASSINATE)			// Message when directly targetting a ship.
+
+	if self.Target.Type() == hal.PLANET {		// Choice of messages when our real target is a planet.
+		if self.Dist(target_ship) > 20 {
+			msg = MessageInt(self.Target.GetId())
+		} else {
+			msg = MSG_ORBIT_FIGHT
+		}
 	}
 
-	planet := self.Target.(hal.Planet)
+	speed, degrees, err := self.GetApproach(target_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list)
+
+	if err != nil {
+		self.Log("EngageShip(): %v", err)
+		self.SetTarget(hal.Nothing{})
+	} else {
+		self.PlanThrust(speed, degrees, msg)
+		if speed == 0 && self.Dist(target_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
+			self.Log("EngageShip(): not moving but not in range!")
+		}
+	}
+}
+
+func (self *Pilot) FinalPlanetApproachForDock(planet hal.Planet, avoid_list []hal.Entity) {
 
 	if self.CanDock(planet) {
 		self.PlanDock(planet)
 		return
 	}
 
-	// Which side of objects to navigate around. At long range, use this arbitary choice...
-	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }
-
-	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
+	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list)
 
 	if err != nil {
 		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)
 	}
 
-	self.PlanThrust(speed, degrees, MSG_DOCK_APPROACH)
+	if self.ApproachDist(planet) > 20 {
+		self.PlanThrust(speed, degrees, MessageInt(planet.Id))
+	} else {
+		self.PlanThrust(speed, degrees, MSG_DOCK_APPROACH)
+	}
 }
 
 // -------------------------------------------------------------------
