@@ -142,8 +142,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.SHIP:
 
-		other_ship := self.Target.(hal.Ship)
-		self.EngageShip(other_ship, avoid_list)
+		self.EngageShip(self.Target.(hal.Ship), avoid_list)
 		return
 
 	case hal.POINT:

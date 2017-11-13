@@ -79,10 +79,15 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 		return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
 	}
 
-	// Reset our nav side iff the colliding object is a planet...
+	// Reset our nav side iff the colliding object is a planet / docked ship...
 
 	if c.Type() == hal.PLANET {
 		nav_side = self.DecideSide(target, c.(hal.Planet))
+	} else {
+		if c.(hal.Ship).DockedPlanet != -1 {
+			p, _ := self.Game.GetPlanet(c.(hal.Ship).DockedPlanet)
+			nav_side = self.DecideSide(target, p)
+		}
 	}
 
 	var waypoint_angle int
@@ -117,6 +122,11 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 // ---------------------------------------------------------------------
 
 type Side int
+
+func (s Side) String() string {
+	if s == LEFT { return "LEFT" } else if s == RIGHT { return "RIGHT" }
+	return "???"
+}
 
 const (
 	LEFT Side = iota
