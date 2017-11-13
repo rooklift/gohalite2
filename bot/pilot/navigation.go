@@ -143,6 +143,16 @@ func (self *Pilot) DecideSide(target hal.Entity, planet hal.Planet) Side {
 
 	diff := to_planet - to_target
 
+	// First, if the angle is 0, choose arbitrarily...
+	//
+	// As an ugly hack, this happens to cause us to dock nicely if we are repeatedly sending ships to a planet on the same course, because
+	// our "target" entity is a point, the blocker is a docked ship, and so the planet we're sent here is the planet it's docked to, which
+	// is actually our desired planet.
+
+	if diff == 0 {
+		if planet.DockedShips % 2 == 0 { return RIGHT } else { return LEFT }
+	}
+
 	if diff >= 0 && diff <= 180 {
 		return LEFT
 	}

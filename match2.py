@@ -2,7 +2,7 @@ import json, random, subprocess
 
 processes = [
 	"bot.exe --conservative",
-	".\\otherbots\\v30\\mybot.exe --conservative",
+	".\\otherbots\\v32\\mybot.exe --conservative",
 ]
 
 scores = [0,0]
