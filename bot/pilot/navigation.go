@@ -79,15 +79,10 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 		return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
 	}
 
-	// Reset our nav side iff the colliding object is a planet / docked ship...
+	// Reset our nav side iff the colliding object is a planet...
 
 	if c.Type() == hal.PLANET {
 		nav_side = self.DecideSide(target, c.(hal.Planet))
-	} else {
-		if c.(hal.Ship).DockedPlanet != -1 {
-			p, _ := self.Game.GetPlanet(c.(hal.Ship).DockedPlanet)
-			nav_side = self.DecideSide(target, p)
-		}
 	}
 
 	var waypoint_angle int
@@ -123,11 +118,6 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 
 type Side int
 
-func (s Side) String() string {
-	if s == LEFT { return "LEFT" } else if s == RIGHT { return "RIGHT" }
-	return "???"
-}
-
 const (
 	LEFT Side = iota
 	RIGHT
@@ -142,16 +132,6 @@ func (self *Pilot) DecideSide(target hal.Entity, planet hal.Planet) Side {
 	to_target := self.Angle(target)
 
 	diff := to_planet - to_target
-
-	// First, if the angle is 0, choose arbitrarily...
-	//
-	// As an ugly hack, this happens to cause us to dock nicely if we are repeatedly sending ships to a planet on the same course, because
-	// our "target" entity is a point, the blocker is a docked ship, and so the planet we're sent here is the planet it's docked to, which
-	// is actually our desired planet.
-
-	if diff == 0 {
-		if planet.DockedShips % 2 == 0 { return RIGHT } else { return LEFT }
-	}
 
 	if diff >= 0 && diff <= 180 {
 		return LEFT
