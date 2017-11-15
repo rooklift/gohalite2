@@ -89,25 +89,34 @@ func (self *Overmind) ChooseThreeDocks() {
 		[]int{2,1,0},
 	}
 
+	best_dist := 999999.9
+
 	for _, perm := range permutations {		// Find a non-crossing solution...
 
-		self.Pilots[0].SetTarget(docks[perm[0]])
-		self.Pilots[1].SetTarget(docks[perm[1]])
-		self.Pilots[2].SetTarget(docks[perm[2]])
+		target_0 := docks[perm[0]]
+		target_1 := docks[perm[1]]
+		target_2 := docks[perm[2]]
 
-		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
+		if hal.Intersect(self.Pilots[0].Ship, target_0, self.Pilots[1].Ship, target_1) {
 			continue
 		}
 
-		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+		if hal.Intersect(self.Pilots[0].Ship, target_0, self.Pilots[2].Ship, target_2) {
 			continue
 		}
 
-		if hal.Intersect(self.Pilots[1].Ship, self.Pilots[1].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+		if hal.Intersect(self.Pilots[1].Ship, target_1, self.Pilots[2].Ship, target_2) {
 			continue
 		}
 
-		break
+		total_dist := self.Pilots[0].Dist(target_0) + self.Pilots[1].Dist(target_1) + self.Pilots[2].Dist(target_2)
+
+		if total_dist < best_dist {
+			best_dist = total_dist
+			self.Pilots[0].SetTarget(target_0)
+			self.Pilots[1].SetTarget(target_1)
+			self.Pilots[2].SetTarget(target_2)
+		}
 	}
 }
 

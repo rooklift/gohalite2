@@ -244,7 +244,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 
 	if self.Target.Type() != hal.PLANET {
-		self.Log("FinalPlanetApproachForDock() called but target wasn't a planet.", self.Id)
+		self.Log("FinalPlanetApproachForDock() called but target wasn't a planet.")
 		return
 	}
 
@@ -260,7 +260,7 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 
 	if err != nil {
-		self.Log("FinalPlanetApproachForDock(): %v", self.Id, err)
+		self.Log("FinalPlanetApproachForDock(): %v", err)
 	}
 
 	self.PlanThrust(speed, degrees, MSG_DOCK_APPROACH)

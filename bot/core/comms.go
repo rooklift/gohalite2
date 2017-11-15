@@ -90,6 +90,12 @@ func (self *TokenParser) ClearTokens() {
 
 func (self *Game) Parse() {
 
+	// Do our first read before clearing things, so that it panics on EOF and we haven't corrupted our state...
+
+	player_count := self.token_parser.Int()
+
+	// Now reset various things...
+
 	self.orders = make(map[int]string)			// Clear all orders.
 
 	if self.inited {
@@ -107,8 +113,6 @@ func (self *Game) Parse() {
 	self.playershipMap = make(map[int][]Ship)
 
 	// Player parsing.............................................................................
-
-	player_count := self.token_parser.Int()
 
 	self.parse_time = time.Now()				// MUST happen AFTER the first token parse. <------------------------------------- important
 
