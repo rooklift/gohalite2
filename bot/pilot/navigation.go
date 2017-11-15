@@ -149,3 +149,35 @@ func (self *Pilot) DecideSide(target hal.Entity, planet hal.Entity) Side {
 
 	return RIGHT
 }
+
+func (self *Pilot) DecideSideFromTarget() Side {
+
+	// Initial arbitrary choice...
+
+	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }
+
+	// If the first planet in our path isn't our target planet, we choose a side to navigate around.
+	// By using AllImmobile() as the avoid_list, any collision will be with a planet or docked ship.
+
+	collision_entity, ok := self.FirstCollision(1000, self.Angle(self.Target), self.Game.AllImmobile())
+
+	if ok {
+
+		var blocking_planet hal.Planet
+
+		// We also consider docked ships to be "part of the planet" for these purposes -+- we must use game.AllImmobile() above
+
+		if collision_entity.Type() == hal.PLANET {
+			blocking_planet = collision_entity.(hal.Planet)
+		} else {
+			s := collision_entity.(hal.Ship)
+			blocking_planet, _ = self.Game.GetPlanet(s.DockedPlanet)
+		}
+
+		if self.Target.Type() != hal.PLANET || blocking_planet.Id != self.Target.GetId() {
+			side = self.DecideSide(self.Target, blocking_planet)
+		}
+	}
+
+	return side
+}

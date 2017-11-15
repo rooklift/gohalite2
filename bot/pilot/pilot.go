@@ -124,8 +124,6 @@ func (self *Pilot) ClosestPlanet() hal.Planet {
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
-	game := self.Game
-
 	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
@@ -135,32 +133,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		return
 	}
 
-	// Which side of objects to navigate around? As a default, use this arbitrary choice...
-
-	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }
-
-	// If the first planet in our path isn't our target planet, we choose a side to navigate around.
-	// By using AllImmobile() as the avoid_list, any collision will be with a planet or docked ship.
-
-	collision_entity, ok := self.FirstCollision(1000, self.Angle(self.Target), game.AllImmobile())
-
-	if ok {
-
-		var blocking_planet hal.Planet
-
-		// We also consider docked ships to be "part of the planet" for these purposes -+- we must use game.AllImmobile() above
-
-		if collision_entity.Type() == hal.PLANET {
-			blocking_planet = collision_entity.(hal.Planet)
-		} else {
-			s := collision_entity.(hal.Ship)
-			blocking_planet, _ = game.GetPlanet(s.DockedPlanet)
-		}
-
-		if self.Target.Type() != hal.PLANET || blocking_planet.Id != self.Target.GetId() {
-			side = self.DecideSide(self.Target, blocking_planet)
-		}
-	}
+	side := self.DecideSideFromTarget()				// Which side of objects to navigate around?
 
 	switch self.Target.Type() {
 
@@ -168,7 +141,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		planet := self.Target.(hal.Planet)
 
-		if self.ApproachDist(planet) <= 100 {		// FIXME? But what's wrong with this?
+		if self.ApproachDist(planet) <= 100 {
 			self.EngagePlanet(avoid_list)
 			return
 		}
@@ -215,7 +188,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	game := self.Game
 
-	// We are very close to our target planet. Do something about this.
+	// We are "very close" (edit: not so much now...) to our target planet. Do something about this.
 
 	if self.Target.Type() != hal.PLANET {
 		self.Log("EngagePlanet() called but target wasn't a planet.")
@@ -279,7 +252,8 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 		return
 	}
 
-	// Which side of objects to navigate around. At long range, use this arbitary choice...
+	// Which side of objects to navigate around. Use this arbitary choice... (FIXME?)
+
 	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }
 
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
