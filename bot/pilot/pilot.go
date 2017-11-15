@@ -133,8 +133,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		return
 	}
 
-	side := self.DecideSideFromTarget()				// Which side of objects to navigate around?
-
 	switch self.Target.Type() {
 
 	case hal.PLANET:
@@ -146,6 +144,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			return
 		}
 
+		side := self.DecideSideFromTarget()
 		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
 
 		if err != nil {
@@ -159,6 +158,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		other_ship := self.Target.(hal.Ship)
 
+		side := self.DecideSideFromTarget()
 		speed, degrees, err := self.GetApproach(other_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
 
 		if err != nil {
@@ -175,7 +175,9 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		point := self.Target.(hal.Point)
 
+		side := self.DecideSideFromTarget()
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
+
 		if err != nil {
 			self.Log("PlanChase(): %v", err)
 			self.SetTarget(hal.Nothing{})
@@ -210,9 +212,10 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 		})
 
 		enemy_ship := enemies[0]
-		side := self.DecideSide(enemy_ship, planet)
 
+		side := self.DecideSide(enemy_ship, planet)
 		speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
+
 		if err != nil {
 			self.PlanThrust(speed, degrees, MSG_RECURSION)
 			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
@@ -252,9 +255,7 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 		return
 	}
 
-	// Which side of objects to navigate around. Use this arbitary choice... (FIXME?)
-
-	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }
+	side := self.ArbitrarySide()											// FIXME?
 
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 

@@ -155,7 +155,7 @@ func (self *Pilot) DecideSideFromTarget() Side {
 	// If the first planet in our path isn't our target, we choose a side to navigate around.
 	// Docked ships also count as part of the planet for these purposes.
 
-	var side Side; if self.Id % 2 == 0 { side = RIGHT } else { side = LEFT }		// Initial arbitrary choice
+	side := self.ArbitrarySide()
 
 	// By using AllImmobile() as the avoid_list, any collision will be with a planet or docked ship.
 
@@ -178,4 +178,9 @@ func (self *Pilot) DecideSideFromTarget() Side {
 	}
 
 	return side
+}
+
+func (self *Pilot) ArbitrarySide() Side {
+	if self.Id % 2 == 0 { return RIGHT }
+	return LEFT
 }
