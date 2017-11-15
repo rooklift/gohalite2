@@ -193,10 +193,14 @@ func FightRush(game *hal.Game) {
 		}
 	}
 
-	game.Log("Rush Evo! Scores: %v", all_scores)
-	game.Log("           Steps: %v", all_steps)
+	var order_elements []int
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
 		game.ThrustWithMessage(ship, genome.genes[i].speed, genome.genes[i].angle, int(pil.MSG_SECRET_SAUCE))
+		order_elements = append(order_elements, genome.genes[i].speed, genome.genes[i].angle)
 	}
+
+	game.Log("Rush Evo! Scores: %v", all_scores)
+	game.Log("           Steps: %v", all_steps)
+	game.Log("          Orders: %v", order_elements)
 }
