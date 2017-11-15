@@ -186,9 +186,9 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 }
 
 func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
-	game := self.Game
 
-	// We are "very close" (edit: not so much now...) to our target planet. Do something about this.
+	// We are "close" to our target planet. Do something about this.
+	// As of v32 or so, "close" is actually quite far.
 
 	if self.Target.Type() != hal.PLANET {
 		self.Log("EngagePlanet() called but target wasn't a planet.")
@@ -199,7 +199,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	// Are there enemy ships near the planet? Includes docked enemies.
 
-	enemies := game.EnemiesNearPlanet(planet)
+	enemies := self.Game.EnemiesNearPlanet(planet)
 
 	if len(enemies) > 0 {
 
@@ -227,7 +227,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	// Is it available for us to dock?
 
-	if planet.Owned == false || (planet.Owner == game.Pid() && planet.IsFull() == false) {
+	if planet.Owned == false || (planet.Owner == self.Game.Pid() && planet.IsFull() == false) {
 		self.FinalPlanetApproachForDock(avoid_list)
 		return
 	}
