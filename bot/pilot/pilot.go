@@ -157,19 +157,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	case hal.SHIP:
 
 		other_ship := self.Target.(hal.Ship)
-
-		side := self.DecideSideFromTarget()
-		speed, degrees, err := self.GetApproach(other_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
-
-		if err != nil {
-			self.Log("PlanChase(): %v", err)
-			self.SetTarget(hal.Nothing{})
-		} else {
-			self.PlanThrust(speed, degrees, MSG_ASSASSINATE)
-			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-				self.Log("PlanChase(): not moving but not in range!")
-			}
-		}
+		self.EngageShip(other_ship, avoid_list)
 
 	case hal.POINT:
 
@@ -211,20 +199,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 		})
 
-		enemy_ship := enemies[0]
-
-		side := self.DecideSide(enemy_ship, planet)
-		speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
-
-		if err != nil {
-			self.PlanThrust(speed, degrees, MSG_RECURSION)
-			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
-		} else {
-			self.PlanThrust(speed, degrees, MSG_ORBIT_FIGHT)
-			if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-				self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
-			}
-		}
+		self.EngageShip(enemies[0], avoid_list)
 		return
 	}
 
@@ -239,6 +214,32 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 	self.Log("EngagePlanet() called but there's nothing to do here.")
 	return
+}
+
+func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+
+	var side Side
+	var msg MessageInt
+
+	if self.Target.Type() == hal.PLANET {				// We're fighting a ship because it's near our target planet...
+		side = self.DecideSide(enemy_ship, self.Target)
+		msg = MSG_ORBIT_FIGHT
+	} else {											// We're directly targeting a ship...
+		side = self.DecideSideFromTarget()
+		msg = MSG_ASSASSINATE
+	}
+
+	speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
+
+	if err != nil {
+		self.PlanThrust(speed, degrees, MSG_RECURSION)
+		self.Log("EngagePlanet(), while trying to engage ship: %v", err)
+	} else {
+		self.PlanThrust(speed, degrees, msg)
+		if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
+			self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
+		}
+	}
 }
 
 func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
