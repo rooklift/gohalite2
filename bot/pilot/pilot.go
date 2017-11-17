@@ -231,7 +231,6 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 		if err != nil {
 			self.PlanThrust(speed, degrees, MSG_RECURSION)
-			self.Log("EngagePlanet(), while trying to engage ship: %v", err)
 		} else {
 			self.PlanThrust(speed, degrees, MSG_ORBIT_FIGHT)
 			if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {

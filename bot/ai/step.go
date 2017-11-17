@@ -8,6 +8,11 @@ import (
 	pil "../pilot"
 )
 
+const (
+	DEBUG_SHIP_ID = 570
+	DEBUG_TURN = 171
+)
+
 func (self *Overmind) Step() {
 
 	self.UpdatePilots()
@@ -175,5 +180,15 @@ func (self *Overmind) NormalStep() {
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
+	}
+
+	// Debug...
+
+	if self.Game.Turn() == DEBUG_TURN {
+		for _, pilot := range self.Pilots {
+			if pilot.Id == DEBUG_SHIP_ID {
+				pilot.LogNavStack()
+			}
+		}
 	}
 }
