@@ -30,6 +30,7 @@ type Pilot struct {
 	Overmind		Overmind
 	Game			*hal.Game
 	Target			hal.Entity						// Use a hal.Nothing{} struct for no target.
+	NavStack		[]string
 }
 
 func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
@@ -46,7 +47,21 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 	self.Game.Log(format_string, args...)
 }
 
+func (self *Pilot) AddToNavStack(format_string string, args ...interface{}) {
+	s := fmt.Sprintf(format_string, args...)
+	self.NavStack = append(self.NavStack, s)
+}
+
+func (self *Pilot) LogNavStack() {
+	self.Game.Log("%v Nav Stack:", self)
+	for _, s := range self.NavStack {
+		self.Game.Log("        %v", s)
+	}
+}
+
 func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.
+
+	self.NavStack = nil
 
 	current_ship, alive := self.Game.GetShip(self.Id)
 
@@ -233,11 +248,13 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 
 	if err != nil {
 		self.PlanThrust(speed, degrees, MSG_RECURSION)
-		self.Log("EngagePlanet(), while trying to engage ship: %v", err)
+		if self.Target.Type() == hal.SHIP {				// This is just to maintain consistency with old version...
+			self.SetTarget(hal.Nothing{})
+		}
 	} else {
 		self.PlanThrust(speed, degrees, msg)
 		if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-			self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
+			self.Log("EngageShip(), while approaching ship: stopped short of target.")
 		}
 	}
 }
