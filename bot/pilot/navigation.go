@@ -119,7 +119,7 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 
 	p := hal.Point{target_point_x, target_point_y}
 
-	self.AddToNavStack("GetApproach(): starting; target is %v", p)
+	self.AddToNavStack("GetApproach(): starting; true target is %v, target is %v", target, p)
 	return self.GetCourse(p, avoid_list, side)
 }
 

@@ -163,7 +163,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
 
 		if err != nil {
-			self.Log("PlanChase(): %v", err)
 			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
@@ -182,7 +181,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
-			self.Log("PlanChase(): %v", err)
 			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MSG_POINT_TARGET)
@@ -253,9 +251,6 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 		}
 	} else {
 		self.PlanThrust(speed, degrees, msg)
-		if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-			self.Log("EngageShip(), while approaching ship: stopped short of target.")
-		}
 	}
 }
 
