@@ -116,7 +116,11 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 
 	travel_distance := self.ApproachDist(target) + 0.51 - margin
 	target_point_x, target_point_y := hal.Projection(self.X, self.Y, travel_distance, self.Angle(target))
-	return self.GetCourse(hal.Point{target_point_x, target_point_y}, avoid_list, side)
+
+	p := hal.Point{target_point_x, target_point_y}
+
+	self.AddToNavStack("GetApproach(): starting; target is %v", p)
+	return self.GetCourse(p, avoid_list, side)
 }
 
 // ---------------------------------------------------------------------

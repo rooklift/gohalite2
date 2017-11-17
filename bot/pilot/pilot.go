@@ -161,7 +161,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
 
 		if err != nil {
-			self.Log("PlanChase(): %v", err)
 			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
@@ -175,13 +174,9 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetApproach(other_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
 
 		if err != nil {
-			self.Log("PlanChase(): %v", err)
 			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MSG_ASSASSINATE)
-			if speed == 0 && self.Dist(other_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-				self.Log("PlanChase(): not moving but not in range!")
-			}
 		}
 
 	case hal.POINT:
@@ -192,7 +187,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
-			self.Log("PlanChase(): %v", err)
 			self.SetTarget(hal.Nothing{})
 		} else {
 			self.PlanThrust(speed, degrees, MSG_POINT_TARGET)
@@ -233,9 +227,6 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 			self.PlanThrust(speed, degrees, MSG_RECURSION)
 		} else {
 			self.PlanThrust(speed, degrees, MSG_ORBIT_FIGHT)
-			if speed == 0 && self.Ship.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-				self.Log("EngagePlanet(), while approaching ship: stopped short of target.")
-			}
 		}
 		return
 	}
@@ -272,10 +263,10 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 
 	if err != nil {
-		self.Log("FinalPlanetApproachForDock(): %v", err)
+		self.PlanThrust(speed, degrees, MSG_RECURSION)
+	} else {
+		self.PlanThrust(speed, degrees, MSG_DOCK_APPROACH)
 	}
-
-	self.PlanThrust(speed, degrees, MSG_DOCK_APPROACH)
 }
 
 // -------------------------------------------------------------------

@@ -188,6 +188,7 @@ func (self *Overmind) NormalStep() {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
 				pilot.LogNavStack()
+				break
 			}
 		}
 	}
