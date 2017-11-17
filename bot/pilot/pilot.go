@@ -61,6 +61,8 @@ func (self *Pilot) LogNavStack() {
 
 func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.
 
+	self.NavStack = nil
+
 	current_ship, alive := self.Game.GetShip(self.Id)
 
 	if alive == false {
