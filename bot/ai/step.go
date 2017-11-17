@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	DEBUG_SHIP_ID = 570
-	DEBUG_TURN = 171
+	DEBUG_SHIP_ID = -1
+	DEBUG_TURN = -1
 )
 
 func (self *Overmind) Step() {

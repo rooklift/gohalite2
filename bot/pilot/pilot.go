@@ -247,11 +247,6 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
 
 	if err != nil {
-		if self.Target.Type() == hal.SHIP {				// This is just to maintain consistency with old version...
-			self.SetTarget(hal.Nothing{})
-		} else {
-			self.PlanThrust(speed, degrees, MSG_RECURSION)
-		}
 	} else {
 		self.PlanThrust(speed, degrees, msg)
 	}
