@@ -234,22 +234,19 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 
 	side := self.DecideSideFromTarget()
+	speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
 
 	var msg MessageInt
 
-	if self.Target.Type() == hal.PLANET {				// We're fighting a ship because it's near our target planet...
+	if err != nil {										// Pathfinding failed...
+		msg = MSG_RECURSION
+	} else if self.Target.Type() == hal.PLANET {		// We're fighting a ship because it's near our target planet...
 		msg = MSG_ORBIT_FIGHT
 	} else {											// We're directly targeting a ship...
 		msg = MSG_ASSASSINATE
 	}
 
-	speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
-
-	if err != nil {
-		self.PlanThrust(speed, degrees, MSG_RECURSION)
-	} else {
-		self.PlanThrust(speed, degrees, msg)
-	}
+	self.PlanThrust(speed, degrees, msg)
 }
 
 func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
@@ -267,7 +264,6 @@ func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
 	}
 
 	side := self.DecideSideFromTarget()
-
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 
 	if err != nil {
