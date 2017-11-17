@@ -119,13 +119,17 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 
 	p := hal.Point{target_point_x, target_point_y}
 
-	self.AddToNavStack("GetApproach(): starting; true target is %v, target is %v", target, p)
+	self.AddToNavStack("GetApproach(): starting; side is %v, true target is %v, target is %v", side, target, p)
 	return self.GetCourse(p, avoid_list, side)
 }
 
 // ---------------------------------------------------------------------
 
 type Side int
+
+func (s Side) String() string {
+	if s == 0 { return "LEFT" } else if s == 1 { return "RIGHT" } else { return "???" }
+}
 
 const (
 	LEFT Side = iota
