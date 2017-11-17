@@ -86,6 +86,7 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 
 	if c.Type() == hal.PLANET {
 		side = self.DecideSide(target, c)
+		self.AddToNavStack("GetCourseRecursive(): called DecideSide(): side is now %v", side)
 	}
 
 	var waypoint_angle int
