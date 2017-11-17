@@ -103,7 +103,7 @@ func (self *Overmind) NormalStep() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.ResetAndUpdate()
+		pilot.ResetAndUpdate(false)
 		pilot.PlanChase(avoid_list)
 	}
 
