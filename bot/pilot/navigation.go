@@ -99,7 +99,7 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 	waypointx, waypointy := hal.Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
 	p := hal.Point{waypointx, waypointy}
 
-	self.AddToNavStack("GetCourseRecursive(): recursing with %v", p)
+	self.AddToNavStack("GetCourseRecursive(): collision: %v; recursing with %v", c, p)
 	return self.GetCourseRecursive(p, avoid_list, depth - 1, side)
 }
 
