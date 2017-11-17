@@ -221,7 +221,7 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 	// Is it available for us to dock?
 
 	if planet.Owned == false || (planet.Owner == self.Game.Pid() && planet.IsFull() == false) {
-		self.FinalPlanetApproachForDock(avoid_list)
+		self.PlanetApproachForDock(avoid_list)
 		return
 	}
 
@@ -233,14 +233,13 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 
-	var side Side
+	side := self.DecideSideFromTarget()
+
 	var msg MessageInt
 
 	if self.Target.Type() == hal.PLANET {				// We're fighting a ship because it's near our target planet...
-		side = self.DecideSide(enemy_ship, self.Target)
 		msg = MSG_ORBIT_FIGHT
 	} else {											// We're directly targeting a ship...
-		side = self.DecideSideFromTarget()
 		msg = MSG_ASSASSINATE
 	}
 
@@ -253,10 +252,10 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	}
 }
 
-func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
+func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
 
 	if self.Target.Type() != hal.PLANET {
-		self.Log("FinalPlanetApproachForDock() called but target wasn't a planet.")
+		self.Log("PlanetApproachForDock() called but target wasn't a planet.")
 		return
 	}
 
@@ -267,7 +266,7 @@ func (self *Pilot) FinalPlanetApproachForDock(avoid_list []hal.Entity) {
 		return
 	}
 
-	side := self.ArbitrarySide()											// FIXME?
+	side := self.DecideSideFromTarget()
 
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 

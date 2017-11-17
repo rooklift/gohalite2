@@ -137,33 +137,30 @@ const (
 	RIGHT
 )
 
-// Given a ship and some target, and some planet to navigate around,
+// Given a ship and some target, and some blocker to navigate around,
 // which side should we go?
 
-func (self *Pilot) DecideSide(target hal.Entity, planet hal.Entity) Side {
+func (self *Pilot) DecideSide(target hal.Entity, blocker hal.Entity) Side {
 
-	to_planet := self.Angle(planet)
+	to_blocker := self.Angle(blocker)
 	to_target := self.Angle(target)
 
-	diff := to_planet - to_target
+	diff := to_blocker - to_target
+
+	var side Side = RIGHT
 
 	if diff >= 0 && diff <= 180 {
-		return LEFT
+		side = LEFT
+	} else if diff >= 180 {
+		side = RIGHT
+	} else if diff <= -180 {
+		side = LEFT
+	} else if diff >= -180 && diff <= 0 {
+		side = RIGHT
 	}
 
-	if diff >= 180 {
-		return RIGHT
-	}
-
-	if diff <= -180 {
-		return LEFT
-	}
-
-	if diff >= -180 && diff <= 0 {
-		return RIGHT
-	}
-
-	return RIGHT
+	self.AddToNavStack("DecideSide(): target = %v, blocker = %v, choice = %v", target, blocker, side)
+	return side
 }
 
 func (self *Pilot) DecideSideFromTarget() Side {
