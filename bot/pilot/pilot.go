@@ -30,6 +30,7 @@ type Pilot struct {
 	Overmind		Overmind
 	Game			*hal.Game
 	Target			hal.Entity						// Use a hal.Nothing{} struct for no target.
+	NavStack		[]string
 }
 
 func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
@@ -44,6 +45,18 @@ func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
 func (self *Pilot) Log(format_string string, args ...interface{}) {
 	format_string = fmt.Sprintf("%v: ", self) + format_string
 	self.Game.Log(format_string, args...)
+}
+
+func (self *Pilot) AddToNavStack(format_string string, args ...interface{}) {
+	s := fmt.Sprintf(format_string, args...)
+	self.NavStack = append(self.NavStack, s)
+}
+
+func (self *Pilot) LogNavStack() {
+	self.Game.Log("%v Nav Stack:", self)
+	for _, s := range self.NavStack {
+		self.Game.Log("        %v", s)
+	}
 }
 
 func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.

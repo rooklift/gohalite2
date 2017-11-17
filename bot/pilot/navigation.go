@@ -57,6 +57,7 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 	distance := self.Dist(target)
 
 	if distance < 0.5 {
+		self.AddToNavStack("GetCourseRecursive(): returning null move")
 		return 0, 0, nil
 	}
 
@@ -72,10 +73,12 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 
 	if ok == false {		// There is no collision
 		speed := hal.Min(hal.Round(distance), hal.MAX_SPEED)
+		self.AddToNavStack("GetCourseRecursive(): succeeded with %v %v", speed, degrees)
 		return speed, degrees, nil
 	}
 
 	if depth < 1 {
+		self.AddToNavStack("GetCourseRecursive(): exceeded max depth")
 		return 0, 0, fmt.Errorf("GetCourseRecursive(): exceeded max depth")
 	}
 
@@ -92,8 +95,12 @@ func (self *Pilot) GetCourseRecursive(target hal.Entity, avoid_list []hal.Entity
 	} else {
 		waypoint_angle = degrees - 90
 	}
+
 	waypointx, waypointy := hal.Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
-	return self.GetCourseRecursive(hal.Point{waypointx, waypointy}, avoid_list, depth - 1, side)
+	p := hal.Point{waypointx, waypointy}
+
+	self.AddToNavStack("GetCourseRecursive(): recursing with %v", p)
+	return self.GetCourseRecursive(p, avoid_list, depth - 1, side)
 }
 
 func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []hal.Entity, side Side) (int, int, error) {
