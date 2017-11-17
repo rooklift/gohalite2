@@ -59,18 +59,20 @@ func (self *Pilot) LogNavStack() {
 	}
 }
 
-func (self *Pilot) ResetAndUpdate() bool {			// Doesn't clear Target. Return true if we still exist.
+func (self *Pilot) ResetAndUpdate(clear_stack bool) bool {		// Doesn't clear Target. Return true if we still exist.
 
-	self.NavStack = nil
+	if clear_stack {
+		self.NavStack = nil
+	}
 
 	current_ship, alive := self.Game.GetShip(self.Id)
 
 	if alive == false {
-		self.SetTarget(hal.Nothing{})				// Means the overmind will be notified about our lack of target.
+		self.SetTarget(hal.Nothing{})							// Means the overmind will be notified about our lack of target.
 		return false
 	}
 
-	self.Ship = current_ship						// Don't do this until after the (possible) self.SetTarget() above.
+	self.Ship = current_ship									// Don't do this until after the (possible) self.SetTarget() above.
 	self.Plan = ""
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
