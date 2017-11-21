@@ -2,6 +2,7 @@ package genetic
 
 import (
 	"math"
+
 	hal "../core"
 )
 

@@ -122,15 +122,13 @@ func (self *Overmind) NormalStep() {
 		}
 	}
 
-	// As a special case, at game start, allow retry with lower velocity...
+	// Retry some times with lower velocity...
 
-	if len(self.Pilots) <= 3 {
-		for n := 0; n < 2; n++ {
-			for _, pilot := range mobile_pilots {
-				if pilot.HasExecuted == false {
-					pilot.SlowPlanDown()
-					pilot.ExecutePlanWithATC(self.ATC)
-				}
+	for n := 0; n < 5; n++ {
+		for _, pilot := range mobile_pilots {
+			if pilot.HasExecuted == false {
+				pilot.SlowPlanDown()
+				pilot.ExecutePlanWithATC(self.ATC)
 			}
 		}
 	}
