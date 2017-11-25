@@ -24,6 +24,7 @@ func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
 	ret.ATC = atc.NewATC(game)
+	ret.Game.SetThreatRange(20)
 	return ret
 }
 
@@ -94,8 +95,6 @@ func (self *Problem) String() string {
 }
 
 func (self *Overmind) Step() {
-
-	self.Game.SetThreatRange(20)
 
 	self.ResetPilots()
 	self.EnemyShipChasers = make(map[int][]int)
