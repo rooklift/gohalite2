@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+const (
+	INITIAL_THREAT_RANGE = 10
+	INITIAL_FRIEND_RANGE = 30
+)
+
 type MoveInfo struct {
 	Dx						float64
 	Dy						float64
@@ -56,7 +61,9 @@ type Game struct {
 
 	enemies_near_planet			map[int][]Ship
 	mobile_enemies_near_planet	map[int][]Ship
+	friends_near_planet			map[int][]Ship
 	threat_range				float64
+	friend_range				float64
 }
 
 func NewGame() *Game {
@@ -72,7 +79,8 @@ func NewGame() *Game {
 	game.lastmoveMap = make(map[int]MoveInfo)
 	game.cumulativeShips = make(map[int]int)
 	game.lastownerMap = make(map[int]int)
-	game.threat_range = 10						// Default value, can be changed.
+	game.threat_range = INITIAL_THREAT_RANGE
+	game.friend_range = INITIAL_FRIEND_RANGE
 	game.token_parser.ClearTokens()				// This is just clearing the token_parser's "log".
 	game.Parse()
 	game.inited = true		// Just means Parse() will increment the turn value before parsing.
@@ -87,7 +95,7 @@ func (self *Game) InitialPlayers() int { return self.initialPlayers }
 func (self *Game) CurrentPlayers() int { return self.currentPlayers }
 func (self *Game) ParseTime() time.Time { return self.parse_time }
 
-func (self *Game) UpdateProximityMaps() {
+func (self *Game) UpdateEnemyMaps() {
 
 	self.enemies_near_planet = make(map[int][]Ship)
 	self.mobile_enemies_near_planet = make(map[int][]Ship)
@@ -117,9 +125,34 @@ func (self *Game) UpdateProximityMaps() {
 	}
 }
 
+func (self *Game) UpdateFriendMap() {
+
+	self.friends_near_planet = make(map[int][]Ship)
+
+	my_ships := self.MyShips()
+	all_planets := self.AllPlanets()
+
+	for _, ship := range my_ships {
+		for _, planet := range all_planets {
+			if ship.CanMove() {
+				if ship.ApproachDist(planet) < self.friend_range {
+					self.friends_near_planet[planet.Id] = append(self.friends_near_planet[planet.Id], ship)
+				}
+			}
+		}
+	}
+}
+
 func (self *Game) SetThreatRange(d float64) {
 	if d != self.threat_range {
 		self.threat_range = d
-		self.UpdateProximityMaps()
+		self.UpdateEnemyMaps()
+	}
+}
+
+func (self *Game) SetFriendRange(d float64) {
+	if d != self.friend_range {
+		self.friend_range = d
+		self.UpdateFriendMap()
 	}
 }
