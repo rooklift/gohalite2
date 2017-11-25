@@ -1,1 +1,1 @@
-halite.exe "bot.exe --conservative" ".\offbots\brine\brine.exe --conservative"
+halite.exe "bot.exe --conservative" "python .\otherbots\holypegasus\mybot.py"

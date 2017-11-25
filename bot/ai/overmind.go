@@ -9,7 +9,7 @@ import (
 // --------------------------------------------
 
 type Overmind struct {
-	Pilots					[]*pil.Pilot
+	Pilots					[]*pil.Pilot			// Not kept in any particular order, can be sorted by whatever
 	Game					*hal.Game
 	ATC						*atc.AirTrafficControl
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
