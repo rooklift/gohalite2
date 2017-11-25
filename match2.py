@@ -16,7 +16,7 @@ while 1:
 	random.shuffle(positions)
 
 	output = subprocess.check_output(
-		"halite.exe --no-compression -q \"{}\" \"{}\"".format(processes[positions[0]], processes[positions[1]])
+		"halite.exe -d \"360 240\" --no-compression -q \"{}\" \"{}\"".format(processes[positions[0]], processes[positions[1]])
 		).decode("ascii")
 
 	result = json.loads(output)
