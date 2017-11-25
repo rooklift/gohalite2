@@ -4,16 +4,16 @@ import (
 	hal "../core"
 )
 
+const (
+	LEFT Side = iota
+	RIGHT
+)
+
 type Side int
 
 func (s Side) String() string {
 	if s == 0 { return "LEFT" } else if s == 1 { return "RIGHT" } else { return "???" }
 }
-
-const (
-	LEFT Side = iota
-	RIGHT
-)
 
 // Given a ship and some target, and some blocker to navigate around,
 // which side should we go?
