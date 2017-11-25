@@ -163,6 +163,12 @@ func (self *Game) EnemiesNearPlanet(planet Planet) []Ship {
 	return ret
 }
 
+func (self *Game) MobileEnemiesNearPlanet(planet Planet) []Ship {
+	ret := make([]Ship, len(self.mobile_enemies_near_planet[planet.Id]))
+	copy(ret, self.mobile_enemies_near_planet[planet.Id])
+	return ret
+}
+
 func (self *Game) LastOwner(planet Planet) int {
 	val, ok := self.lastownerMap[planet.Id]
 	if ok == false {

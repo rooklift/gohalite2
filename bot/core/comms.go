@@ -283,7 +283,7 @@ func (self *Game) Parse() {
 
 	self.currentPlayers = players_with_ships
 	self.raw = self.token_parser.Tokens(" ")
-	self.UpdateProximityMap()
+	self.UpdateProximityMaps()
 }
 
 // ---------------------------------------
