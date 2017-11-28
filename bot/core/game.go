@@ -2,6 +2,8 @@ package core
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -155,4 +157,23 @@ func (self *Game) SetFriendRange(d float64) {
 		self.friend_range = d
 		self.UpdateFriendMap()
 	}
+}
+
+func (self *Game) RawWorld() string {
+	return self.raw
+}
+
+func (self *Game) RawOutput(sorted bool) string {
+	var commands []string
+	for _, s := range self.orders {
+		if s != "" {
+			commands = append(commands, s)
+		}
+	}
+	if sorted {
+		sort.Slice(commands, func(a, b int) bool {
+			return commands[a] < commands[b]
+		})
+	}
+	return strings.Join(commands, " ")
 }

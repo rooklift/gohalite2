@@ -321,11 +321,6 @@ func (self *Game) RawOrder(sid int, s string) {
 }
 
 func (self *Game) Send() {
-	var commands []string
-	for _, s := range self.orders {
-		commands = append(commands, s)
-	}
-	out := strings.Join(commands, " ")
-	fmt.Printf(out)
+	fmt.Printf(self.RawOutput(false))
 	fmt.Printf("\n")
 }
