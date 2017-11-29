@@ -189,7 +189,7 @@ func (self *Pilot) ExecutePlanWithATC(atc *atc.AirTrafficControl) bool {
 	speed, degrees := hal.CourseFromString(self.Plan)
 	atc.Unrestrict(self.Ship, 0, 0)							// Unrestruct our preliminary null course so it doesn't block us.
 
-	if atc.PathIsFree(self.Ship, speed, degrees) {
+	if atc.PathIsFree(self.Ship, speed, degrees) && self.Game.CourseStaysInBounds(self.Ship, speed, degrees) {
 
 		self.ExecutePlan()
 		atc.Restrict(self.Ship, speed, degrees)

@@ -178,3 +178,16 @@ func (self *Game) LastOwner(planet Planet) int {
 	}
 	return val
 }
+
+func (self *Game) InBounds(x, y float64) bool {
+	if x <= 0 { return false }
+	if y <= 0 { return false }
+	if x >= float64(self.width) { return false }
+	if y >= float64(self.height) { return false }
+	return true
+}
+
+func (self *Game) CourseStaysInBounds(ship Ship, speed int, degrees int) bool {
+	x2, y2 := Projection(ship.X, ship.Y, float64(speed), degrees)
+	return self.InBounds(x2, y2)
+}
