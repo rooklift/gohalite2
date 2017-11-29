@@ -99,19 +99,41 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 }
 
 func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+	if self.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
+		self.EngageShipApproach(enemy_ship, avoid_list)
+	} else {
+		self.EngageShipFlee(enemy_ship, avoid_list)
+	}
+}
 
+func (self *Pilot) EngageShipMessage(err error) MessageInt {
+	if err != nil { return MSG_RECURSION }
+	if self.Target.Type() == hal.PLANET { return MSG_ORBIT_FIGHT }
+	return MSG_ASSASSINATE
+}
+
+func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	side := self.DecideSideFromTarget()
 	speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
+	msg := self.EngageShipMessage(err)
+	self.PlanThrust(speed, degrees, msg)
+}
 
-	var msg MessageInt
+func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 
-	if err != nil {										// Pathfinding failed...
-		msg = MSG_RECURSION
-	} else if self.Target.Type() == hal.PLANET {		// We're fighting a ship because it's near our target planet...
-		msg = MSG_ORBIT_FIGHT
-	} else {											// We're directly targeting a ship...
-		msg = MSG_ASSASSINATE
-	}
+	// We were already within range of our target ship, so we will definitely attack it this turn.
+	// We can therefore back off.
+
+	angle := self.Angle(enemy_ship) + 180
+
+	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
+	flee_point := hal.Point{x2, y2}
+
+	side := self.DecideSideFromTarget()
+
+	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
+
+	msg := self.EngageShipMessage(err)
 
 	self.PlanThrust(speed, degrees, msg)
 }
