@@ -1,7 +1,5 @@
 package pilot
 
-type MessageInt int
-
 const (
 	MSG_ATTACK_DOCKED = 121
 	MSG_ORBIT_FIGHT = 122

@@ -180,9 +180,9 @@ func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
 		return self.Pilots[a].Y < self.Pilots[b].Y
 	})
 
-	self.Pilots[0].PlanThrust(s0, d0, -1)
-	self.Pilots[1].PlanThrust(s1, d1, -1)
-	self.Pilots[2].PlanThrust(s2, d2, -1)
+	self.Pilots[0].PlanThrust(s0, d0)
+	self.Pilots[1].PlanThrust(s1, d1)
+	self.Pilots[2].PlanThrust(s2, d2)
 
 	for _, pilot := range self.Pilots {
 		pilot.ExecutePlan()

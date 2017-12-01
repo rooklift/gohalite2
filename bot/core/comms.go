@@ -97,6 +97,7 @@ func (self *Game) Parse() {
 	// Now reset various things...
 
 	self.orders = make(map[int]string)			// Clear all orders.
+	self.messages = make(map[int]int)
 
 	if self.inited {
 		self.turn++
@@ -294,10 +295,11 @@ func (self *Game) Thrust(ship Ship, speed, degrees int) {
 	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, degrees)
 }
 
-func (self *Game) ThrustWithMessage(ship Ship, speed, degrees int, message int) {
-	for degrees < 0 { degrees += 360 }; degrees %= 360
-	if message >= 0 && message <= 180 { degrees += (int(message) + 1) * 360 }
-	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, degrees)
+func (self *Game) SetMessage(ship Ship, message int) {
+	if message < 0 || message > 180 {
+		return
+	}
+	self.messages[ship.Id] = message
 }
 
 func (self *Game) Dock(ship Ship, planet Planet) {

@@ -13,7 +13,8 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	}
 
 	if self.Target.Type() == hal.NOTHING {
-		self.PlanThrust(0, 0, MSG_NO_TARGET)
+		self.PlanThrust(0, 0)
+		self.Message = MSG_NO_TARGET
 		return
 	}
 
@@ -34,7 +35,8 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		if err != nil {
 			self.SetTarget(hal.Nothing{})
 		} else {
-			self.PlanThrust(speed, degrees, MessageInt(planet.Id))
+			self.PlanThrust(speed, degrees)
+			self.Message = planet.Id
 		}
 
 	case hal.SHIP:
@@ -52,7 +54,8 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		if err != nil {
 			self.SetTarget(hal.Nothing{})
 		} else {
-			self.PlanThrust(speed, degrees, MSG_POINT_TARGET)
+			self.PlanThrust(speed, degrees)
+			self.Message = MSG_POINT_TARGET
 		}
 	}
 }
@@ -106,9 +109,9 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	}
 }
 
-func (self *Pilot) EngageShipMessage(err error) MessageInt {
+func (self *Pilot) EngageShipMessage(err error) int {
 	if err != nil { return MSG_RECURSION }
-	if self.Target.Type() == hal.PLANET { return MSG_ORBIT_FIGHT }
+	if self.Target.Type() == hal.PLANET { return self.Target.(hal.Planet).Id }
 	return MSG_ASSASSINATE
 }
 
@@ -116,7 +119,8 @@ func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Enti
 	side := self.DecideSideFromTarget()
 	speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
 	msg := self.EngageShipMessage(err)
-	self.PlanThrust(speed, degrees, msg)
+	self.PlanThrust(speed, degrees)
+	self.Message = msg
 }
 
 func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) {
@@ -135,7 +139,8 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 
 	msg := self.EngageShipMessage(err)
 
-	self.PlanThrust(speed, degrees, msg)
+	self.PlanThrust(speed, degrees)
+	self.Message = msg
 }
 
 func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
@@ -155,9 +160,11 @@ func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
 	side := self.DecideSideFromTarget()
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 
+	self.PlanThrust(speed, degrees)
+
 	if err != nil {
-		self.PlanThrust(speed, degrees, MSG_RECURSION)
+		self.Message = MSG_RECURSION
 	} else {
-		self.PlanThrust(speed, degrees, MSG_DOCK_APPROACH)
+		self.Message = planet.Id
 	}
 }

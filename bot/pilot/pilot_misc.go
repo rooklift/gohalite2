@@ -25,7 +25,8 @@ func SetEnemyShipApproachDist(d float64) {
 
 type Pilot struct {
 	hal.Ship
-	Plan			string							// Our planned order, valid for 1 turn only
+	Plan			string							// Our planned order, valid for 1 turn only.
+	Message			int								// Message for this turn. -1 for no message.
 	HasExecuted		bool							// Have we actually "sent" the order? (Placed it in the game.orders map.)
 	Overmind		Overmind
 	Game			*hal.Game
@@ -74,6 +75,7 @@ func (self *Pilot) ResetAndUpdate(clear_stack bool) bool {		// Doesn't clear Tar
 
 	self.Ship = current_ship									// Don't do this until after the (possible) self.SetTarget() above.
 	self.Plan = ""
+	self.Message = -1
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
 
@@ -141,20 +143,9 @@ func (self *Pilot) ClosestPlanet() hal.Planet {
 
 // -------------------------------------------------------------------
 
-func (self *Pilot) PlanThrust(speed, degrees int, message MessageInt) {		// Send -1 as message for no message.
-
-	for degrees < 0 {
-		degrees += 360
-	}
-
+func (self *Pilot) PlanThrust(speed, degrees int) {
+	for degrees < 0 { degrees += 360 }
 	degrees %= 360
-
-	// We put some extra info into the angle, which we can see in the Chlorine replayer...
-
-	if message >= 0 && message <= 180 {
-		degrees += (int(message) + 1) * 360
-	}
-
 	self.Plan = fmt.Sprintf("t %d %d %d", self.Id, speed, degrees)
 }
 
@@ -171,9 +162,11 @@ func (self *Pilot) PlanUndock() {
 
 func (self *Pilot) ExecutePlan() {
 	if self.Plan == "" {
-		self.PlanThrust(0, 0, MSG_EXECUTED_NO_PLAN)
+		self.PlanThrust(0, 0)
+		self.Message = MSG_EXECUTED_NO_PLAN
 	}
 	self.Game.RawOrder(self.Id, self.Plan)
+	self.Game.SetMessage(self.Ship, self.Message)			// Fails silently if message < 0 or > 180
 	self.HasExecuted = true
 }
 
@@ -213,7 +206,8 @@ func (self *Pilot) SlowPlanDown() {
 
 	speed--
 
-	self.PlanThrust(speed, degrees, MSG_ATC_SLOWED)
+	self.PlanThrust(speed, degrees)
+	self.Message = MSG_ATC_SLOWED
 }
 
 // -------------------------------------------------------------------

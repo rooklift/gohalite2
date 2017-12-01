@@ -47,6 +47,7 @@ type Game struct {
 	lastownerMap				map[int]int			// Planet ID --> Last owner (check OK for never owned)
 
 	orders						map[int]string
+	messages					map[int]int			// For the Chlorine viewer
 
 	logfile						*Logfile
 	token_parser				*TokenParser
@@ -59,7 +60,9 @@ type Game struct {
 	all_ships_cache				[]Ship
 	enemy_ships_cache			[]Ship
 	all_planets_cache			[]Planet
-	all_immobile_cache			[]Entity
+	all_immobile_cache			[]Entity			// Planets and docked ships
+
+	// Some more stuff used by the AI...
 
 	enemies_near_planet			map[int][]Ship
 	mobile_enemies_near_planet	map[int][]Ship
@@ -164,16 +167,40 @@ func (self *Game) RawWorld() string {
 }
 
 func (self *Game) RawOutput(sorted bool) string {
+
 	var commands []string
-	for _, s := range self.orders {
+
+	for sid, s := range self.orders {
+
 		if s != "" {
-			commands = append(commands, s)
+
+			message, ok := self.messages[sid]
+
+			if s[0] == 't' && ok {
+
+				speed, degrees := CourseFromString(s)
+
+				// We put some extra info into the angle, which we can see in the Chlorine replayer...
+
+				if message >= 0 && message <= 180 {
+					degrees += (int(message) + 1) * 360
+				}
+
+				commands = append(commands, fmt.Sprintf("t %d %d %d", sid, speed, degrees))
+
+			} else {
+
+				commands = append(commands, s)
+
+			}
 		}
 	}
+
 	if sorted {
 		sort.Slice(commands, func(a, b int) bool {
 			return commands[a] < commands[b]
 		})
 	}
+
 	return strings.Join(commands, " ")
 }

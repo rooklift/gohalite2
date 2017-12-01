@@ -196,7 +196,8 @@ func FightRush(game *hal.Game) {
 	var order_elements []int
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
-		game.ThrustWithMessage(ship, genome.genes[i].speed, genome.genes[i].angle, int(pil.MSG_SECRET_SAUCE))
+		game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)
+		game.SetMessage(ship, pil.MSG_SECRET_SAUCE)
 		order_elements = append(order_elements, genome.genes[i].speed, genome.genes[i].angle)
 	}
 
