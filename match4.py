@@ -2,9 +2,9 @@ import json, random, subprocess
 
 processes = [
 	"bot.exe",
-	".\\otherbots\\v12\\mybot.exe",
-	".\\otherbots\\v34\\mybot.exe",
-	".\\offbots\\brine\\brine.exe",
+	"bot.exe",
+	".\\otherbots\\v36\\mybot.exe",
+	".\\otherbots\\v36\\mybot.exe",
 ]
 
 scores = [0,0,0,0]
@@ -29,7 +29,13 @@ while 1:
 		i = positions[int(key)]
 
 		if rank == 1:
+			scores[i] += 3
+		elif rank == 2:
 			scores[i] += 1
+		elif rank == 3:
+			scores[i] -= 1
+		elif rank == 4:
+			scores[i] -= 3
 
 	print(scores)
 
