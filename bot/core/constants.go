@@ -35,4 +35,13 @@ const (
 	UNDOCK
 )
 
+type Edge int
+
+const (
+	TOP Edge = iota
+	BOTTOM
+	LEFT
+	RIGHT
+)
+
 var BackendDevLog = NewLog("backend_dev_log.txt")
