@@ -12,6 +12,13 @@ func (self *Pilot) PlanCowardice(all_enemies []hal.Ship, avoid_list []hal.Entity
 		return
 	}
 
+	edge, dist := self.Game.NearestEdge(self.Ship)
+
+	if dist < 3 {
+		self.PlanEdgeCowardice(edge, all_enemies)
+		return
+	}
+
 	sort.Slice(all_enemies, func(a, b int) bool {
 		return self.Dist(all_enemies[a]) < self.Dist(all_enemies[b])
 	})
@@ -37,4 +44,36 @@ func (self *Pilot) PlanCowardice(all_enemies []hal.Ship, avoid_list []hal.Entity
 	self.PlanThrust(speed, degrees)
 	self.Message = msg
 
+}
+
+func (self *Pilot) PlanEdgeCowardice(edge hal.Edge, all_enemies []hal.Ship) {
+
+	self.Message = MSG_COWARD
+
+	sort.Slice(all_enemies, func(a, b int) bool {
+		return self.Dist(all_enemies[a]) < self.Dist(all_enemies[b])
+	})
+
+	enemy_ship := all_enemies[0]
+
+	switch edge {
+
+	case hal.TOP: fallthrough
+	case hal.BOTTOM:
+
+		if enemy_ship.X > self.X {
+			self.PlanThrust(7, 180)
+		} else {
+			self.PlanThrust(7, 0)
+		}
+
+	case hal.LEFT: fallthrough
+	case hal.RIGHT:
+
+		if enemy_ship.Y > self.Y {
+			self.PlanThrust(7, 270)
+		} else {
+			self.PlanThrust(7, 90)
+		}
+	}
 }
