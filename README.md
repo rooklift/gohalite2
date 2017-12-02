@@ -35,3 +35,5 @@ I suspect implementation details are less important than overall strategy. I onl
 * However... chasing ships is quite exploitable. An enemy can [send a single ship](https://halite.io/play/?game_id=2424227&replay_class=1&replay_name=replay-20171108-160208%2B0000--3470758710-312-208-1510156921) to distract many of your ships. Therefore, I started only allowing 1 ship to chase any particular enemy. This seems OK but does lose some of the clustering benefits.
 
 * When your ship is in range of its target at the start of a turn, it's guaranteed to attack that target (plus anything else in range at turn start). Instead of sitting there motionless, it's good to back away, making it harder for incoming enemies to attack you.
+
+* In 4 player games, when you are seriously weak, it's best to flee and try and survive to take advantage of the (dubious) tiebreaker rules.
