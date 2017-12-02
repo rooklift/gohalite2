@@ -48,6 +48,10 @@ func DecideSideFromTarget(ship hal.Ship, target hal.Entity, game *hal.Game, ns N
 
 	side := ArbitrarySide(ship)
 
+	if target.Type() == hal.NOTHING {
+		return side
+	}
+
 	// By using AllImmobile() as the avoid_list, any collision will be with a planet or docked ship.
 
 	collision_entity, ok := FirstCollision(ship, 1000, ship.Angle(target), game.AllImmobile())

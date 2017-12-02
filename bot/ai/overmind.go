@@ -15,6 +15,7 @@ type Overmind struct {
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
 	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
 	PlanetChasers			map[int][]int			// Planet ID --> slice of my IDs going there
+	CowardFlag				bool
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -119,5 +120,21 @@ func (self *Overmind) UpdateChasers() {
 			self.PlanetChasers[target.Id] = append(self.PlanetChasers[target.Id], pilot.Id)
 
 		}
+	}
+}
+
+func (self *Overmind) SetCowardFlag() {
+
+	if self.Game.CurrentPlayers() <= 2 {
+		self.CowardFlag = false
+		return
+	}
+
+	if self.CowardFlag {
+		return				// i.e. leave it true
+	}
+
+	if self.Game.CountMyShips() < self.Game.CountEnemyShips() / 10 {
+		self.CowardFlag = true
 	}
 }

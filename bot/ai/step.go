@@ -19,11 +19,16 @@ func (self *Overmind) Step() {
 	self.UpdateChasers()						// Must happen after self.Pilots is updated
 	self.ShipsDockingCount = make(map[int]int)
 	self.ATC.Clear()
+	self.SetCowardFlag()
+
+	// -----------------
 
 	if self.Game.Turn() == 0 {
 		self.TurnZero()
 	} else if self.DetectRushFight() {
 		self.HandleRushFight()
+	} else if self.CowardFlag {
+		self.CowardStep()
 	} else {
 		self.NormalStep()
 	}
@@ -114,7 +119,9 @@ func (self *Overmind) NormalStep() {
 		self.ATC.Restrict(pilot.Ship, 0, 0)			// All initially restrict a null move.
 	}
 
-	for n := 0; n < 5; n++ {						// Try a few times to allow chains of ships.
+	// Try a few times to allow chains of ships...
+
+	for n := 0; n < 5; n++ {
 		for _, pilot := range mobile_pilots {
 			if pilot.HasExecuted == false {
 				pilot.ExecutePlanWithATC(self.ATC)
@@ -190,6 +197,58 @@ func (self *Overmind) NormalStep() {
 				pilot.LogNavStack()
 				break
 			}
+		}
+	}
+}
+
+func (self *Overmind) CowardStep() {
+
+	var mobile_pilots []*pil.Pilot
+
+	for _, pilot := range self.Pilots {
+		if pilot.DockedStatus == hal.UNDOCKED {
+			mobile_pilots = append(mobile_pilots, pilot)
+		}
+	}
+
+	all_enemies := self.Game.EnemyShips()
+	avoid_list := self.Game.AllImmobile()
+
+	for _, pilot := range mobile_pilots {
+		pilot.PlanCowardice(all_enemies, avoid_list)
+	}
+
+	for _, pilot := range mobile_pilots {
+		self.ATC.Restrict(pilot.Ship, 0, 0)			// All initially restrict a null move.
+	}
+
+	// Try a few times to allow chains of ships...
+
+	for n := 0; n < 5; n++ {
+		for _, pilot := range mobile_pilots {
+			if pilot.HasExecuted == false {
+				pilot.ExecutePlanWithATC(self.ATC)
+			}
+		}
+	}
+
+	// Retry some times with lower velocity...
+
+	for n := 0; n < 5; n++ {
+		for _, pilot := range mobile_pilots {
+			if pilot.HasExecuted == false {
+				pilot.SlowPlanDown()
+				pilot.ExecutePlanWithATC(self.ATC)
+			}
+		}
+	}
+
+	// Also undock any docked ships...
+
+	for _, pilot := range self.Pilots {
+		if pilot.DockedStatus == hal.DOCKED {
+			pilot.PlanUndock()
+			pilot.ExecutePlan()
 		}
 	}
 }

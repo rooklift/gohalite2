@@ -56,6 +56,16 @@ func (self *Game) EnemyShips() []Ship {
 
 // ----------------------------------------------
 
+func (self *Game) CountMyShips() int {
+	return len(self.playershipMap[self.pid])
+}
+
+func (self *Game) CountEnemyShips() int {
+	return len(self.enemy_ships_cache)
+}
+
+// ----------------------------------------------
+
 func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 	var ret []int
 	for sid, _ := range self.shipMap {
