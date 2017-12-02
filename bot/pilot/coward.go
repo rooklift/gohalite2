@@ -12,23 +12,12 @@ func (self *Pilot) PlanCowardice(all_enemies []hal.Ship, avoid_list []hal.Entity
 		return
 	}
 
-	edge, dist := self.Game.NearestEdge(self.Ship)
+	edge, dist, flee_point := self.Game.NearestEdge(self.Ship)
 
 	if dist < 3 {
 		self.PlanEdgeCowardice(edge, all_enemies)
 		return
 	}
-
-	sort.Slice(all_enemies, func(a, b int) bool {
-		return self.Dist(all_enemies[a]) < self.Dist(all_enemies[b])
-	})
-
-	enemy_ship := all_enemies[0]
-
-	angle := self.Angle(enemy_ship) + 180
-
-	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
-	flee_point := hal.Point{x2, y2}
 
 	side := self.DecideSideFromTarget()
 

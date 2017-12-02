@@ -202,25 +202,29 @@ func (self *Game) CourseStaysInBounds(ship Ship, speed int, degrees int) bool {
 	return self.InBounds(x2, y2)
 }
 
-func (self *Game) NearestEdge(ship Ship) (e Edge, dist float64) {
+func (self *Game) NearestEdge(ship Ship) (e Edge, dist float64, point Point) {
 
 	e = LEFT
 	dist = ship.X
+	point = Point{0, ship.Y}
 
 	if float64(self.width) - ship.X < dist {
 		e = RIGHT
 		dist = float64(self.width) - ship.X
+		point = Point{float64(self.width), ship.Y}
 	}
 
 	if ship.Y < dist {
 		e = TOP
 		dist = ship.Y
+		point = Point{ship.X, 0}
 	}
 
 	if float64(self.height) - ship.Y < dist {
 		e = BOTTOM
 		dist = float64(self.height) - ship.Y
+		point = Point{ship.X, float64(self.height)}
 	}
 
-	return e, dist
+	return e, dist, point
 }
