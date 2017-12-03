@@ -55,6 +55,8 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 	// Perhaps another should be the enemy ships blinking out of existence, so we don't crash into planets.
 
+	width, height := float64(game.Width()), float64(game.Height())
+
 	initial_sim := SetupSim(game)
 
 	sim_without_enemies := initial_sim.Copy()
@@ -140,10 +142,16 @@ func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 			sim.Step()
 
 			for _, ship := range my_sim_ship_ptrs {
+
 				if ship.hp > 0 {
 					score += ship.hp * 100
 				}
+
 				score -= int(ship.Dist(centre_of_gravity))
+
+				if ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
+					score -= 100000
+				}
 			}
 
 			for _, ship := range enemy_sim_ship_ptrs {
