@@ -17,7 +17,7 @@ type Overmind struct {
 	Game					*hal.Game
 	ATC						*atc.AirTrafficControl
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
-	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
+	CowardFlag				bool
 }
 
 func NewOvermind(game *hal.Game) *Overmind {
@@ -29,12 +29,7 @@ func NewOvermind(game *hal.Game) *Overmind {
 }
 
 func (self *Overmind) NotifyTargetChange(pilot *pil.Pilot, old_target, new_target hal.Entity) {
-	if old_target.Type() == hal.SHIP {
-		self.EnemyShipChasers[old_target.(hal.Ship).Id] = hal.IntSliceWithout(self.EnemyShipChasers[old_target.(hal.Ship).Id], pilot.Id)
-	}
-	if new_target.Type() == hal.SHIP {
-		self.EnemyShipChasers[new_target.(hal.Ship).Id] = append(self.EnemyShipChasers[new_target.(hal.Ship).Id], pilot.Id)
-	}
+	// pass
 }
 
 func (self *Overmind) NotifyDock(planet hal.Planet) {
@@ -45,10 +40,6 @@ func (self *Overmind) NotifyDock(planet hal.Planet) {
 
 func (self *Overmind) ShipsAboutToDock(planet hal.Planet) int {
 	return self.ShipsDockingCount[planet.Id]
-}
-
-func (self *Overmind) ShipsChasing(ship hal.Ship) int {
-	return len(self.EnemyShipChasers[ship.Id])
 }
 
 // --------------------------------------------
@@ -97,12 +88,17 @@ func (self *Problem) String() string {
 func (self *Overmind) Step() {
 
 	self.ResetPilots()
-	self.EnemyShipChasers = make(map[int][]int)
 	self.ShipsDockingCount = make(map[int]int)
 	self.ATC.Clear()
+	self.SetCowardFlag()
 
 	if self.Game.Turn() == 0 {
 		self.ChooseThreeDocks()
+	}
+
+	if self.CowardFlag {
+		self.CowardStep()
+		return
 	}
 
 	all_problems := self.AllProblems()
@@ -438,5 +434,73 @@ func (self *Overmind) ChooseThreeDocks() {
 		}
 
 		break
+	}
+}
+
+func (self *Overmind) CowardStep() {
+
+	var mobile_pilots []*pil.Pilot
+
+	for _, pilot := range self.Pilots {
+		if pilot.DockedStatus == hal.UNDOCKED {
+			mobile_pilots = append(mobile_pilots, pilot)
+		}
+	}
+
+	all_enemies := self.Game.EnemyShips()
+	avoid_list := self.Game.AllImmobile()
+
+	for _, pilot := range mobile_pilots {
+		pilot.PlanCowardice(all_enemies, avoid_list)
+	}
+
+	for _, pilot := range mobile_pilots {
+		self.ATC.Restrict(pilot.Ship, 0, 0)			// All initially restrict a null move.
+	}
+
+	// Try a few times to allow chains of ships...
+
+	for n := 0; n < 5; n++ {
+		for _, pilot := range mobile_pilots {
+			if pilot.HasExecuted == false {
+				pilot.ExecutePlanWithATC(self.ATC)
+			}
+		}
+	}
+
+	// Retry some times with lower velocity...
+
+	for n := 0; n < 5; n++ {
+		for _, pilot := range mobile_pilots {
+			if pilot.HasExecuted == false {
+				pilot.SlowPlanDown()
+				pilot.ExecutePlanWithATC(self.ATC)
+			}
+		}
+	}
+
+	// Also undock any docked ships...
+
+	for _, pilot := range self.Pilots {
+		if pilot.DockedStatus == hal.DOCKED {
+			pilot.PlanUndock()
+			pilot.ExecutePlan()
+		}
+	}
+}
+
+func (self *Overmind) SetCowardFlag() {
+
+	if self.Game.CurrentPlayers() <= 2 {
+		self.CowardFlag = false
+		return
+	}
+
+	if self.CowardFlag {
+		return				// i.e. leave it true
+	}
+
+	if self.Game.CountMyShips() < self.Game.CountEnemyShips() / 10 {
+		self.CowardFlag = true
 	}
 }
