@@ -2,7 +2,6 @@ My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
 
 At a strategic level there's not much to the bot. In most games, the bot acts on these principles:
 
-* Don't crash our ships into each other.
 * Send new ships to the nearest target, which is either an enemy ship, or a planet that *needs help*, defined as:
   - Not fully docked by us, or:
   - Under threat of attack.
@@ -26,7 +25,9 @@ The problem is, the simulation needs to know what the opponent will do. I curren
 
 # Global Strategy - Conceptual Breakthroughs
 
-I suspect implementation details are less important than overall strategy. I only made a few conceptual breakthroughs:
+Some key conceptual breakthroughs that seemed to improve the bot were:
+
+* Don't crash our ships into each other. This is accomplished by a fairly crude 3D (2 space + 1 time) grid of occupied locations of discrete size -- see `atc.go`.
 
 * Never dock when there are enemy ships around. This is obvious in hindsight. Docking is basically suicide. Instead, fight whatever enemy ships are in the area.
 
