@@ -57,7 +57,7 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 	self.Game.Log(format_string, args...)
 }
 
-func (self *Pilot) ResetAndUpdate(clear_stack bool) bool {		// Doesn't clear Target. Return true if we still exist.
+func (self *Pilot) ResetAndUpdate(clear_stack, reset_ead bool) bool {		// Doesn't clear Target. Return true if we still exist.
 
 	if clear_stack {
 		self.NavStack = nil
@@ -76,7 +76,9 @@ func (self *Pilot) ResetAndUpdate(clear_stack bool) bool {		// Doesn't clear Tar
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
 
-	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST	// The Overmind has to set this every turn if it wants something else.
+	if reset_ead {
+		self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
+	}
 
 	// Update the info about our target.
 

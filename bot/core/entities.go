@@ -137,12 +137,6 @@ func (s Ship) CanDock(p Planet) bool {
 	return false
 }
 
-func (s Ship) Projection(distance float64, degrees int) Ship {
-	ret := s
-	ret.X, ret.Y = Projection(s.X, s.Y, distance, degrees)
-	return ret
-}
-
 func (s Ship) CanMove() bool {
 	return s.DockedStatus == UNDOCKED
 }
