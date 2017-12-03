@@ -17,21 +17,18 @@ type Overmind interface {
 	NotifyDock(planet hal.Planet)
 }
 
-var ENEMY_SHIP_APPROACH_DIST float64 = 5.45			// GetApproach uses centre-to-edge distances, so 5.5ish
-
-func SetEnemyShipApproachDist(d float64) {
-	ENEMY_SHIP_APPROACH_DIST = d
-}
+const DEFAULT_ENEMY_SHIP_APPROACH_DIST = 5.45		// GetApproach uses centre-to-edge distances, so 5.5ish.
 
 type Pilot struct {
 	hal.Ship
-	Plan			string							// Our planned order, valid for 1 turn only.
-	Message			int								// Message for this turn. -1 for no message.
-	HasExecuted		bool							// Have we actually "sent" the order? (Placed it in the game.orders map.)
-	Overmind		Overmind
-	Game			*hal.Game
-	Target			hal.Entity						// Use a hal.Nothing{} struct for no target.
-	NavStack		[]string
+	Plan				string						// Our planned order, valid for 1 turn only.
+	Message				int							// Message for this turn. -1 for no message.
+	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
+	Overmind			Overmind
+	Game				*hal.Game
+	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
+	EnemyApproachDist	float64
+	NavStack			[]string
 }
 
 func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
@@ -78,6 +75,8 @@ func (self *Pilot) ResetAndUpdate(clear_stack bool) bool {		// Doesn't clear Tar
 	self.Message = -1
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
+
+	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST	// The Overmind has to set this every turn if it wants something else.
 
 	// Update the info about our target.
 

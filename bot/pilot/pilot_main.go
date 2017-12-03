@@ -117,7 +117,7 @@ func (self *Pilot) EngageShipMessage(err error) int {
 
 func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	side := self.DecideSideFromTarget()
-	speed, degrees, err := self.GetApproach(enemy_ship, ENEMY_SHIP_APPROACH_DIST, avoid_list, side)
+	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
 	msg := self.EngageShipMessage(err)
 	self.PlanThrust(speed, degrees)
 	self.Message = msg
