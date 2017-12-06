@@ -88,6 +88,36 @@ func (self *Overmind) NormalStep() {
 		}
 	}
 
+	// Swap targets if this results in decreased travel distance...
+	// FIXME? Can do more passes of this...
+
+	for a := 0; a < len(mobile_pilots); a++ {
+
+		pa := mobile_pilots[a]
+
+		if pa.Target.Type() == hal.NOTHING {
+			continue
+		}
+
+		for b := a + 1; b < len(mobile_pilots); b++ {
+
+			pb := mobile_pilots[b]
+
+			if pb.Target.Type() == hal.NOTHING {
+				continue
+			}
+
+			current_dist := pa.Dist(pa.Target) + pb.Dist(pb.Target)
+
+			swap_dist := pa.Dist(pb.Target) + pb.Dist(pa.Target)
+
+			if swap_dist < current_dist {
+				// self.Game.Log("Swapping targets: %v (%v), %v (%v), gain %.2f", pa.Id, pa.Target, pb.Id, pb.Target, current_dist - swap_dist)
+				pa.Target, pb.Target = pb.Target, pa.Target
+			}
+		}
+	}
+
 	// Perhaps this pilot doesn't need to move? If so, consider it frozen.
 
 	for i := 0; i < len(mobile_pilots); i++ {
