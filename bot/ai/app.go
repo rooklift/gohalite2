@@ -13,7 +13,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "43 final"
+	VERSION = "44 final"
 )
 
 type Config struct {
@@ -29,10 +29,6 @@ func init() {
 	flag.BoolVar(&CONFIG.Stateless, "stateless", false, "clear target each turn")
 	flag.BoolVar(&CONFIG.Timeseed, "timeseed", false, "seed RNG with time")
 	flag.Parse()
-
-	// FIXME: Special hack for v43...
-
-	CONFIG.Stateless = true
 }
 
 func Run() {
