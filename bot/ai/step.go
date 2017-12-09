@@ -84,6 +84,7 @@ func (self *Overmind) NormalStep() {
 
 	for _, pilot := range mobile_pilots {
 		if CONFIG.Stateless || self.ValidateTarget(pilot) == false {
+			pilot.SetTarget(hal.Nothing{})										// Causes the Chaser maps to be updated.
 			self.ChooseTarget(pilot, all_planets, all_enemy_ships)
 		}
 	}
