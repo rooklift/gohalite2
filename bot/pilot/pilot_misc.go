@@ -205,7 +205,7 @@ func (self *Pilot) SlowPlanDown() {
 
 	speed, degrees := hal.CourseFromString(self.Plan)
 
-	if speed < 1 {
+	if speed <= 1 {											// Don't slow our plan to zero, which is like having no plan.
 		return
 	}
 
