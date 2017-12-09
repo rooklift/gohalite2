@@ -78,7 +78,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		// Why do we bother with this, instead of always calling PlanetApproachForDock() ? - I can't recall.
 
-		side := self.DecideSideFromTarget()											// Uses Target rather than TurnTarget, but meh.
+		side := self.DecideSideFromTurnTarget()
 		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
 
 		if err != nil {
@@ -97,7 +97,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		point := self.TurnTarget.(hal.Point)
 
-		side := self.DecideSideFromTarget()											// Uses Target rather than TurnTarget, but meh.
+		side := self.DecideSideFromTurnTarget()
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
@@ -124,7 +124,7 @@ func (self *Pilot) EngageShipMessage(err error) int {
 }
 
 func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
-	side := self.DecideSideFromTarget()
+	side := self.DecideSideFromTurnTarget()
 	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
 	msg := self.EngageShipMessage(err)
 	self.PlanThrust(speed, degrees)
@@ -141,7 +141,7 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
 	flee_point := hal.Point{x2, y2}
 
-	side := self.DecideSideFromTarget()
+	side := self.DecideSideFromTurnTarget()
 
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
 
@@ -165,7 +165,7 @@ func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
 		return
 	}
 
-	side := self.DecideSideFromTarget()
+	side := self.DecideSideFromTurnTarget()
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 
 	self.PlanThrust(speed, degrees)

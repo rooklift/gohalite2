@@ -19,7 +19,8 @@ func (self *Pilot) PlanCowardice(all_enemies []hal.Ship, avoid_list []hal.Entity
 		return
 	}
 
-	side := self.DecideSideFromTarget()
+	self.TurnTarget = flee_point
+	side := self.DecideSideFromTurnTarget()
 
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
 
