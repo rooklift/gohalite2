@@ -118,6 +118,12 @@ func (self *Overmind) NormalStep() {
 		}
 	}
 
+	// Set tactical (single turn) targets...
+
+	for _, pilot := range mobile_pilots {
+		pilot.SetTurnTarget()
+	}
+
 	// Perhaps this pilot doesn't need to move? If so, consider it frozen.
 
 	for i := 0; i < len(mobile_pilots); i++ {
@@ -138,7 +144,7 @@ func (self *Overmind) NormalStep() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.ResetAndUpdate(false, false)
+		pilot.ResetAndUpdate(false, false, false)
 		pilot.PlanChase(avoid_list)
 	}
 

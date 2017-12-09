@@ -87,7 +87,7 @@ func (self *Overmind) UpdatePilots() {
 
 	for i := 0; i < len(self.Pilots); i++ {
 		pilot := self.Pilots[i]
-		alive := pilot.ResetAndUpdate(true, true)
+		alive := pilot.ResetAndUpdate(true, true, true)
 		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--

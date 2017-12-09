@@ -6,71 +6,31 @@ import (
 	hal "../core"
 )
 
-func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
+func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
+
+	// Default...
+
+	self.TurnTarget = self.Target
+
+	// Keep the default in many cases...
 
 	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
 
-	if self.Target.Type() == hal.NOTHING {
-		self.PlanThrust(0, 0)
-		self.Message = MSG_NO_TARGET
-		return
-	}
-
-	switch self.Target.Type() {
-
-	case hal.PLANET:
-
-		planet := self.Target.(hal.Planet)
-
-		if self.ApproachDist(planet) <= 100 {
-			self.EngagePlanet(avoid_list)
-			return
-		}
-
-		side := self.DecideSideFromTarget()
-		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
-
-		if err != nil {
-			self.SetTarget(hal.Nothing{})
-		} else {
-			self.PlanThrust(speed, degrees)
-			self.Message = planet.Id
-		}
-
-	case hal.SHIP:
-
-		other_ship := self.Target.(hal.Ship)
-		self.EngageShip(other_ship, avoid_list)
-
-	case hal.POINT:
-
-		point := self.Target.(hal.Point)
-
-		side := self.DecideSideFromTarget()
-		speed, degrees, err := self.GetCourse(point, avoid_list, side)
-
-		if err != nil {
-			self.SetTarget(hal.Nothing{})
-		} else {
-			self.PlanThrust(speed, degrees)
-			self.Message = MSG_POINT_TARGET
-		}
-	}
-}
-
-func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
-
-	// We are "close" to our target planet. Do something about this.
-	// As of v32 or so, "close" is actually quite far.
-
 	if self.Target.Type() != hal.PLANET {
-		self.Log("EngagePlanet() called but target wasn't a planet.")
 		return
 	}
+
+	// But in the case of a planet, we might set TurnTarget to be a ship...
 
 	planet := self.Target.(hal.Planet)
+
+	// Is the planet far away?
+
+	if self.ApproachDist(planet) > 100 {
+		return
+	}
 
 	// Are there enemy ships near the planet? Includes docked enemies.
 
@@ -84,21 +44,69 @@ func (self *Pilot) EngagePlanet(avoid_list []hal.Entity) {
 			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 		})
 
-		self.EngageShip(enemies[0], avoid_list)
+		self.TurnTarget = enemies[0]
 		return
 	}
 
-	// Is it available for us to dock?
+	// Otherwise, just return (leaving the TurnTarget as the planet).
 
-	if planet.Owned == false || (planet.Owner == self.Game.Pid() && planet.IsFull() == false) {
-		self.PlanetApproachForDock(avoid_list)
-		return
-	}
-
-	// This function shouldn't have been called at all.
-
-	self.Log("EngagePlanet() called but there's nothing to do here.")
 	return
+}
+
+func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
+
+	if self.DockedStatus != hal.UNDOCKED {
+		return
+	}
+
+	if self.TurnTarget.Type() == hal.NOTHING {
+		self.PlanThrust(0, 0)
+		self.Message = MSG_NO_TARGET
+		return
+	}
+
+	switch self.TurnTarget.Type() {
+
+	case hal.PLANET:
+
+		planet := self.TurnTarget.(hal.Planet)
+
+		if self.ApproachDist(planet) <= 100 {
+			self.PlanetApproachForDock(avoid_list)
+			return
+		}
+
+		// Why do we bother with this, instead of always calling PlanetApproachForDock() ? - I can't recall.
+
+		side := self.DecideSideFromTarget()											// Uses Target rather than TurnTarget, but meh.
+		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
+
+		if err != nil {
+			self.SetTarget(hal.Nothing{})
+		} else {
+			self.PlanThrust(speed, degrees)
+			self.Message = planet.Id
+		}
+
+	case hal.SHIP:
+
+		other_ship := self.TurnTarget.(hal.Ship)
+		self.EngageShip(other_ship, avoid_list)
+
+	case hal.POINT:
+
+		point := self.TurnTarget.(hal.Point)
+
+		side := self.DecideSideFromTarget()											// Uses Target rather than TurnTarget, but meh.
+		speed, degrees, err := self.GetCourse(point, avoid_list, side)
+
+		if err != nil {
+			self.SetTarget(hal.Nothing{})
+		} else {
+			self.PlanThrust(speed, degrees)
+			self.Message = MSG_POINT_TARGET
+		}
+	}
 }
 
 func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
@@ -145,12 +153,12 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 
 func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
 
-	if self.Target.Type() != hal.PLANET {
+	if self.TurnTarget.Type() != hal.PLANET {
 		self.Log("PlanetApproachForDock() called but target wasn't a planet.")
 		return
 	}
 
-	planet := self.Target.(hal.Planet)
+	planet := self.TurnTarget.(hal.Planet)
 
 	if self.CanDock(planet) {
 		self.PlanDock(planet)
