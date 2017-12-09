@@ -110,11 +110,36 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 }
 
 func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
-	if self.Dist(enemy_ship) >= hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
-		self.EngageShipApproach(enemy_ship, avoid_list)
-	} else {
+
+	// Flee if we're already in weapons range...
+
+	if self.Dist(enemy_ship) < hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
 		self.EngageShipFlee(enemy_ship, avoid_list)
+		return
 	}
+
+	// If we're quite far, just approach...
+
+	if self.Dist(enemy_ship) >= 12 {
+		self.EngageShipApproach(enemy_ship, avoid_list)
+		return
+	}
+
+	// If enemy ship is docked, approaching is fine...
+
+	if enemy_ship.DockedStatus != hal.UNDOCKED {
+		self.EngageShipApproach(enemy_ship, avoid_list)
+		return
+	}
+
+	// Enemy is undocked. We would need to close in to attack. But should we?
+
+	if self.AvoidFight {
+		self.EngageShipFlee(enemy_ship, avoid_list)
+		return
+	}
+
+	self.EngageShipApproach(enemy_ship, avoid_list)
 }
 
 func (self *Pilot) EngageShipMessage(err error) int {

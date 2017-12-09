@@ -129,6 +129,21 @@ func (self *Overmind) NormalStep() {
 		}
 	}
 
+	// Don't allow ships to attack without help...
+
+	for _, pilot := range mobile_pilots {
+
+		if pilot.TurnTarget.Type() == hal.SHIP {
+
+			target_id := pilot.TurnTarget.(hal.Ship).Id
+			killers := len(self.EnemyShipKillers[target_id])
+
+			if killers < 2 {
+				pilot.AvoidFight = true
+			}
+		}
+	}
+
 	// Perhaps this pilot doesn't need to move? If so, consider it frozen.
 
 	for i := 0; i < len(mobile_pilots); i++ {
