@@ -12,16 +12,18 @@ At a strategic level there's not much to the bot. In most games, the bot acts on
 
 That's about it - everything else is implementation details.
 
-# 1v1 Genetic Algorithm
+# 1v1 Genetic Algorithm + Metropolis Coupling
 
 In 2-player games it's sometimes sensible to rush the enemy, ignoring planets and going straight at 'em. In this case, when the ships are close to the enemy, the bot uses a genetic algorithm to find which moves are best, i.e. we generate a random "genome" (list of moves) and then do the following:
 
 * Mutate the genome randomly.
 * Simulate the results.
-* If the new genome is better, keep it, otherwise discard.
+* If the new genome is good, keep it, otherwise discard.
 * Repeat.
 
 The problem is, the simulation needs to know what the opponent will do. I currently do very crude guessing. A more advanced technique would be to evolve the *opponent's* moves as above, and only then evolve our own moves to counteract them.
+
+Another problem is local optima. To avoid these, I run multiple chains of evolution at once, with different "heats". Hot chains are allowed to accept bad mutations (the hotter the chain, the looser its standards are). Between iterations, the chains are sorted so that the colder chains have the better genomes. I believe this whole process is called "Metropolis Coupling".
 
 # Global Strategy - Conceptual Breakthroughs
 
