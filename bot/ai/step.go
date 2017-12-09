@@ -77,14 +77,19 @@ func (self *Overmind) NormalStep() {
 		}
 	}
 
-	// Choose target if needed... (i.e. we don't have a valid target already).
+	// Choose target if needed... (i.e. we don't have a valid target already, or we are stateless).
+
+	if CONFIG.Stateless && len(self.Game.MyShips()) > 3 {
+		for _, pilot := range mobile_pilots {
+			pilot.SetTarget(hal.Nothing{})										// Also causes the Chaser maps to be updated.
+		}
+	}
 
 	all_enemy_ships := self.Game.EnemyShips()
 	all_planets := self.Game.AllPlanets()
 
 	for _, pilot := range mobile_pilots {
-		if CONFIG.Stateless || self.ValidateTarget(pilot) == false {
-			pilot.SetTarget(hal.Nothing{})										// Causes the Chaser maps to be updated.
+		if self.ValidateTarget(pilot) == false {
 			self.ChooseTarget(pilot, all_planets, all_enemy_ships)
 		}
 	}
