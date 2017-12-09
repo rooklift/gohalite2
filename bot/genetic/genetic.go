@@ -10,7 +10,6 @@ import (
 )
 
 const CHAINS = 10
-
 var thresholds = [CHAINS]float64{1.0, 0.999, 0.995, 0.99, 0.98, 0.96, 0.93, 0.9, 0.8, 0.7}
 
 // --------------------------------------------------------------------
@@ -91,7 +90,8 @@ func EvolveGenome(game *hal.Game, iterations int) *Genome {
 
 	for n := 0; n < iterations; n++ {
 
-		// We run various chains of evolution with different "heats" (i.e. how willing
+		// We run various chains of evolution with different "heats" (i.e. how willing we are to accept bad mutations)
+		// in the "metropolis coupling" fashion.
 
 		for c := 0; c < CHAINS; c++ {
 
