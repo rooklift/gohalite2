@@ -122,9 +122,7 @@ func (self *Overmind) ChooseThreeDocks() {
 
 func (self *Overmind) DetectRushFight() bool {
 
-	// <= 3 ships each
-	// All ships near each other
-	// My ships all undocked
+	// 2 players
 
 	players := self.Game.SurvivingPlayerIDs()
 
@@ -132,28 +130,44 @@ func (self *Overmind) DetectRushFight() bool {
 		return false
 	}
 
-	var all_ships []hal.Ship
+	// <= 3 ships each
 
 	for _, pid := range players {
 		ships := self.Game.ShipsOwnedBy(pid)
 		if len(ships) > 3 {
 			return false
 		}
-		for _, ship := range ships {
-			if ship.DockedStatus != hal.UNDOCKED && ship.Owner == self.Game.Pid() {
-				return false
-			}
-		}
-		all_ships = append(all_ships, ships...)
 	}
 
-	for _, ship := range all_ships {
-		if ship.Dist(self.Game.AllShipsCentreOfGravity()) > 20 {
+	// My ships all undocked
+
+	for _, ship := range self.Game.MyShips() {
+		if ship.DockedStatus != hal.UNDOCKED {
 			return false
 		}
 	}
 
-	return true
+	// All ships near centre of gravity
+
+	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+
+	for _, ship := range self.Game.AllShips() {
+		if ship.Dist(centre_of_gravity) > 20 {
+			return false
+		}
+	}
+
+	// Now, return true if any of my ships is within critical distance of any enemy ship
+
+	for _, my_ship := range self.Game.MyShips() {
+		for _, enemy_ship := range self.Game.EnemyShips() {
+			if my_ship.Dist(enemy_ship) <= 20 {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (self *Overmind) TurnZeroCluster() {
