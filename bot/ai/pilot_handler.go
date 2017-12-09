@@ -192,6 +192,7 @@ func (self *Overmind) DockIfWise(pilot *pil.Pilot) bool {
 		return false
 	}
 
+	pilot.SetTarget(closest_planet)				// Can usefully cause PlanetChaser maps to be updated.
 	pilot.PlanDock(closest_planet)
 	return true
 }
