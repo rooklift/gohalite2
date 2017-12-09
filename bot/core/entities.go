@@ -141,6 +141,18 @@ func (s Ship) CanMove() bool {
 	return s.DockedStatus == UNDOCKED
 }
 
+func (s Ship) Continued(game *Game) Ship {
+
+	last_move := game.LastTurnMoveBy(s)
+
+	ret := s
+
+	ret.X += last_move.Dx
+	ret.Y += last_move.Dy
+
+	return ret
+}
+
 // ------------------------------------------------------
 
 type Point struct {

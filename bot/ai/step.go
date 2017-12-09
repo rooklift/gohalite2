@@ -123,7 +123,7 @@ func (self *Overmind) NormalStep() {
 
 	for _, pilot := range mobile_pilots {
 		pilot.SetTurnTarget()
-		if pilot.TurnTarget.Type() == hal.SHIP && pilot.Dist(pilot.TurnTarget) < 12 {
+		if pilot.TurnTarget.Type() == hal.SHIP && pilot.Dist(pilot.TurnTarget) < pil.KILLER_THRESHOLD {
 			target_id := pilot.TurnTarget.(hal.Ship).Id
 			self.EnemyShipKillers[target_id] = append(self.EnemyShipKillers[target_id], pilot.Id)
 		}

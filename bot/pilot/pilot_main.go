@@ -120,7 +120,7 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 
 	// If we're quite far, just approach...
 
-	if self.Dist(enemy_ship) >= 12 {
+	if self.Dist(enemy_ship) >= KILLER_THRESHOLD {
 		self.EngageShipApproach(enemy_ship, avoid_list)
 		return
 	}

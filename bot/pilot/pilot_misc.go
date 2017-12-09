@@ -17,7 +17,10 @@ type Overmind interface {
 	NotifyDock(planet hal.Planet)
 }
 
-const DEFAULT_ENEMY_SHIP_APPROACH_DIST = 5.45		// GetApproach uses centre-to-edge distances, so 5.5ish.
+const (
+	DEFAULT_ENEMY_SHIP_APPROACH_DIST = 5.45			// GetApproach uses centre-to-edge distances, so 5.5ish.
+	KILLER_THRESHOLD = 12
+)
 
 type Pilot struct {
 	hal.Ship
