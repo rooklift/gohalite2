@@ -18,6 +18,7 @@ func (self *Overmind) Step() {
 	self.UpdatePilots()
 	self.UpdateChasers()						// Must happen after self.Pilots is updated
 	self.ShipsDockingCount = make(map[int]int)
+	self.EnemyShipKillers = make(map[int][]int)
 	self.ATC.Clear()
 	self.SetCowardFlag()
 
@@ -118,10 +119,14 @@ func (self *Overmind) NormalStep() {
 		}
 	}
 
-	// Set tactical (single turn) targets...
+	// Set tactical (single turn) targets, and the update the EnemyShipKillers map
 
 	for _, pilot := range mobile_pilots {
 		pilot.SetTurnTarget()
+		if pilot.TurnTarget.Type() == hal.SHIP && pilot.Dist(pilot.TurnTarget) < 12 {
+			target_id := pilot.TurnTarget.(hal.Ship).Id
+			self.EnemyShipKillers[target_id] = append(self.EnemyShipKillers[target_id], pilot.Id)
+		}
 	}
 
 	// Perhaps this pilot doesn't need to move? If so, consider it frozen.
@@ -144,7 +149,7 @@ func (self *Overmind) NormalStep() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.ResetAndUpdate(false, false, false)
+		pilot.ResetPlan()
 		pilot.PlanChase(avoid_list)
 	}
 

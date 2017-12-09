@@ -58,19 +58,18 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 	self.Game.Log(format_string, args...)
 }
 
-func (self *Pilot) ResetAndUpdate(clear_stack, reset_ead, reset_tt bool) bool {		// Doesn't clear Target. Return true if we still exist.
+func (self *Pilot) ResetPlan() {
+	self.Plan = ""
+	self.Message = -1
+	self.HasExecuted = false
+	self.Game.RawOrder(self.Id, "")
+}
 
-	if clear_stack {
-		self.NavStack = nil
-	}
+func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return true if we still exist.
 
-	if reset_ead {
-		self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
-	}
-
-	if reset_tt {
-		self.TurnTarget = self.Target
-	}
+	self.NavStack = nil
+	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
+	self.TurnTarget = self.Target
 
 	current_ship, alive := self.Game.GetShip(self.Id)
 

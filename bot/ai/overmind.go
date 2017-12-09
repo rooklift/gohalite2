@@ -13,8 +13,9 @@ type Overmind struct {
 	Game					*hal.Game
 	ATC						*atc.AirTrafficControl
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
-	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> slice of my IDs chasing it
-	PlanetChasers			map[int][]int			// Planet ID --> slice of my IDs going there
+	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> My IDs chasing it
+	EnemyShipKillers		map[int][]int			// Enemy Ship ID --> My IDs expecting to attack it this turn
+	PlanetChasers			map[int][]int			// Planet ID --> My IDs going there
 	CowardFlag				bool
 }
 
@@ -87,7 +88,7 @@ func (self *Overmind) UpdatePilots() {
 
 	for i := 0; i < len(self.Pilots); i++ {
 		pilot := self.Pilots[i]
-		alive := pilot.ResetAndUpdate(true, true, true)
+		alive := pilot.ResetAndUpdate()
 		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
