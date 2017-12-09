@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	TIME_STEPS = 21			// The true value for resolution. Higher is more exact. Can be safely changed.
+	TIME_STEPS = 42			// The true value for resolution. Higher is more exact. Can be safely changed.
 	SPACE_RESOLUTION = 2	// Leave this alone.
 	FILL_RADIUS = 1			// Leave this alone.
 )
