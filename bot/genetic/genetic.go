@@ -8,12 +8,6 @@ import (
 	pil "../pilot"			// Just for message constants
 )
 
-const CHAINS = 10
-
-var thresholds = [CHAINS]float64{1.0, 0.999, 0.995, 0.99, 0.98, 0.96, 0.93, 0.9, 0.8, 0.7}
-
-// --------------------------------------------------------------------
-
 type Gene struct {			// A gene is an instruction to a ship.
 	speed		int
 	angle		int
@@ -21,7 +15,6 @@ type Gene struct {			// A gene is an instruction to a ship.
 
 type Genome struct {
 	genes		[]*Gene
-	score		int
 }
 
 func (self *Genome) Copy() *Genome {
@@ -31,7 +24,6 @@ func (self *Genome) Copy() *Genome {
 		*new_gene = *gene
 		ret.genes = append(ret.genes, new_gene)
 	}
-	ret.score = self.score
 	return ret
 }
 
@@ -43,7 +35,6 @@ func (self *Genome) Init(size int) {
 			angle: rand.Intn(360),
 		})
 	}
-	self.score = -2147483647
 }
 
 func (self *Genome) Mutate() {
@@ -59,9 +50,7 @@ func (self *Genome) Mutate() {
 	}
 }
 
-// --------------------------------------------------------------------
-
-func EvolveGenome(game *hal.Game, iterations int) *Genome {
+func EvolveGenome(game *hal.Game, iterations int) (*Genome, int, int) {
 
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 	// Perhaps another should be the enemy ships blinking out of existence, so we don't crash into planets.
@@ -80,114 +69,106 @@ func EvolveGenome(game *hal.Game, iterations int) *Genome {
 
 	centre_of_gravity := game.AllShipsCentreOfGravity()
 
-	var genomes []*Genome
+	best_genome := new(Genome)
+	best_genome.Init(len(game.MyShips()))
 
-	for n := 0; n < CHAINS; n++ {
-		g := new(Genome)
-		g.Init(len(game.MyShips()))
-		genomes = append(genomes, g)
-	}
+	best_score := -999999
+
+	steps := 0		// Counted for info - how many successful mutations we make.
 
 	for n := 0; n < iterations; n++ {
 
-		for c := 0; c < CHAINS; c++ {
+		genome := best_genome.Copy()
+		genome.Mutate()
 
-			genome := genomes[c].Copy()
-			genome.Mutate()
+		score := 0
 
-			genome.score = 0
+		for scenario := 0; scenario < 3; scenario++ {
 
-			for scenario := 0; scenario < 3; scenario++ {
+			var sim *Sim
 
-				var sim *Sim
+			if scenario == 0 {						// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
+				sim = sim_without_enemies.Copy()
+			} else {
+				sim = initial_sim.Copy()
+			}
 
-				if scenario == 0 {						// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
-					sim = sim_without_enemies.Copy()
+			var my_sim_ship_ptrs []*SimShip
+			var enemy_sim_ship_ptrs []*SimShip
+
+			for _, ship := range sim.ships {
+				if ship.owner == game.Pid() {
+					my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
 				} else {
-					sim = initial_sim.Copy()
+					enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
 				}
+			}
 
-				var my_sim_ship_ptrs []*SimShip
-				var enemy_sim_ship_ptrs []*SimShip
+			for i := 0; i < len(my_sim_ship_ptrs); i++ {
+				speed := genome.genes[i].speed
+				angle := genome.genes[i].angle
+				vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
+				my_sim_ship_ptrs[i].vel_x = vel_x
+				my_sim_ship_ptrs[i].vel_y = vel_y
+			}
 
-				for _, ship := range sim.ships {
-					if ship.owner == game.Pid() {
-						my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
-					} else {
-						enemy_sim_ship_ptrs = append(enemy_sim_ship_ptrs, ship)
-					}
-				}
+			for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
 
-				for i := 0; i < len(my_sim_ship_ptrs); i++ {
-					speed := genome.genes[i].speed
-					angle := genome.genes[i].angle
-					vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
-					my_sim_ship_ptrs[i].vel_x = vel_x
-					my_sim_ship_ptrs[i].vel_y = vel_y
-				}
+				if enemy_sim_ship_ptrs[i].dockedstatus != hal.UNDOCKED {
 
-				for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
+					enemy_sim_ship_ptrs[i].vel_x = 0
+					enemy_sim_ship_ptrs[i].vel_y = 0
 
-					if enemy_sim_ship_ptrs[i].dockedstatus != hal.UNDOCKED {
+				} else {
 
+					switch scenario {
+
+					case 0:
+						// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
+
+					case 1:
+						last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
+						enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
+						enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
+
+					case 2:
 						enemy_sim_ship_ptrs[i].vel_x = 0
 						enemy_sim_ship_ptrs[i].vel_y = 0
 
-					} else {
-
-						switch scenario {
-
-						case 0:
-							// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
-
-						case 1:
-							last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
-							enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
-							enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
-
-						case 2:
-							enemy_sim_ship_ptrs[i].vel_x = 0
-							enemy_sim_ship_ptrs[i].vel_y = 0
-
-						}
-					}
-				}
-
-				sim.Step()
-
-				for _, ship := range my_sim_ship_ptrs {
-
-					if ship.hp > 0 {
-						genome.score += ship.hp * 100
-					}
-
-					genome.score -= int(ship.Dist(centre_of_gravity))
-
-					if ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
-						genome.score -= 100000
-					}
-				}
-
-				for _, ship := range enemy_sim_ship_ptrs {
-					if ship.hp > 0 {
-						genome.score -= ship.hp * 100
 					}
 				}
 			}
 
-			if float64(genome.score) > float64(genomes[c].score) * thresholds[c] {
-				genomes[c] = genome
+			sim.Step()
+
+			for _, ship := range my_sim_ship_ptrs {
+
+				if ship.hp > 0 {
+					score += ship.hp * 100
+				}
+
+				score -= int(ship.Dist(centre_of_gravity))
+
+				if ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
+					score -= 100000
+				}
+			}
+
+			for _, ship := range enemy_sim_ship_ptrs {
+				if ship.hp > 0 {
+					score -= ship.hp * 100
+				}
 			}
 		}
 
-		for c := 0; c < CHAINS - 1; c++ {
-			if genomes[c].score < genomes[c + 1].score {
-				genomes[c], genomes[c + 1] = genomes[c + 1], genomes[c]
-			}
+		if score > best_score {
+			steps++
+			best_score = score
+			best_genome = genome.Copy()
 		}
 	}
 
-	return genomes[0]
+	return best_genome, best_score, steps
 }
 
 func FightRush(game *hal.Game) {
@@ -195,16 +176,24 @@ func FightRush(game *hal.Game) {
 	game.LogOnce("Entering dangerous rush situation!")
 
 	var genome *Genome
+	var best_score int
 
-	for n := 0; n < 1; n++ {
+	var all_scores []int
+	var all_steps []int			// Count of mutations used to produce each genome (for info only)
 
-		new_genome := EvolveGenome(game, 5000)
+	for n := 0; n < 20; n++ {
 
-		if genome == nil || new_genome.score > genome.score {
+		new_genome, score, steps := EvolveGenome(game, 2500)
+
+		if score > best_score || genome == nil {
 			genome = new_genome
+			best_score = score
 		}
 
-		// FIXME: This probably isn't the right place any more to prevent timeouts...
+		all_scores = append(all_scores, score)
+		all_steps = append(all_steps, steps)
+
+		// Hopefully the following is adequate to prevent timeouts...
 
 		if time.Now().Sub(game.ParseTime()) > 1500 * time.Millisecond {
 			game.Log("Emergency timeout in FightRush() after %d genomes.", n)
@@ -220,5 +209,7 @@ func FightRush(game *hal.Game) {
 		order_elements = append(order_elements, genome.genes[i].speed, genome.genes[i].angle)
 	}
 
-	game.Log("Rush Evo! Orders: %v", order_elements)
+	game.Log("Rush Evo! Scores: %v", all_scores)
+	game.Log("           Steps: %v", all_steps)
+	game.Log("          Orders: %v", order_elements)
 }
