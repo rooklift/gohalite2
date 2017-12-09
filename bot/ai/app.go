@@ -13,7 +13,6 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "40 final"
 )
 
 type Config struct {

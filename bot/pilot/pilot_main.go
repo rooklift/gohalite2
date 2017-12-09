@@ -118,26 +118,7 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 		return
 	}
 
-	// If we're quite far, just approach...
-
-	if self.Dist(enemy_ship) >= KILLER_THRESHOLD {
-		self.EngageShipApproach(enemy_ship, avoid_list)
-		return
-	}
-
-	// If enemy ship is docked, approaching is fine...
-
-	if enemy_ship.DockedStatus != hal.UNDOCKED {
-		self.EngageShipApproach(enemy_ship, avoid_list)
-		return
-	}
-
-	// Enemy is undocked. We would need to close in to attack. But should we?
-
-	if self.AvoidFight {
-		self.EngageShipFlee(enemy_ship, avoid_list)
-		return
-	}
+	// Approach...
 
 	self.EngageShipApproach(enemy_ship, avoid_list)
 }

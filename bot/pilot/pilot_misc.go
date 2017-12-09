@@ -19,7 +19,6 @@ type Overmind interface {
 
 const (
 	DEFAULT_ENEMY_SHIP_APPROACH_DIST = 5.45			// GetApproach uses centre-to-edge distances, so 5.5ish.
-	KILLER_THRESHOLD = 12
 )
 
 type Pilot struct {
@@ -27,7 +26,6 @@ type Pilot struct {
 	Plan				string						// Our planned order, valid for 1 turn only.
 	Message				int							// Message for this turn. -1 for no message.
 	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
-	AvoidFight			bool
 	Overmind			Overmind
 	Game				*hal.Game
 	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
@@ -74,7 +72,6 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	self.NavStack = nil
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 	self.TurnTarget = self.Target
-	self.AvoidFight = false
 
 	current_ship, alive := self.Game.GetShip(self.Id)
 

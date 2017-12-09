@@ -14,7 +14,6 @@ type Overmind struct {
 	ATC						*atc.AirTrafficControl
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
 	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> My IDs chasing it
-	EnemyShipKillers		map[int][]int			// Enemy Ship ID --> My IDs expecting to attack it this turn
 	PlanetChasers			map[int][]int			// Planet ID --> My IDs going there
 	CowardFlag				bool
 }
