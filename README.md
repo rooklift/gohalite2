@@ -38,3 +38,5 @@ Some key conceptual breakthroughs that seemed to improve the bot were:
 * When your ship is in range of its target at the start of a turn, it's guaranteed to attack that target (plus anything else in range at turn start). Instead of sitting there motionless, it's good to back away, making it harder for incoming enemies to attack you.
 
 * In 4 player games, when you are seriously weak, it's best to flee and try and survive to take advantage of the (dubious) tiebreaker rules.
+
+* The bot isn't stateless because targets are retained. Sometimes swapping 2 ships' targets reduces the overall distance they have to travel. So do this.
