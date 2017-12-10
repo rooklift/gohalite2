@@ -7,22 +7,19 @@ import (
 	pil "../pilot"
 )
 
+type TargetPlanet struct {
+	planet					hal.Planet
+	score					float64
+}
+
 func (self *Overmind) ChooseTarget(pilot *pil.Pilot, all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
 
 	// We pass all_planets and all_enemy_ships for speed. They may get sorted in place, caller beware.
 
-	if self.Game.InitialPlayers() == 2 {
-		self.ChooseTarget2(pilot, all_planets, all_enemy_ships)
-	} else {
-		self.ChooseTarget4(pilot, all_planets, all_enemy_ships)
-	}
-}
+	penalty_factor := 1.0
 
-func (self *Overmind) ChooseTarget2(pilot *pil.Pilot, all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
-
-	type TargetPlanet struct {
-		planet					hal.Planet
-		score					float64
+	if self.Game.InitialPlayers() < 4 {
+		penalty_factor = 1.4
 	}
 
 	game := self.Game
@@ -44,7 +41,7 @@ func (self *Overmind) ChooseTarget2(pilot *pil.Pilot, all_planets []hal.Planet, 
 		if game.DesiredSpots(planet) > 0 {
 			commitment := len(self.PlanetChasers[planet.Id])
 			if commitment < game.DesiredSpots(planet) {
-				target_planets = append(target_planets, TargetPlanet{planet, 1 / (pilot.Dist(planet) * 1.4)})		// Lower score for these.
+				target_planets = append(target_planets, TargetPlanet{planet, 1 / (pilot.Dist(planet) * penalty_factor)})		// Lower score for these.
 				continue
 			}
 		}
@@ -70,61 +67,6 @@ func (self *Overmind) ChooseTarget2(pilot *pil.Pilot, all_planets []hal.Planet, 
 		}
 	} else if len(target_planets) > 0 {
 		pilot.SetTarget(target_planets[0].planet)
-	} else if len(all_enemy_ships) > 0 {
-		pilot.SetTarget(all_enemy_ships[0])
-	}
-}
-
-func (self *Overmind) ChooseTarget4(pilot *pil.Pilot, all_planets []hal.Planet, all_enemy_ships []hal.Ship) {
-
-	game := self.Game
-
-	var target_planets []hal.Planet
-
-	for _, planet := range all_planets {
-
-		ok := false
-
-		// It's always valid to go to threatened / enemy planets...
-
-		if len(game.EnemiesNearPlanet(planet)) > 0 {
-			ok = true
-		}
-
-		// We can go to neutral or friendly planet sometimes...
-
-		if game.DesiredSpots(planet) > 0 {
-			commitment := len(self.PlanetChasers[planet.Id])
-			if commitment < game.DesiredSpots(planet) {
-				ok = true
-			}
-		}
-
-		if ok {
-			target_planets = append(target_planets, planet)
-		}
-	}
-
-	sort.Slice(target_planets, func(a, b int) bool {
-		return pilot.Dist(target_planets[a]) < pilot.Dist(target_planets[b])	// Could use ApproachDist
-	})
-
-	sort.Slice(all_enemy_ships, func(a, b int) bool {
-		return pilot.Dist(all_enemy_ships[a]) < pilot.Dist(all_enemy_ships[b])
-	})
-
-	if len(all_enemy_ships) > 0 && len(target_planets) > 0 {
-		if pilot.Dist(all_enemy_ships[0]) < pilot.Dist(target_planets[0]) {
-			if self.ShipsChasing(all_enemy_ships[0]) == 0 {
-				pilot.SetTarget(all_enemy_ships[0])
-			} else {
-				pilot.SetTarget(target_planets[0])
-			}
-		} else {
-			pilot.SetTarget(target_planets[0])
-		}
-	} else if len(target_planets) > 0 {
-		pilot.SetTarget(target_planets[0])
 	} else if len(all_enemy_ships) > 0 {
 		pilot.SetTarget(all_enemy_ships[0])
 	}
