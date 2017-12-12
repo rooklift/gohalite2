@@ -62,7 +62,7 @@ func (self *Overmind) ResetPilots() {
 
 	for i := 0; i < len(self.Pilots); i++ {
 		pilot := self.Pilots[i]
-		alive := pilot.ResetAndUpdate(true)
+		alive := pilot.ResetAndUpdate()
 		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
@@ -157,6 +157,10 @@ func (self *Overmind) Step() {
 				swaps++
 			}
 		}
+	}
+
+	for _, pilot := range self.Pilots {
+		pilot.SetTurnTarget()
 	}
 
 	self.ExecuteMoves()
@@ -268,7 +272,7 @@ func (self *Overmind) ExecuteMoves() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.ResetAndUpdate(false)
+		pilot.ResetPlan()
 		pilot.PlanChase(avoid_list)
 	}
 
