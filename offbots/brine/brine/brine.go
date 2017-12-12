@@ -70,6 +70,7 @@ func (self *Overmind) ResetPilots() {
 
 		if pilot.Target.Type() != hal.POINT {
 			pilot.Target = hal.Nothing{}				// Brine has no long term targets, except points during the opening.
+			pilot.TurnTarget = hal.Nothing{}
 		}
 	}
 }
@@ -98,8 +99,13 @@ func (self *Overmind) Step() {
 
 	if self.CowardFlag {
 		self.CowardStep()
-		return
+	} else {
+		self.ChooseTargets()
+		self.ExecuteMoves()
 	}
+}
+
+func (self *Overmind) ChooseTargets() {
 
 	all_problems := self.AllProblems()
 
@@ -131,8 +137,6 @@ func (self *Overmind) Step() {
 
 	// See if we can optimise a bit...
 
-	swaps := 0
-
 	for i := 0; i < len(self.Pilots); i++ {
 
 		pilot_a := self.Pilots[i]
@@ -154,7 +158,6 @@ func (self *Overmind) Step() {
 
 			if swap_dist < total_dist {
 				pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
-				swaps++
 			}
 		}
 	}
@@ -162,8 +165,6 @@ func (self *Overmind) Step() {
 	for _, pilot := range self.Pilots {
 		pilot.SetTurnTarget()
 	}
-
-	self.ExecuteMoves()
 }
 
 func (self *Overmind) AllProblems() []*Problem {
