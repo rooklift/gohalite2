@@ -1,6 +1,8 @@
 My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
 
-At a strategic level there's not much to the bot. In most games, the bot acts on these principles:
+# Initial stateful algorithm (before v45)
+
+The algorithm I used until v45 was fairly simple in principle...
 
 * Send new ships to the nearest target, which is either an enemy ship, or a planet that *needs help*, defined as:
   - Not fully docked by us, or:
@@ -10,7 +12,9 @@ At a strategic level there's not much to the bot. In most games, the bot acts on
   - Otherwise, dock if possible.
   - Otherwise, choose a new destination as above.
 
-That's about it - everything else is implementation details.
+# Stateless algorithm (after v45)
+
+I scrapped the above algorithm in version 45, becoming stateless. Now, each turn the bot generates a list of "problems" (e.g. planets to be attacked) and assigns nearby ships to those problems, with no state saved between turns.
 
 # 1v1 Genetic Algorithm + Metropolis Coupling
 
