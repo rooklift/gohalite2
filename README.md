@@ -45,4 +45,4 @@ Some key conceptual breakthroughs that seemed to improve the bot were:
 
 * In 4 player games, when you are seriously weak, it's best to flee and try and survive to take advantage of the (dubious) tiebreaker rules.
 
-* The bot isn't stateless because targets are retained. Sometimes swapping 2 ships' targets reduces the overall distance they have to travel. So do this.
+* Sometimes swapping 2 ships' targets reduces the overall distance they have to travel. So do this.
