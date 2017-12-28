@@ -8,6 +8,27 @@ import (
 	"strings"
 )
 
+func ShipsWillCollide(ship_a Ship, speed_a, angle_a int, ship_b Ship, speed_b, angle_b int) bool {
+
+	// Work this out by pretending ship B is standing still, while ship A is moving possibly faster than allowed.
+
+	radians_a := DegToRad(float64(angle_a))
+	speedx_a := float64(speed_a) * math.Cos(radians_a)
+	speedy_a := float64(speed_a) * math.Sin(radians_a)
+
+	radians_b := DegToRad(float64(angle_b))
+	speedx_b := float64(speed_b) * math.Cos(radians_b)
+	speedy_b := float64(speed_b) * math.Sin(radians_b)
+
+	startx := ship_a.X
+	starty := ship_a.Y
+
+	endx_adjusted := startx + speedx_a - speedx_b
+	endy_adjusted := starty + speedy_a - speedy_b
+
+	return IntersectSegmentCircle(ship_a.X, ship_a.Y, endx_adjusted, endy_adjusted, ship_b.X, ship_b.Y, SHIP_RADIUS * 2)
+}
+
 func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius float64) bool {
 
 	// Based on the Python version, I have no idea how this works.
