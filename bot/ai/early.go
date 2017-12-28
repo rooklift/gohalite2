@@ -123,3 +123,56 @@ func (self *Overmind) DetectRushFight() bool {
 
 	return false
 }
+
+func (self *Overmind) ChooseThreeDocks() {
+
+	// Sort all planets by distance to our fleet...
+
+	all_planets := self.Game.AllPlanets()
+
+	sort.Slice(all_planets, func(a, b int) bool {
+		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
+	})
+
+	closest_three := all_planets[:3]
+
+	// Get docks...
+
+	var docks []hal.Point
+
+	for _, planet := range closest_three {
+		docks = append(docks, planet.OpeningDockHelper(self.Pilots[0].Ship)...)
+	}
+
+	docks = docks[:3]
+
+	var permutations = [][]int{
+		[]int{0,1,2},
+		[]int{0,2,1},
+		[]int{1,0,2},
+		[]int{1,2,0},
+		[]int{2,0,1},
+		[]int{2,1,0},
+	}
+
+	for _, perm := range permutations {		// Find a non-crossing solution...
+
+		self.Pilots[0].SetTarget(docks[perm[0]])
+		self.Pilots[1].SetTarget(docks[perm[1]])
+		self.Pilots[2].SetTarget(docks[perm[2]])
+
+		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
+			continue
+		}
+
+		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+			continue
+		}
+
+		if hal.Intersect(self.Pilots[1].Ship, self.Pilots[1].Target, self.Pilots[2].Ship, self.Pilots[2].Target) {
+			continue
+		}
+
+		break
+	}
+}
