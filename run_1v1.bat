@@ -1,1 +1,1 @@
-halite.exe "bot.exe --conservative" ".\offbots\brine\brine.exe"
+halite.exe "bot.exe" "bot.exe --conservative"

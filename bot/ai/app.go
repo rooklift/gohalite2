@@ -13,12 +13,11 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "45 dev"
+	VERSION = "46"
 )
 
 type Config struct {
 	Conservative	bool
-	Stateless		bool
 	Timeseed		bool
 }
 
@@ -26,7 +25,6 @@ var CONFIG Config
 
 func init() {
 	flag.BoolVar(&CONFIG.Conservative, "conservative", false, "no rushing")
-	flag.BoolVar(&CONFIG.Stateless, "stateless", false, "clear target each turn")
 	flag.BoolVar(&CONFIG.Timeseed, "timeseed", false, "seed RNG with time")
 	flag.Parse()
 }
