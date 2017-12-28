@@ -11,6 +11,7 @@ type Problem struct {
 	Entity		hal.Entity
 	X			float64
 	Y			float64
+	Value		float64
 	Need		int
 }
 
@@ -38,7 +39,8 @@ func (self *Overmind) ChooseTargets() {
 		}
 
 		sort.Slice(all_problems, func(a, b int) bool {
-			return hal.Dist(pilot.X, pilot.Y, all_problems[a].X, all_problems[a].Y) < hal.Dist(pilot.X, pilot.Y, all_problems[b].X, all_problems[b].Y)
+			return hal.Dist(pilot.X, pilot.Y, all_problems[a].X, all_problems[a].Y) / all_problems[a].Value <
+			       hal.Dist(pilot.X, pilot.Y, all_problems[b].X, all_problems[b].Y) / all_problems[b].Value
 		})
 
 		pilot.SetTarget(all_problems[0].Entity)
@@ -99,6 +101,7 @@ func (self *Overmind) AllProblems() []*Problem {
 			Entity: ship,
 			X: ship.X,
 			Y: ship.Y,
+			Value: 1.0,
 			Need: 1,
 		}
 		all_problems = append(all_problems, problem)
@@ -111,17 +114,28 @@ func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
 
 	game := self.Game
 
-	if game.DesiredSpots(planet) > 0 || len(game.EnemiesNearPlanet(planet)) > 0 {
+	fight_strength := len(game.EnemiesNearPlanet(planet)) * 2
+	capture_strength := game.DesiredSpots(planet)
 
-		fight_strength := len(game.EnemiesNearPlanet(planet)) * 2
-		capture_strength := game.DesiredSpots(planet)
+	// Start with low value, but increase it to 1.0 if there's fighting to be done at the planet (enemies near it),
+	// or if it's a 4 player game.
+
+	value := 1.0 / 1.4
+
+	if fight_strength > 0 || self.Game.InitialPlayers() > 2 {
+		value = 1.0
+	}
+
+	if capture_strength > 0 || fight_strength > 0 {
 
 		return &Problem{
 			Entity: planet,
 			X: planet.X,
 			Y: planet.Y,
+			Value: value,
 			Need: hal.Max(fight_strength, capture_strength),
 		}
+
 	}
 
 	return nil

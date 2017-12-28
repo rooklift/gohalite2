@@ -99,7 +99,7 @@ func (self *Overmind) ResetPilots() {
 
 		// The stateless version -- usually -- has no long term targets...
 
-		if self.RushFlag == false || pilot.Id > 5 {
+		if self.RushFlag == false || pilot.Ship.Birth > 5 {
 			if pilot.Target.Type() != hal.POINT {
 				pilot.Target = hal.Nothing{}
 				pilot.TurnTarget = hal.Nothing{}
