@@ -1,7 +1,6 @@
 package ai
 
 import (
-	atc "../atc"
 	hal "../core"
 	pil "../pilot"
 )
@@ -11,7 +10,6 @@ import (
 type Overmind struct {
 	Pilots					[]*pil.Pilot			// Not kept in any particular order, can be sorted by whatever
 	Game					*hal.Game
-	ATC						*atc.AirTrafficControl
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
 	EnemyShipChasers		map[int][]int			// Enemy Ship ID --> My IDs chasing it
 	PlanetChasers			map[int][]int			// Planet ID --> My IDs going there
@@ -21,7 +19,6 @@ type Overmind struct {
 func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
-	ret.ATC = atc.NewATC(game)
 
 	if ret.Game.InitialPlayers() == 2 {
 		ret.Game.SetThreatRange(20)					// This value seems to be surprisingly fine-tuned
