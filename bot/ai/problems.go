@@ -50,27 +50,30 @@ func (self *Overmind) ChooseTargets() {
 
 	// See if we can optimise a bit...
 
-	for i := 0; i < len(self.Pilots); i++ {
+	for n := 0; n < 5; n++ {
 
-		pilot_a := self.Pilots[i]
+		for i := 0; i < len(self.Pilots); i++ {
 
-		if pilot_a.DockedStatus != hal.UNDOCKED {
-			continue
-		}
+			pilot_a := self.Pilots[i]
 
-		for j := i + 1; j < len(self.Pilots); j++ {
-
-			pilot_b := self.Pilots[j]
-
-			if pilot_b.DockedStatus != hal.UNDOCKED {
+			if pilot_a.DockedStatus != hal.UNDOCKED {
 				continue
 			}
 
-			total_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
-			swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
+			for j := i + 1; j < len(self.Pilots); j++ {
 
-			if swap_dist < total_dist {
-				pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
+				pilot_b := self.Pilots[j]
+
+				if pilot_b.DockedStatus != hal.UNDOCKED {
+					continue
+				}
+
+				total_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
+				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
+
+				if swap_dist < total_dist {
+					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
+				}
 			}
 		}
 	}
