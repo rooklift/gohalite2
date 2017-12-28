@@ -119,6 +119,9 @@ func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
 
 	// Start with low value, but increase it to 1.0 if there's fighting to be done at the planet (enemies near it),
 	// or if it's a 4 player game.
+	//
+	// However, since we do this every frame, it's not like the old stateful bot where target choice was made at
+	// the moment that ship spawned and then kept.
 
 	value := 1.0 / 1.4
 
