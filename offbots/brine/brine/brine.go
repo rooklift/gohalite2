@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"sort"
 
-	atc "../../../bot/atc"
 	hal "../../../bot/core"
 	pil "../../../bot/pilot"
 )
@@ -15,7 +14,6 @@ import (
 type Overmind struct {
 	Pilots					[]*pil.Pilot
 	Game					*hal.Game
-	ATC						*atc.AirTrafficControl
 	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
 	CowardFlag				bool
 }
@@ -23,7 +21,6 @@ type Overmind struct {
 func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
-	ret.ATC = atc.NewATC(game)
 	ret.Game.SetThreatRange(20)
 	return ret
 }
@@ -90,7 +87,6 @@ func (self *Overmind) Step() {
 
 	self.ResetPilots()
 	self.ShipsDockingCount = make(map[int]int)
-	self.ATC.Clear()
 	self.SetCowardFlag()
 
 	if self.Game.Turn() == 0 {
@@ -227,7 +223,6 @@ func (self *Overmind) ExecuteMoves() {
 	}
 
 	// As a special case (relevant for 1v1 rushes) sort 3 ships by distance to centre...
-	// This is helpful for the ATC slowdown below.
 
 	if len(mobile_pilots) <= 3 {
 
@@ -266,7 +261,6 @@ func (self *Overmind) ExecuteMoves() {
 	}
 
 	// Our PlanChase() above didn't avoid these frozen ships. Remake plans with the new info.
-	// Possibly avoiding collisions we would have (since the above ships won't use ATC).
 
 	for _, pilot := range frozen_pilots {
 		avoid_list = append(avoid_list, pilot.Ship)
@@ -280,30 +274,7 @@ func (self *Overmind) ExecuteMoves() {
 	// Now the only danger is 2 "mobile" ships colliding. We use the ATC for this possibility.
 	// Note that it's possible that one of the colliding ships will not actually be moving.
 
-	for _, pilot := range mobile_pilots {
-		self.ATC.Restrict(pilot.Ship, 0, 0)			// All initially restrict a null move.
-	}
-
-	for n := 0; n < 5; n++ {						// Try a few times to allow chains of ships.
-		for _, pilot := range mobile_pilots {
-			if pilot.HasExecuted == false {
-				pilot.ExecutePlanWithATC(self.ATC)
-			}
-		}
-	}
-
-	// As a special case, at game start, allow retry with lower velocity...
-
-	if len(self.Pilots) <= 3 {
-		for n := 0; n < 2; n++ {
-			for _, pilot := range mobile_pilots {
-				if pilot.HasExecuted == false {
-					pilot.SlowPlanDown()
-					pilot.ExecutePlanWithATC(self.ATC)
-				}
-			}
-		}
-	}
+	pil.ExecuteSafely(mobile_pilots)
 
 	// Randomly give up for half the ships that still aren't moving, and
 	// retry the pathfinding with the other half.
@@ -316,24 +287,30 @@ func (self *Overmind) ExecuteMoves() {
 		if pilot.HasExecuted == false && rand.Intn(2) == 0 {
 			pilot.PlanThrust(0, 0)
 			pilot.Message = pil.MSG_ATC_DEACTIVATED
-			self.ATC.Unrestrict(pilot.Ship, 0, 0)
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
 			i--
 		}
 	}
 
-	avoid_list = self.Game.AllImmobile()			// Remake the avoid_list...
+	// Remake the avoid_list...
+
+	avoid_list = self.Game.AllImmobile()
 	for _, pilot := range frozen_pilots {
 		avoid_list = append(avoid_list, pilot.Ship)
 	}
 
+	// Remake plans for our non-moving ships that we didn't freeze...
+
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
 			pilot.PlanChase(avoid_list)
-			pilot.ExecutePlanWithATC(self.ATC)
 		}
 	}
+
+	// And execute. Note that pilots that have already executed won't be affected...
+
+	pil.ExecuteSafely(mobile_pilots)
 
 	// Null thrust every "mobile" ship that didn't move. This causes target info to be put into
 	// the replay via the Angle Message system.
@@ -459,30 +436,7 @@ func (self *Overmind) CowardStep() {
 		pilot.PlanCowardice(all_enemies, avoid_list)
 	}
 
-	for _, pilot := range mobile_pilots {
-		self.ATC.Restrict(pilot.Ship, 0, 0)			// All initially restrict a null move.
-	}
-
-	// Try a few times to allow chains of ships...
-
-	for n := 0; n < 5; n++ {
-		for _, pilot := range mobile_pilots {
-			if pilot.HasExecuted == false {
-				pilot.ExecutePlanWithATC(self.ATC)
-			}
-		}
-	}
-
-	// Retry some times with lower velocity...
-
-	for n := 0; n < 5; n++ {
-		for _, pilot := range mobile_pilots {
-			if pilot.HasExecuted == false {
-				pilot.SlowPlanDown()
-				pilot.ExecutePlanWithATC(self.ATC)
-			}
-		}
-	}
+	pil.ExecuteSafely(mobile_pilots)
 
 	// Also undock any docked ships...
 
