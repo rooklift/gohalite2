@@ -21,7 +21,13 @@ type Overmind struct {
 func NewOvermind(game *hal.Game) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
-	ret.Game.SetThreatRange(20)
+
+	if game.InitialPlayers() == 2 {
+		game.SetThreatRange(20)					// This value seems to be surprisingly fine-tuned
+	} else {
+		game.SetThreatRange(10)
+	}
+
 	return ret
 }
 
