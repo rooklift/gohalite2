@@ -10,7 +10,7 @@ func (self *Overmind) SetRushFlag() {
 
 	self.RushFlag = false
 
-	if CONFIG.Conservative || self.Game.InitialPlayers() > 2 {
+	if self.Config.Conservative || self.Game.InitialPlayers() > 2 {
 		return
 	}
 

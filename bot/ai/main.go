@@ -11,16 +11,23 @@ import (
 
 // --------------------------------------------
 
+type Config struct {
+	Conservative			bool
+	Timeseed				bool
+}
+
 type Overmind struct {
+	Config					*Config
 	Pilots					[]*pil.Pilot
 	Game					*hal.Game
 	CowardFlag				bool
 	RushFlag				bool
 }
 
-func NewOvermind(game *hal.Game) *Overmind {
+func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
+	ret.Config = config
 
 	if game.InitialPlayers() == 2 {
 		game.SetThreatRange(20)					// This value seems to be surprisingly fine-tuned
@@ -55,7 +62,7 @@ func (self *Overmind) Step() {
 		return
 	}
 
-	if CONFIG.Conservative == false && self.DetectRushFight() {
+	if self.Config.Conservative == false && self.DetectRushFight() {
 		gen.FightRush(self.Game)
 		return
 	}
