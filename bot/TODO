@@ -1,3 +1,3 @@
 TODO
 
-- Are we sometimes docking too many ships at once?
+- Make genetic algo disallow events where we have 0 ships and enemy has >= 1
