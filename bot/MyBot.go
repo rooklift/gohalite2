@@ -1,4 +1,4 @@
-package ai
+package main
 
 import (
 	"flag"
@@ -14,7 +14,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "49 final"
+	VERSION = "50 final"
 )
 
 func main() {
