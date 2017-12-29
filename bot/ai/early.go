@@ -37,7 +37,7 @@ func (self *Overmind) SetRushTargets() {
 	// Pair pilots with enemies...
 
 	for index, pilot := range self.Pilots {
-		pilot.SetTarget(enemies[index])
+		pilot.Target = enemies[index]
 	}
 }
 
@@ -138,7 +138,7 @@ func (self *Overmind) ChooseThreeDocks() {
 
 	// Get docks...
 
-	var docks []hal.Point
+	var docks []hal.Port
 
 	for _, planet := range closest_three {
 		docks = append(docks, planet.OpeningDockHelper(self.Pilots[0].Ship)...)
@@ -157,9 +157,9 @@ func (self *Overmind) ChooseThreeDocks() {
 
 	for _, perm := range permutations {		// Find a non-crossing solution...
 
-		self.Pilots[0].SetTarget(docks[perm[0]])
-		self.Pilots[1].SetTarget(docks[perm[1]])
-		self.Pilots[2].SetTarget(docks[perm[2]])
+		self.Pilots[0].Target = docks[perm[0]]
+		self.Pilots[1].Target = docks[perm[1]]
+		self.Pilots[2].Target = docks[perm[2]]
 
 		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
 			continue

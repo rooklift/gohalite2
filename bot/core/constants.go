@@ -23,6 +23,7 @@ const (
 	SHIP
 	PLANET
 	POINT
+	PORT
 	NOTHING
 )
 

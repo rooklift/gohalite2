@@ -7,15 +7,6 @@ import (
 	nav "../navigation"
 )
 
-// The point of making Pilot its own module is that the logic of dealing with targets is
-// mostly independent of grand strategy. Still, there are a few things the Overmind may
-// need back from us, hence the Overmind interface below which allows us to update it.
-
-type Overmind interface {
-	NotifyTargetChange(pilot *Pilot, old_target, new_target hal.Entity)
-	NotifyDock(planet hal.Planet)
-}
-
 const (
 	DEFAULT_ENEMY_SHIP_APPROACH_DIST = 5.45			// GetApproach uses centre-to-edge distances, so 5.5ish.
 )
@@ -25,7 +16,6 @@ type Pilot struct {
 	Plan				string						// Our planned order, valid for 1 turn only.
 	Message				int							// Message for this turn. -1 for no message.
 	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
-	Overmind			Overmind
 	Game				*hal.Game
 	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
 	TurnTarget			hal.Entity
@@ -33,9 +23,8 @@ type Pilot struct {
 	NavStack			[]string
 }
 
-func NewPilot(sid int, game *hal.Game, overmind Overmind) *Pilot {
+func NewPilot(sid int, game *hal.Game) *Pilot {
 	ret := new(Pilot)
-	ret.Overmind = overmind
 	ret.Game = game
 	ret.Id = sid
 	ret.Target = hal.Nothing{}
@@ -75,18 +64,17 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	current_ship, alive := self.Game.GetShip(self.Id)
 
 	if alive == false {
-		self.SetTarget(hal.Nothing{})							// Means the overmind will be notified about our lack of target.
 		return false
 	}
 
-	self.Ship = current_ship									// Don't do this until after the (possible) self.SetTarget() above.
+	self.Ship = current_ship
 
 	self.ResetPlan()
 
 	// Update the info about our target.
 
 	if self.DockedStatus != hal.UNDOCKED {
-		self.SetTarget(hal.Nothing{})
+		self.Target = hal.Nothing{}
 	}
 
 	switch self.Target.Type() {
@@ -94,24 +82,24 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.SetTarget(hal.Nothing{})
+			self.Target = hal.Nothing{}
 		} else {
 			var ok bool
 			self.Target, ok = self.Game.GetShip(self.Target.GetId())
 			if ok == false {
-				self.SetTarget(hal.Nothing{})
+				self.Target = hal.Nothing{}
 			}
 		}
 
 	case hal.PLANET:
 
 		if self.Target.Alive() == false {
-			self.SetTarget(hal.Nothing{})
+			self.Target = hal.Nothing{}
 		} else {
 			var ok bool
 			self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
 			if ok == false {
-				self.SetTarget(hal.Nothing{})
+				self.Target = hal.Nothing{}
 			}
 		}
 	}
@@ -135,12 +123,6 @@ func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g
 	return self.Target.Type() != hal.NOTHING
 }
 
-func (self *Pilot) SetTarget(e hal.Entity) {		// So we can update Overmind's info.
-	old_target := self.Target
-	self.Target = e
-	self.Overmind.NotifyTargetChange(self, old_target, e)
-}
-
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
 }
@@ -155,7 +137,6 @@ func (self *Pilot) PlanThrust(speed, degrees int) {
 
 func (self *Pilot) PlanDock(planet hal.Planet) {
 	self.Plan = fmt.Sprintf("d %d %d", self.Id, planet.Id)
-	self.Overmind.NotifyDock(planet)
 }
 
 func (self *Pilot) PlanUndock() {

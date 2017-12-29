@@ -43,7 +43,7 @@ func (self *Overmind) ChooseTargets() {
 			       hal.Dist(pilot.X, pilot.Y, all_problems[b].X, all_problems[b].Y) / all_problems[b].Value
 		})
 
-		pilot.SetTarget(all_problems[0].Entity)
+		pilot.Target = all_problems[0].Entity
 		all_problems[0].Need--
 		if all_problems[0].Need <= 0 {
 			all_problems = all_problems[1:]
@@ -79,6 +79,8 @@ func (self *Overmind) ChooseTargets() {
 			}
 		}
 	}
+
+	// Choose what tactical target we have this turn; i.e. if our main target is a planet, we may target a ship near that planet...
 
 	for _, pilot := range self.Pilots {
 		pilot.SetTurnTarget()

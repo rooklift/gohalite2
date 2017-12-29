@@ -55,6 +55,9 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
+	// Assumption: we have self.TurnTarget already set. Thus, if TurnTarget
+	// is a planet, it's OK to dock at that planet if we can.
+
 	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
@@ -82,7 +85,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
 
 		if err != nil {
-			self.SetTarget(hal.Nothing{})
+			self.Target = hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees)
 			self.Message = planet.Id
@@ -101,10 +104,39 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
-			self.SetTarget(hal.Nothing{})
+			self.Target = hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees)
 			self.Message = MSG_POINT_TARGET
+		}
+
+	case hal.PORT:
+
+		port := self.TurnTarget.(hal.Port)
+
+		planet, ok := self.Game.GetPlanet(port.PlanetID)
+
+		if ok == false {
+			self.Target = hal.Nothing{}
+			self.TurnTarget = hal.Nothing{}
+			self.PlanThrust(0, 0)
+			self.Message = MSG_NO_TARGET
+			return
+		}
+
+		if self.CanDock(planet) {
+			self.PlanDock(planet)
+			return
+		}
+
+		side := self.DecideSideFromTurnTarget()
+		speed, degrees, err := self.GetCourse(port, avoid_list, side)
+
+		if err != nil {
+			self.Target = hal.Nothing{}
+		} else {
+			self.PlanThrust(speed, degrees)
+			self.Message = MSG_DOCK_TARGET
 		}
 	}
 }

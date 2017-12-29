@@ -39,8 +39,8 @@ type Game struct {
 	currentPlayers				int
 
 	planetMap					map[int]Planet		// Planet ID --> Planet
-	shipMap						map[int]Ship		// Ship ID --> Ship
 	dockMap						map[int][]Ship		// Planet ID --> Ship slice
+	shipMap						map[int]Ship		// Ship ID --> Ship
 	lastmoveMap					map[int]MoveInfo	// Ship ID --> MoveInfo struct
 	playershipMap				map[int][]Ship		// Player ID --> Ship slice
 	cumulativeShips				map[int]int			// Player ID --> Count
@@ -62,7 +62,7 @@ type Game struct {
 	all_planets_cache			[]Planet
 	all_immobile_cache			[]Entity			// Planets and docked ships
 
-	// Some more stuff used by the AI...
+	// Some more stuff maybe used by the AI...
 
 	enemies_near_planet			map[int][]Ship
 	mobile_enemies_near_planet	map[int][]Ship

@@ -14,7 +14,6 @@ import (
 type Overmind struct {
 	Pilots					[]*pil.Pilot
 	Game					*hal.Game
-	ShipsDockingCount		map[int]int				// Planet ID --> My ship count docking this turn
 	CowardFlag				bool
 	RushFlag				bool
 }
@@ -26,26 +25,12 @@ func NewOvermind(game *hal.Game) *Overmind {
 	return ret
 }
 
-func (self *Overmind) NotifyTargetChange(pilot *pil.Pilot, old_target, new_target hal.Entity) {
-	// pass
-}
-
-func (self *Overmind) NotifyDock(planet hal.Planet) {
-	self.ShipsDockingCount[planet.Id]++
-}
-
-// --------------------------------------------
-
-func (self *Overmind) ShipsAboutToDock(planet hal.Planet) int {
-	return self.ShipsDockingCount[planet.Id]
-}
-
 // --------------------------------------------
 
 func (self *Overmind) Step() {
 
 	self.ResetPilots()
-	self.ShipsDockingCount = make(map[int]int)
+
 	self.SetCowardFlag()
 
 	if self.Game.Turn() == 0 {
@@ -82,7 +67,7 @@ func (self *Overmind) ResetPilots() {
 	my_new_ships := game.MyNewShipIDs()
 
 	for _, sid := range my_new_ships {
-		pilot := pil.NewPilot(sid, game, self)
+		pilot := pil.NewPilot(sid, game)
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
@@ -100,7 +85,7 @@ func (self *Overmind) ResetPilots() {
 		// The stateless version -- usually -- has no long term targets...
 
 		if self.RushFlag == false || pilot.Ship.Birth > 5 {
-			if pilot.Target.Type() != hal.POINT {
+			if pilot.Target.Type() != hal.PORT {
 				pilot.Target = hal.Nothing{}
 				pilot.TurnTarget = hal.Nothing{}
 			}
@@ -132,21 +117,6 @@ func (self *Overmind) ExecuteMoves() {
 		sort.Slice(mobile_pilots, func(a, b int) bool {
 			return mobile_pilots[a].Dist(centre_of_gravity) < mobile_pilots[b].Dist(centre_of_gravity)
 		})
-	}
-
-	// Plan a Dock if possible. (And we're not chasing a ship.)
-	// If we do, remove this pilot from the mobile pilots list and make it frozen.
-
-	for i := 0; i < len(mobile_pilots); i++ {
-		pilot := mobile_pilots[i]
-		if pilot.HasTarget() == false || pilot.Target.Type() == hal.PLANET || pilot.Target.Type() == hal.POINT {
-			ok := self.DockIfWise(pilot)
-			if ok {
-				mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
-				frozen_pilots = append(frozen_pilots, pilot)
-				i--
-			}
-		}
 	}
 
 	// Perhaps this pilot doesn't need to move? If so, consider it frozen.
@@ -231,40 +201,6 @@ func (self *Overmind) ExecuteMoves() {
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
 	}
-}
-
-func (self *Overmind) DockIfWise(pilot *pil.Pilot) bool {
-
-	if pilot.DockedStatus != hal.UNDOCKED {
-		return false
-	}
-
-	closest_planet := pilot.ClosestPlanet()
-
-	if pilot.CanDock(closest_planet) == false {
-		return false
-	}
-
-	// Pilots with point targets should always succeed in docking...
-
-	if pilot.Target.Type() == hal.POINT {
-		pilot.SetTarget(closest_planet)			// It would be sad to stay with a Point target forever...
-		pilot.PlanDock(closest_planet)
-		return true
-	}
-
-	// Otherwise we check some things...
-
-	if len(self.Game.EnemiesNearPlanet(closest_planet)) > 0 {
-		return false
-	}
-
-	if self.ShipsAboutToDock(closest_planet) >= self.Game.DesiredSpots(closest_planet) {
-		return false
-	}
-
-	pilot.PlanDock(closest_planet)
-	return true
 }
 
 func (self *Overmind) CowardStep() {
