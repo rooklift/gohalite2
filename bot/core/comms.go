@@ -241,7 +241,7 @@ func (self *Game) Parse() {
 	for _, ship := range self.shipMap {
 		self.all_ships_cache = append(self.all_ships_cache, ship)
 	}
-	sort.Slice(self.all_ships_cache, func(a, b int) bool {
+	sort.Slice(self.all_ships_cache, func(a, b int) bool {						// This sort is depended on by the genetic code.
 		return self.all_ships_cache[a].Id < self.all_ships_cache[b].Id
 	})
 
