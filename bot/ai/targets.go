@@ -37,8 +37,8 @@ func (self *Overmind) ChooseTargets() {
 		}
 
 		sort.Slice(all_problems, func(a, b int) bool {
-			return pilot.Dist(all_problems[a].Entity) / all_problems[a].Value <
-			       pilot.Dist(all_problems[b].Entity) / all_problems[b].Value
+			return pilot.ApproachDist(all_problems[a].Entity) / all_problems[a].Value <
+			       pilot.ApproachDist(all_problems[b].Entity) / all_problems[b].Value
 		})
 
 		pilot.Target = all_problems[0].Entity

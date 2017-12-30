@@ -3,8 +3,8 @@ import json, random, subprocess
 processes = [
 	"bot.exe",
 	"bot.exe",
-	".\\otherbots\\v48\\mybot.exe",
-	".\\otherbots\\v48\\mybot.exe",
+	".\\otherbots\\v51\\mybot.exe",
+	".\\otherbots\\v51\\mybot.exe",
 ]
 
 scores = [0,0,0,0]
@@ -38,4 +38,3 @@ while 1:
 			scores[i] -= 3
 
 	print(scores)
-
