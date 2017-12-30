@@ -221,6 +221,54 @@ func StringSliceContains(slice []string, s string) bool {
 	return StringSliceIndex(slice, s) != -1
 }
 
+func OpeningDockHelper(p Planet, mid_ship Ship) []Port {
+
+	// Returns 2 or 3 points for a ship and its nearby allies to dock at.
+
+	var ret []Port
+
+	switch {
+
+	case p.DockingSpots == 1:
+
+		degrees := p.Angle(mid_ship)
+		dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees)
+
+		ret = append(ret, Port{dock_x, dock_y, p.Id})
+
+	case p.DockingSpots > 1:
+
+		degrees_mid := p.Angle(mid_ship)
+		dock_mid_x, dock_mid_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid)
+
+		dock_mid := Port{dock_mid_x, dock_mid_y, p.Id}
+
+		ret = append(ret, dock_mid)
+
+		for n := 1; n < 90; n++ {
+
+			dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid + n)
+			dock := Port{dock_x, dock_y, p.Id}
+
+			if dock.Dist(dock_mid) > 2 {
+
+				ret = append(ret, dock)
+
+				if p.DockingSpots > 2 {
+
+					dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid - n)
+					dock := Port{dock_x, dock_y, p.Id}
+					ret = append(ret, dock)
+				}
+
+				break
+			}
+		}
+	}
+
+	return ret
+}
+
 // Line segment intersection helpers...
 // https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
 

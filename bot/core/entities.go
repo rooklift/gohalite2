@@ -65,56 +65,6 @@ func (p Planet) IsFull() bool {
 	return p.DockedShips >= p.DockingSpots
 }
 
-func (p Planet) OpeningDockHelper(mid_ship Ship) []Port {
-
-	// Returns 2 or 3 points for a ship and its nearby allies to dock at.
-
-	switch {
-
-	case p.DockingSpots == 1:
-
-		degrees := p.Angle(mid_ship)
-		dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees)
-
-		return []Port{Port{dock_x, dock_y, p.Id}}
-
-	case p.DockingSpots > 1:
-
-		var ret []Port
-
-		degrees_mid := p.Angle(mid_ship)
-		dock_mid_x, dock_mid_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid)
-
-		dock_mid := Port{dock_mid_x, dock_mid_y, p.Id}
-
-		ret = append(ret, dock_mid)
-
-		for n := 1; n < 90; n++ {
-
-			dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid + n)
-			dock := Port{dock_x, dock_y, p.Id}
-
-			if dock.Dist(dock_mid) > 2 {
-
-				ret = append(ret, dock)
-
-				if p.DockingSpots > 2 {
-
-					dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid - n)
-					dock := Port{dock_x, dock_y, p.Id}
-					ret = append(ret, dock)
-				}
-
-				break
-			}
-		}
-
-		return ret
-	}
-
-	return nil
-}
-
 // ------------------------------------------------------
 
 type Ship struct {

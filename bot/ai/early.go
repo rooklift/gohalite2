@@ -6,7 +6,7 @@ import (
 	hal "../core"
 )
 
-func (self *Overmind) SetRushFlag() {
+func (self *Overmind) SetRushFlag() {			// Called on Turn 0 only.
 
 	self.RushFlag = false
 
@@ -19,7 +19,7 @@ func (self *Overmind) SetRushFlag() {
 	}
 }
 
-func (self *Overmind) SetRushTargets() {
+func (self *Overmind) SetRushTargets() {		// Called on Turn 0 only, iff Rush Flag is set.
 
 	// Sort our pilots by Y...
 
@@ -141,7 +141,7 @@ func (self *Overmind) ChooseThreeDocks() {
 	var docks []hal.Port
 
 	for _, planet := range closest_three {
-		docks = append(docks, planet.OpeningDockHelper(self.Pilots[0].Ship)...)
+		docks = append(docks, hal.OpeningDockHelper(planet, self.Pilots[0].Ship)...)
 	}
 
 	docks = docks[:3]
