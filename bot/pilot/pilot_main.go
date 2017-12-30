@@ -53,7 +53,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.PLANET:
 
-		self.PlanetApproachForDock(avoid_list)
+		self.PlanetApproachForDock(self.Target.(hal.Planet), avoid_list)
 
 	case hal.SHIP:
 
@@ -64,7 +64,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		point := self.Target.(hal.Point)
 
-		side := self.DecideSideFromTarget()
+		side := self.DecideSideFor(point)
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
@@ -89,7 +89,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			return
 		}
 
-		side := self.DecideSideFromTarget()
+		side := self.DecideSideFor(port)
 		speed, degrees, err := self.GetCourse(port, avoid_list, side)
 
 		if err != nil {
@@ -115,7 +115,7 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 }
 
 func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
-	side := self.DecideSideFromTarget()
+	side := self.DecideSideFor(enemy_ship)
 	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
 	if err != nil { self.Message = MSG_RECURSION }
 	self.PlanThrust(speed, degrees)
@@ -131,27 +131,20 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
 	flee_point := hal.Point{x2, y2}
 
-	side := self.DecideSideFromTarget()
+	side := self.DecideSideFor(enemy_ship)											// Wrong, but to preserve behaviour while changing things
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
 	if err != nil { self.Message = MSG_RECURSION }
 	self.PlanThrust(speed, degrees)
 }
 
-func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
-
-	if self.Target.Type() != hal.PLANET {
-		self.Log("PlanetApproachForDock() called but target wasn't a planet.")
-		return
-	}
-
-	planet := self.Target.(hal.Planet)
+func (self *Pilot) PlanetApproachForDock(planet hal.Planet, avoid_list []hal.Entity) {
 
 	if self.CanDock(planet) {
 		self.PlanDock(planet)
 		return
 	}
 
-	side := self.DecideSideFromTarget()
+	side := self.DecideSideFor(planet)
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 	if err != nil { self.Message = MSG_RECURSION }
 	self.PlanThrust(speed, degrees)

@@ -207,6 +207,6 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 	return nav.GetApproach(self.Ship, target, margin, avoid_list, side, self)
 }
 
-func (self *Pilot) DecideSideFromTarget() nav.Side {
-	return nav.DecideSideFromTarget(self.Ship, self.Target, self.Game, self)
+func (self *Pilot) DecideSideFor(target hal.Entity) nav.Side {
+	return nav.DecideSideFromTarget(self.Ship, target, self.Game, self)
 }
