@@ -9,8 +9,6 @@ import (
 
 type Problem struct {
 	Entity		hal.Entity
-	X			float64
-	Y			float64
 	Value		float64
 	Need		int
 }
@@ -39,8 +37,8 @@ func (self *Overmind) ChooseTargets() {
 		}
 
 		sort.Slice(all_problems, func(a, b int) bool {
-			return hal.Dist(pilot.X, pilot.Y, all_problems[a].X, all_problems[a].Y) / all_problems[a].Value <
-			       hal.Dist(pilot.X, pilot.Y, all_problems[b].X, all_problems[b].Y) / all_problems[b].Value
+			return pilot.Dist(all_problems[a].Entity) / all_problems[a].Value <
+			       pilot.Dist(all_problems[b].Entity) / all_problems[b].Value
 		})
 
 		pilot.Target = all_problems[0].Entity
@@ -76,8 +74,6 @@ func (self *Overmind) AllProblems() []*Problem {
 	for _, ship := range self.Game.EnemyShips() {
 		problem := &Problem{
 			Entity: ship,
-			X: ship.X,
-			Y: ship.Y,
 			Value: 1.0,
 			Need: 1,
 		}
@@ -110,8 +106,6 @@ func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
 
 		return &Problem{
 			Entity: planet,
-			X: planet.X,
-			Y: planet.Y,
 			Value: value,
 			Need: hal.Max(fight_strength, capture_strength),
 		}
