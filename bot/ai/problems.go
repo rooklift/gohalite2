@@ -62,7 +62,7 @@ func (self *Overmind) ChooseTargets() {
 				continue
 			}
 
-			if pilot_a.Target.Type() == hal.PORT {
+			if pilot_a.Target.Type() == hal.PORT || pilot_a.Target.Type() == hal.NOTHING {
 				continue
 			}
 
@@ -74,7 +74,7 @@ func (self *Overmind) ChooseTargets() {
 					continue
 				}
 
-				if pilot_b.Target.Type() == hal.PORT {
+				if pilot_b.Target.Type() == hal.PORT || pilot_b.Target.Type() == hal.NOTHING {
 					continue
 				}
 
