@@ -49,7 +49,6 @@ func (self *Pilot) Log(format_string string, args ...interface{}) {
 
 func (self *Pilot) ResetPlan() {
 	self.Plan = ""
-	self.Message = -1
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
 }
@@ -57,6 +56,7 @@ func (self *Pilot) ResetPlan() {
 func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return true if we still exist.
 
 	self.NavStack = nil
+	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 
 	current_ship, alive := self.Game.GetShip(self.Id)
@@ -123,6 +123,29 @@ func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g
 
 func (self *Pilot) ClosestPlanet() hal.Planet {
 	return self.Game.ClosestPlanet(self)
+}
+
+// -------------------------------------------------------------------
+
+func (self *Pilot) SetMessageFromTarget() {
+
+	switch self.Target.Type() {
+
+	case hal.NOTHING:
+		self.Message = MSG_NO_TARGET
+
+	case hal.PLANET:
+		self.Message = self.Target.(hal.Planet).Id
+
+	case hal.PORT:
+		self.Message = MSG_DOCK_TARGET
+
+	case hal.POINT:
+		self.Message = MSG_POINT_TARGET
+
+	case hal.SHIP:
+		self.Message = MSG_ASSASSINATE
+	}
 }
 
 // -------------------------------------------------------------------

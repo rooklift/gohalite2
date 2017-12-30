@@ -83,6 +83,7 @@ func (self *Overmind) ChooseTargets() {
 	// Choose what tactical target we have this turn; i.e. if our main target is a planet, we may target a ship near that planet...
 
 	for _, pilot := range self.Pilots {
+		pilot.SetMessageFromTarget()
 		pilot.SetTurnTarget()
 	}
 }
