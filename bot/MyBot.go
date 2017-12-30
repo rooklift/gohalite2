@@ -21,6 +21,7 @@ func main() {
 
 	config := new(ai.Config)
 	flag.BoolVar(&config.Conservative, "conservative", false, "no rushing")
+	flag.BoolVar(&config.NoMsg, "nomsg", false, "no angle messages")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
 	flag.Parse()
 
@@ -69,7 +70,7 @@ func main() {
 
 		game.Parse()
 		overmind.Step()
-		game.Send()
+		game.Send(config.NoMsg)
 
 		if time.Now().Sub(start_time) > longest_turn {
 			longest_turn = time.Now().Sub(start_time)

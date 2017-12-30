@@ -166,7 +166,7 @@ func (self *Game) RawWorld() string {
 	return self.raw
 }
 
-func (self *Game) RawOutput(sorted bool) string {
+func (self *Game) RawOutput(sorted, no_messages bool) string {
 
 	var commands []string
 
@@ -176,7 +176,7 @@ func (self *Game) RawOutput(sorted bool) string {
 
 			message, ok := self.messages[sid]
 
-			if s[0] == 't' && ok {
+			if no_messages == false && s[0] == 't' && ok {
 
 				speed, degrees := CourseFromString(s)
 

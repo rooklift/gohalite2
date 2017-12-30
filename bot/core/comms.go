@@ -322,7 +322,7 @@ func (self *Game) RawOrder(sid int, s string) {
 	self.orders[sid] = s
 }
 
-func (self *Game) Send() {
-	fmt.Printf(self.RawOutput(false))
+func (self *Game) Send(no_messages bool) {
+	fmt.Printf(self.RawOutput(false, no_messages))
 	fmt.Printf("\n")
 }

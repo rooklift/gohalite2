@@ -13,6 +13,7 @@ import (
 
 type Config struct {
 	Conservative			bool
+	NoMsg					bool
 	Timeseed				bool
 }
 
