@@ -8,21 +8,9 @@ import (
 
 func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 
-	// Default...
-
-	self.TurnTarget = self.Target
-
-	// Keep the default in many cases...
-
-	if self.DockedStatus != hal.UNDOCKED {
+	if self.DockedStatus != hal.UNDOCKED || self.Target.Type() != hal.PLANET {
 		return
 	}
-
-	if self.Target.Type() != hal.PLANET {
-		return
-	}
-
-	// But in the case of a planet, we might set TurnTarget to be a ship...
 
 	planet := self.Target.(hal.Planet)
 
@@ -44,35 +32,32 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 		})
 
-		self.TurnTarget = enemies[0]
+		self.Target = enemies[0]
 		return
 	}
 
-	// Otherwise, just return (leaving the TurnTarget as the planet).
+	// Otherwise, just return (leaving the Target as the planet).
 
 	return
 }
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
-	// Assumption: we have self.TurnTarget already set. Thus, if TurnTarget
-	// is a planet, it's OK to dock at that planet if we can.
-
 	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
 
-	if self.TurnTarget.Type() == hal.NOTHING {
+	if self.Target.Type() == hal.NOTHING {
 		self.PlanThrust(0, 0)
 		self.Message = MSG_NO_TARGET
 		return
 	}
 
-	switch self.TurnTarget.Type() {
+	switch self.Target.Type() {
 
 	case hal.PLANET:
 
-		planet := self.TurnTarget.(hal.Planet)
+		planet := self.Target.(hal.Planet)
 
 		if self.ApproachDist(planet) <= 100 {
 			self.PlanetApproachForDock(avoid_list)
@@ -81,7 +66,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		// Why do we bother with this, instead of always calling PlanetApproachForDock() ? - I can't recall.
 
-		side := self.DecideSideFromTurnTarget()
+		side := self.DecideSideFromTarget()
 		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
 
 		if err != nil {
@@ -93,14 +78,14 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.SHIP:
 
-		other_ship := self.TurnTarget.(hal.Ship)
+		other_ship := self.Target.(hal.Ship)
 		self.EngageShip(other_ship, avoid_list)
 
 	case hal.POINT:
 
-		point := self.TurnTarget.(hal.Point)
+		point := self.Target.(hal.Point)
 
-		side := self.DecideSideFromTurnTarget()
+		side := self.DecideSideFromTarget()
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
@@ -112,13 +97,12 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.PORT:
 
-		port := self.TurnTarget.(hal.Port)
+		port := self.Target.(hal.Port)
 
 		planet, ok := self.Game.GetPlanet(port.PlanetID)
 
 		if ok == false {
 			self.Target = hal.Nothing{}
-			self.TurnTarget = hal.Nothing{}
 			self.PlanThrust(0, 0)
 			self.Message = MSG_NO_TARGET
 			return
@@ -129,7 +113,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 			return
 		}
 
-		side := self.DecideSideFromTurnTarget()
+		side := self.DecideSideFromTarget()
 		speed, degrees, err := self.GetCourse(port, avoid_list, side)
 
 		if err != nil {
@@ -162,7 +146,7 @@ func (self *Pilot) EngageShipMessage(err error) int {
 }
 
 func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
-	side := self.DecideSideFromTurnTarget()
+	side := self.DecideSideFromTarget()
 	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
 	msg := self.EngageShipMessage(err)
 	self.PlanThrust(speed, degrees)
@@ -179,7 +163,7 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
 	flee_point := hal.Point{x2, y2}
 
-	side := self.DecideSideFromTurnTarget()
+	side := self.DecideSideFromTarget()
 
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
 
@@ -191,19 +175,19 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 
 func (self *Pilot) PlanetApproachForDock(avoid_list []hal.Entity) {
 
-	if self.TurnTarget.Type() != hal.PLANET {
+	if self.Target.Type() != hal.PLANET {
 		self.Log("PlanetApproachForDock() called but target wasn't a planet.")
 		return
 	}
 
-	planet := self.TurnTarget.(hal.Planet)
+	planet := self.Target.(hal.Planet)
 
 	if self.CanDock(planet) {
 		self.PlanDock(planet)
 		return
 	}
 
-	side := self.DecideSideFromTurnTarget()
+	side := self.DecideSideFromTarget()
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
 
 	self.PlanThrust(speed, degrees)
