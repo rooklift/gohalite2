@@ -16,6 +16,24 @@ The algorithm I used until v45 was fairly simple in principle...
 
 I scrapped the above algorithm in version 45, becoming stateless. Now, each turn the bot generates a list of "problems" (e.g. planets to be attacked) and assigns nearby ships to those problems, with no state saved between turns.
 
+* Generate all problems; each problem has a number of ships required (its "need").
+* Iterate through the ships; go to the nearest problem that still needs help; reduce that need by 1.
+* Make some tactical choices; e.g. if the problem is a planet, we may actually be targetting an enemy ship.
+
+# Collision Avoidance
+
+Collision avoidance is fairly straightforward. Each ship starts off with its actual move set to null (stationary) but chooses a preferred move (e.g. thrust 7, 180) that it wants to make, if it can.
+
+* Set each ship's *actual* move to null.
+* Create a list of all entities known not to be moving (planets, docked ships).
+* Make each ship consider (only) those for navigation, and choose each ship's *preferred* move.
+* Iterate through the ships:
+  - Pretend that the ship will get its preferred move.
+  - Check for collisions against other ships' *actual* moves.
+  - If no collisions, set this ship's actual move to be its preferred move.
+  - Repeat this whole loop several times.
+* After a number of loops, if a ship still isn't moving, try reducing its speed.
+
 # 1v1 Genetic Algorithm + Metropolis Coupling
 
 In 2-player games it's sometimes sensible to rush the enemy, ignoring planets and going straight at 'em. In this case, when the ships are close to the enemy, the bot uses a genetic algorithm to find which moves are best, i.e. we generate a random "genome" (list of moves) and then do the following:
