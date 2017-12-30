@@ -22,7 +22,7 @@ type Entity interface {
 
 func EntitiesDist(a, b Entity) float64 {
 	if a.Type() == NOTHING || b.Type() == NOTHING {
-		panic("EntitiesDist() called with NOTHING entity")
+		return 0
 	}
 	return Dist(a.GetX(), a.GetY(), b.GetX(), b.GetY())
 }
@@ -32,6 +32,9 @@ func EntitiesApproachDist(a, b Entity) float64 {
 }
 
 func EntitiesCollide(a, b Entity) bool {
+	if a.Type() == NOTHING || b.Type() == NOTHING {
+		return false
+	}
 	return EntitiesDist(a, b) <= a.GetRadius() + b.GetRadius()
 }
 
@@ -162,19 +165,19 @@ func (e Ship) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 func (e Point) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 func (e Port) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 func (e Planet) Dist(other Entity) float64 { return EntitiesDist(e, other) }
-func (e Nothing) Dist(other Entity) float64 { return EntitiesDist(e, other) }					// Will panic
+func (e Nothing) Dist(other Entity) float64 { return EntitiesDist(e, other) }
 
 func (e Ship) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
 func (e Point) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
 func (e Port) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
 func (e Planet) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
-func (e Nothing) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }	// Will panic
+func (e Nothing) ApproachDist(other Entity) float64 { return EntitiesApproachDist(e, other) }
 
 func (e Ship) Collides(other Entity) bool { return EntitiesCollide(e, other) }
 func (e Point) Collides(other Entity) bool { return EntitiesCollide(e, other) }
 func (e Port) Collides(other Entity) bool { return EntitiesCollide(e, other) }
 func (e Planet) Collides(other Entity) bool { return EntitiesCollide(e, other) }
-func (e Nothing) Collides(other Entity) bool { return EntitiesCollide(e, other) }				// Will panic
+func (e Nothing) Collides(other Entity) bool { return EntitiesCollide(e, other) }
 
 func (e Ship) Alive() bool { return e.HP > 0 }
 func (e Point) Alive() bool { return true }

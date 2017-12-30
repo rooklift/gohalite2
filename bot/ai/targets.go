@@ -133,7 +133,7 @@ func (self *Overmind) OptimisePilots() {
 				continue
 			}
 
-			if pilot_a.Target.Type() == hal.PORT || pilot_a.Target.Type() == hal.NOTHING {
+			if pilot_a.Target.Type() == hal.PORT {
 				continue
 			}
 
@@ -145,7 +145,7 @@ func (self *Overmind) OptimisePilots() {
 					continue
 				}
 
-				if pilot_b.Target.Type() == hal.PORT || pilot_b.Target.Type() == hal.NOTHING {
+				if pilot_b.Target.Type() == hal.PORT {
 					continue
 				}
 
