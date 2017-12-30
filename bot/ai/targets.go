@@ -50,43 +50,9 @@ func (self *Overmind) ChooseTargets() {
 		}
 	}
 
-	// See if we can optimise a bit...
+	// Optimise (swap targets for better overall distance). Best do this before choosing short term targets...
 
-	for n := 0; n < 5; n++ {
-
-		for i := 0; i < len(self.Pilots); i++ {
-
-			pilot_a := self.Pilots[i]
-
-			if pilot_a.DockedStatus != hal.UNDOCKED {
-				continue
-			}
-
-			if pilot_a.Target.Type() == hal.PORT || pilot_a.Target.Type() == hal.NOTHING {
-				continue
-			}
-
-			for j := i + 1; j < len(self.Pilots); j++ {
-
-				pilot_b := self.Pilots[j]
-
-				if pilot_b.DockedStatus != hal.UNDOCKED {
-					continue
-				}
-
-				if pilot_b.Target.Type() == hal.PORT || pilot_b.Target.Type() == hal.NOTHING {
-					continue
-				}
-
-				total_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
-				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
-
-				if swap_dist < total_dist {
-					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
-				}
-			}
-		}
-	}
+	self.OptimisePilots()
 
 	// Choose what tactical target we have this turn; i.e. if our main target is a planet, we may target a ship near that planet...
 
@@ -153,4 +119,43 @@ func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
 	}
 
 	return nil
+}
+
+func (self *Overmind) OptimisePilots() {
+
+	for n := 0; n < 5; n++ {
+
+		for i := 0; i < len(self.Pilots); i++ {
+
+			pilot_a := self.Pilots[i]
+
+			if pilot_a.DockedStatus != hal.UNDOCKED {
+				continue
+			}
+
+			if pilot_a.Target.Type() == hal.PORT || pilot_a.Target.Type() == hal.NOTHING {
+				continue
+			}
+
+			for j := i + 1; j < len(self.Pilots); j++ {
+
+				pilot_b := self.Pilots[j]
+
+				if pilot_b.DockedStatus != hal.UNDOCKED {
+					continue
+				}
+
+				if pilot_b.Target.Type() == hal.PORT || pilot_b.Target.Type() == hal.NOTHING {
+					continue
+				}
+
+				total_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
+				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
+
+				if swap_dist < total_dist {
+					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
+				}
+			}
+		}
+	}
 }

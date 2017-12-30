@@ -33,7 +33,6 @@ func (self *Pilot) PlanCowardice(all_enemies []hal.Ship, avoid_list []hal.Entity
 
 	self.PlanThrust(speed, degrees)
 	self.Message = msg
-
 }
 
 func (self *Pilot) PlanEdgeCowardice(edge hal.Edge, all_enemies []hal.Ship) {

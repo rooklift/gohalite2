@@ -117,8 +117,11 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	side := self.DecideSideFor(enemy_ship)
 	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
-	if err != nil { self.Message = MSG_RECURSION }
-	self.PlanThrust(speed, degrees)
+	if err != nil {
+		self.Message = MSG_RECURSION
+	} else {
+		self.PlanThrust(speed, degrees)
+	}
 }
 
 func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) {
@@ -133,8 +136,11 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 
 	side := self.DecideSideFor(enemy_ship)											// Wrong, but to preserve behaviour while changing things
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
-	if err != nil { self.Message = MSG_RECURSION }
-	self.PlanThrust(speed, degrees)
+	if err != nil {
+		self.Message = MSG_RECURSION
+	} else {
+		self.PlanThrust(speed, degrees)
+	}
 }
 
 func (self *Pilot) PlanetApproachForDock(planet hal.Planet, avoid_list []hal.Entity) {
@@ -146,6 +152,9 @@ func (self *Pilot) PlanetApproachForDock(planet hal.Planet, avoid_list []hal.Ent
 
 	side := self.DecideSideFor(planet)
 	speed, degrees, err := self.GetApproach(planet, hal.DOCKING_RADIUS + hal.SHIP_RADIUS - 0.001, avoid_list, side)
-	if err != nil { self.Message = MSG_RECURSION }
-	self.PlanThrust(speed, degrees)
+	if err != nil {
+		self.Message = MSG_RECURSION
+	} else {
+		self.PlanThrust(speed, degrees)
+	}
 }
