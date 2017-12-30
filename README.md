@@ -1,6 +1,6 @@
 My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
 
-# Initial stateful algorithm (before v45)
+# Initial Stateful Algorithm (before v45)
 
 The algorithm I used until v45 was fairly simple in principle...
 
@@ -12,7 +12,7 @@ The algorithm I used until v45 was fairly simple in principle...
   - Otherwise, dock if possible.
   - Otherwise, choose a new destination as above.
 
-# Stateless algorithm (after v45)
+# Stateless Algorithm (after v45)
 
 I scrapped the above algorithm in version 45, becoming stateless. Now, each turn the bot generates a list of "problems" (e.g. planets to be attacked) and assigns nearby ships to those problems, with no state saved between turns.
 
