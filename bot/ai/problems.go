@@ -16,7 +16,7 @@ type Problem struct {
 }
 
 func (self *Problem) String() string {
-	return fmt.Sprintf("%v (%d)", self.Entity, self.Need)
+	return fmt.Sprintf("%v (%d, %f)", self.Entity, self.Need, self.Value)
 }
 
 func (self *Overmind) ChooseTargets() {

@@ -18,7 +18,6 @@ type Pilot struct {
 	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
 	Game				*hal.Game
 	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
-	TurnTarget			hal.Entity
 	EnemyApproachDist	float64
 	NavStack			[]string
 }
@@ -59,7 +58,6 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 
 	self.NavStack = nil
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
-	self.TurnTarget = self.Target
 
 	current_ship, alive := self.Game.GetShip(self.Id)
 
@@ -186,6 +184,6 @@ func (self *Pilot) GetApproach(target hal.Entity, margin float64, avoid_list []h
 	return nav.GetApproach(self.Ship, target, margin, avoid_list, side, self)
 }
 
-func (self *Pilot) DecideSideFromTurnTarget() nav.Side {
-	return nav.DecideSideFromTarget(self.Ship, self.TurnTarget, self.Game, self)
+func (self *Pilot) DecideSideFromTarget() nav.Side {
+	return nav.DecideSideFromTarget(self.Ship, self.Target, self.Game, self)
 }
