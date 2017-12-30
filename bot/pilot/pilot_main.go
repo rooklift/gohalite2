@@ -43,12 +43,9 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
-	if self.DockedStatus != hal.UNDOCKED {
-		return
-	}
+	// We have our target, but what are we doing about it?
 
-	if self.Target.Type() == hal.NOTHING {
-		self.PlanThrust(0, 0)
+	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
 
@@ -56,23 +53,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.PLANET:
 
-		planet := self.Target.(hal.Planet)
-
-		if self.ApproachDist(planet) <= 100 {
-			self.PlanetApproachForDock(avoid_list)
-			return
-		}
-
-		// Why do we bother with this, instead of always calling PlanetApproachForDock() ? - I can't recall.
-
-		side := self.DecideSideFromTarget()
-		speed, degrees, err := self.GetApproach(planet, 4.45, avoid_list, side)
-
-		if err != nil {
-			self.Target = hal.Nothing{}
-		} else {
-			self.PlanThrust(speed, degrees)
-		}
+		self.PlanetApproachForDock(avoid_list)
 
 	case hal.SHIP:
 
@@ -100,7 +81,6 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 		if ok == false {
 			self.Target = hal.Nothing{}
-			self.PlanThrust(0, 0)
 			return
 		}
 
