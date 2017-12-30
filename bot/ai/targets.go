@@ -129,11 +129,7 @@ func (self *Overmind) OptimisePilots() {
 
 			pilot_a := self.Pilots[i]
 
-			if pilot_a.DockedStatus != hal.UNDOCKED {
-				continue
-			}
-
-			if pilot_a.Target.Type() == hal.PORT {
+			if pilot_a.DockedStatus != hal.UNDOCKED || pilot_a.Target.Type() == hal.PORT {
 				continue
 			}
 
@@ -141,11 +137,7 @@ func (self *Overmind) OptimisePilots() {
 
 				pilot_b := self.Pilots[j]
 
-				if pilot_b.DockedStatus != hal.UNDOCKED {
-					continue
-				}
-
-				if pilot_b.Target.Type() == hal.PORT {
+				if pilot_b.DockedStatus != hal.UNDOCKED || pilot_b.Target.Type() == hal.PORT {
 					continue
 				}
 
