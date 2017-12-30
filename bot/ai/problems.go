@@ -62,11 +62,19 @@ func (self *Overmind) ChooseTargets() {
 				continue
 			}
 
+			if pilot_a.Target.Type() == hal.PORT {
+				continue
+			}
+
 			for j := i + 1; j < len(self.Pilots); j++ {
 
 				pilot_b := self.Pilots[j]
 
 				if pilot_b.DockedStatus != hal.UNDOCKED {
+					continue
+				}
+
+				if pilot_b.Target.Type() == hal.PORT {
 					continue
 				}
 

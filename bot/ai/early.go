@@ -146,6 +146,8 @@ func (self *Overmind) ChooseThreeDocks() {
 
 	docks = docks[:3]
 
+	best_acceptable_dist := 999999.9
+
 	var permutations = [][]int{
 		[]int{0,1,2},
 		[]int{0,2,1},
@@ -156,6 +158,12 @@ func (self *Overmind) ChooseThreeDocks() {
 	}
 
 	for _, perm := range permutations {		// Find a non-crossing solution...
+
+		dist := self.Pilots[0].Dist(docks[perm[0]]) + self.Pilots[1].Dist(docks[perm[1]]) + self.Pilots[2].Dist(docks[perm[2]])
+
+		if dist > best_acceptable_dist {
+			continue
+		}
 
 		self.Pilots[0].Target = docks[perm[0]]
 		self.Pilots[1].Target = docks[perm[1]]
@@ -173,6 +181,6 @@ func (self *Overmind) ChooseThreeDocks() {
 			continue
 		}
 
-		break
+		best_acceptable_dist = dist
 	}
 }
