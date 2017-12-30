@@ -160,16 +160,13 @@ func (self *Overmind) ExecuteMoves() {
 		pilot.PlanChase(avoid_list)
 	}
 
-	// Now the only danger is 2 "mobile" ships colliding. We use the ATC for this possibility.
-	// Note that it's possible that one of the colliding ships will not actually be moving.
+	// Now the only danger is 2 "mobile" ships colliding. Note that it's possible that one
+	// of the colliding ships will not actually be moving.
 
 	pil.ExecuteSafely(mobile_pilots)
 
 	// Randomly give up for half the ships that still aren't moving, and
 	// retry the pathfinding with the other half.
-
-	// Ships moved into the frozen slice can have their ATC restriction
-	// cleared since we will navigate around them precisely.
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
