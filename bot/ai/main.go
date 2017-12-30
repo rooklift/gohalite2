@@ -132,11 +132,16 @@ func (self *Overmind) ExecuteMoves() {
 		})
 	}
 
-	// Perhaps this pilot doesn't need to move? If so, consider it frozen.
+	// Choose each ship's plan...
+
+	for _, pilot := range mobile_pilots {
+		pilot.PlanChase(avoid_list)			// avoid_list is, at this point, planets plus already-docked ships.
+	}
+
+	// Some pilots may not want to move... consider them frozen...
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
-		pilot.PlanChase(avoid_list)			// avoid_list is, at this point, planets plus already-docked ships.
 		if pilot.HasStationaryPlan() {
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)

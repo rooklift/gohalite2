@@ -32,6 +32,7 @@ func ShipsWillCollide(ship_a Ship, speed_a, angle_a int, ship_b Ship, speed_b, a
 func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius float64) bool {
 
 	// Based on the Python version, I have no idea how this works.
+	// "Mathematics not Zathras skill"
 
 	dx := endx - startx
 	dy := endy - starty
