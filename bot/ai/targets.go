@@ -37,8 +37,8 @@ func (self *Overmind) ChooseTargets() {
 		}
 
 		sort.Slice(all_problems, func(a, b int) bool {
-			return pilot.ApproachDist(all_problems[a].Entity) / all_problems[a].Value <
-			       pilot.ApproachDist(all_problems[b].Entity) / all_problems[b].Value
+			return pilot.Dist(all_problems[a].Entity) / all_problems[a].Value <
+			       pilot.Dist(all_problems[b].Entity) / all_problems[b].Value
 		})
 
 		pilot.Target = all_problems[0].Entity
@@ -134,6 +134,9 @@ func (self *Overmind) OptimisePilots() {
 				if pilot_b.DockedStatus != hal.UNDOCKED || pilot_b.Target.Type() == hal.PORT {
 					continue
 				}
+
+				// Dist or ApproachDist won't matter here as long as it's consistent.
+				// Either way the comparison will come out the same.
 
 				total_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
 				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
