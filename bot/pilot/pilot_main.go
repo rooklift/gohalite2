@@ -72,7 +72,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
-			self.Target = &hal.Nothing{}
+			self.Target = hal.Nothing
 		} else {
 			self.PlanThrust(speed, degrees)
 		}
@@ -84,7 +84,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		planet, ok := self.Game.GetPlanet(port.PlanetID)
 
 		if ok == false {
-			self.Target = &hal.Nothing{}
+			self.Target = hal.Nothing
 			return
 		}
 
@@ -97,7 +97,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetCourse(port, avoid_list, side)
 
 		if err != nil {
-			self.Target = &hal.Nothing{}
+			self.Target = hal.Nothing
 		} else {
 			self.PlanThrust(speed, degrees)
 		}

@@ -30,7 +30,7 @@ func NewPilot(sid int, game *hal.Game) *Pilot {
 		panic("NewPilot called with invalid sid")
 	}
 	ret.Ship = ship
-	ret.Target = &hal.Nothing{}
+	ret.Target = hal.Nothing
 	return ret
 }
 
@@ -76,7 +76,7 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	// Update the info about our target.
 
 	if self.DockedStatus != hal.UNDOCKED {
-		self.Target = &hal.Nothing{}
+		self.Target = hal.Nothing
 	}
 
 	switch self.Target.Type() {
@@ -84,13 +84,13 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.Target = &hal.Nothing{}
+			self.Target = hal.Nothing
 		}
 
 	case hal.PLANET:
 
 		if self.Target.Alive() == false {
-			self.Target = &hal.Nothing{}
+			self.Target = hal.Nothing
 		}
 	}
 
