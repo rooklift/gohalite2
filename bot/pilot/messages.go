@@ -29,7 +29,7 @@ func (self *Pilot) SetMessageFromTarget() {
 		self.Message = MSG_NO_TARGET
 
 	case hal.PLANET:
-		self.Message = self.Target.(hal.Planet).Id
+		self.Message = self.Target.GetId()
 
 	case hal.PORT:
 		self.Message = MSG_DOCK_TARGET

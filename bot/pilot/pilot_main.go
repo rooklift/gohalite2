@@ -12,7 +12,7 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 		return
 	}
 
-	planet := self.Target.(hal.Planet)
+	planet := self.Target.(*hal.Planet)
 
 	// Is the planet far away?
 
@@ -57,11 +57,11 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.PLANET:
 
-		self.PlanetApproachForDock(self.Target.(hal.Planet), avoid_list)
+		self.PlanetApproachForDock(self.Target.(*hal.Planet), avoid_list)
 
 	case hal.SHIP:
 
-		other_ship := self.Target.(hal.Ship)
+		other_ship := self.Target.(*hal.Ship)
 		self.EngageShip(other_ship, avoid_list)
 
 	case hal.POINT:
@@ -104,7 +104,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	}
 }
 
-func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 	// Flee if we're already in weapons range...
 
@@ -118,7 +118,7 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	self.EngageShipApproach(enemy_ship, avoid_list)
 }
 
-func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 	side := self.DecideSideFor(enemy_ship)
 	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
 	if err != nil {
@@ -128,7 +128,7 @@ func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Enti
 	}
 }
 
-func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShipFlee(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 	// We were already within range of our target ship, so we will definitely attack it this turn.
 	// We can therefore back off.
@@ -147,7 +147,7 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 	}
 }
 
-func (self *Pilot) PlanetApproachForDock(planet hal.Planet, avoid_list []hal.Entity) {
+func (self *Pilot) PlanetApproachForDock(planet *hal.Planet, avoid_list []hal.Entity) {
 
 	if self.CanDock(planet) {
 		self.PlanDock(planet)

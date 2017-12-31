@@ -60,11 +60,11 @@ type Planet struct {
 	DockedShips						int			// The ships themselves can be accessed via game.dockMap[]
 }
 
-func (p Planet) OpenSpots() int {
+func (p *Planet) OpenSpots() int {
 	return p.DockingSpots - p.DockedShips
 }
 
-func (p Planet) IsFull() bool {
+func (p *Planet) IsFull() bool {
 	return p.DockedShips >= p.DockingSpots
 }
 
@@ -83,22 +83,23 @@ type Ship struct {
 	Birth				int			// Turn this ship was first seen
 }
 
-func (s Ship) CanDock(p Planet) bool {
+func (s *Ship) CanDock(p *Planet) bool {
 	if s.Alive() && p.Alive() && p.IsFull() == false && (p.Owned == false || p.Owner == s.Owner) {
 		return s.ApproachDist(p) < DOCKING_RADIUS + SHIP_RADIUS
 	}
 	return false
 }
 
-func (s Ship) CanMove() bool {
+func (s *Ship) CanMove() bool {
 	return s.DockedStatus == UNDOCKED
 }
 
-func (s Ship) Continued(game *Game) Ship {
+func (s *Ship) Continued(game *Game) *Ship {
 
 	last_move := game.LastTurnMoveBy(s)
 
-	ret := s
+	ret := new(Ship)
+	*ret = *s
 
 	ret.X += last_move.Dx
 	ret.Y += last_move.Dy
@@ -135,7 +136,7 @@ func (e Ship) GetId() int { return e.Id }
 func (e Point) GetId() int { return -1 }
 func (e Port) GetId() int { return -1 }
 func (e Planet) GetId() int { return e.Id }
-func (e Nothing) GetId() int { panic("GetId() called on NOTHING entity") }
+func (e Nothing) GetId() int { return -1 }
 
 func (e Ship) GetX() float64 { return e.X }
 func (e Point) GetX() float64 { return e.X }

@@ -12,7 +12,7 @@ const (
 )
 
 type Pilot struct {
-	hal.Ship
+	*hal.Ship
 	Plan				string						// Our planned order, valid for 1 turn only.
 	Message				int							// Message for this turn. -1 for no message.
 	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
@@ -25,7 +25,7 @@ type Pilot struct {
 func NewPilot(sid int, game *hal.Game) *Pilot {
 	ret := new(Pilot)
 	ret.Game = game
-	ret.Id = sid
+	ret.Ship, _ = game.GetShip(sid)
 	ret.Target = hal.Nothing{}
 	return ret
 }
@@ -121,7 +121,7 @@ func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g
 	return self.Target.Type() != hal.NOTHING
 }
 
-func (self *Pilot) ClosestPlanet() hal.Planet {
+func (self *Pilot) ClosestPlanet() *hal.Planet {
 	return self.Game.ClosestPlanet(self)
 }
 
@@ -133,7 +133,7 @@ func (self *Pilot) PlanThrust(speed, degrees int) {
 	self.Plan = fmt.Sprintf("t %d %d %d", self.Id, speed, degrees)
 }
 
-func (self *Pilot) PlanDock(planet hal.Planet) {
+func (self *Pilot) PlanDock(planet *hal.Planet) {
 	self.Plan = fmt.Sprintf("d %d %d", self.Id, planet.Id)
 }
 

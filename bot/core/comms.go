@@ -107,11 +107,11 @@ func (self *Game) Parse() {
 
 	old_shipmap := self.shipMap					// We need last turn's ship info for inferring movement / birth.
 
-	self.shipMap = make(map[int]Ship)
-	self.planetMap = make(map[int]Planet)
-	self.dockMap = make(map[int][]Ship)
-	self.lastmoveMap = make(map[int]MoveInfo)
-	self.playershipMap = make(map[int][]Ship)
+	self.shipMap = make(map[int]*Ship)
+	self.planetMap = make(map[int]*Planet)
+	self.dockMap = make(map[int][]*Ship)
+	self.lastmoveMap = make(map[int]*MoveInfo)
+	self.playershipMap = make(map[int][]*Ship)
 
 	// Player parsing.............................................................................
 
@@ -135,7 +135,7 @@ func (self *Game) Parse() {
 
 		for s := 0; s < ship_count; s++ {
 
-			var ship Ship
+			ship := new(Ship)
 
 			sid := self.token_parser.Int()
 
@@ -162,11 +162,11 @@ func (self *Game) Parse() {
 			if ok == false {
 				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
 				self.cumulativeShips[pid]++
-				self.lastmoveMap[sid] = MoveInfo{Spawned: true}		// All other fields zero.
+				self.lastmoveMap[sid] = &MoveInfo{Spawned: true}	// All other fields zero.
 			} else {
 				dx := ship.X - last_ship.X
 				dy := ship.Y - last_ship.Y
-				self.lastmoveMap[sid] = MoveInfo{
+				self.lastmoveMap[sid] = &MoveInfo{
 					Dx: dx,
 					Dy: dy,
 					Speed: Round(math.Sqrt(dx * dx + dy * dy)),
@@ -191,7 +191,7 @@ func (self *Game) Parse() {
 
 	for p := 0; p < planet_count; p++ {
 
-		var planet Planet
+		planet := new(Planet)
 
 		plid := self.token_parser.Int()
 		planet.Id = plid
@@ -290,31 +290,31 @@ func (self *Game) Parse() {
 
 // ---------------------------------------
 
-func (self *Game) Thrust(ship Ship, speed, degrees int) {
+func (self *Game) Thrust(ship *Ship, speed, degrees int) {
 	for degrees < 0 { degrees += 360 }; degrees %= 360
 	self.orders[ship.Id] = fmt.Sprintf("t %d %d %d", ship.Id, speed, degrees)
 }
 
-func (self *Game) SetMessage(ship Ship, message int) {
+func (self *Game) SetMessage(ship *Ship, message int) {
 	if message < 0 || message > 180 {
 		return
 	}
 	self.messages[ship.Id] = message
 }
 
-func (self *Game) Dock(ship Ship, planet Planet) {
+func (self *Game) Dock(ship *Ship, planet Planet) {
 	self.orders[ship.Id] = fmt.Sprintf("d %d %d", ship.Id, planet.Id)
 }
 
-func (self *Game) Undock(ship Ship) {
+func (self *Game) Undock(ship *Ship) {
 	self.orders[ship.Id] = fmt.Sprintf("u %d", ship.Id)
 }
 
-func (self *Game) ClearOrder(ship Ship) {
+func (self *Game) ClearOrder(ship *Ship) {
 	delete(self.orders, ship.Id)
 }
 
-func (self *Game) CurrentOrder(ship Ship) string {
+func (self *Game) CurrentOrder(ship *Ship) string {
 	return self.orders[ship.Id]
 }
 

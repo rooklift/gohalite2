@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ShipsWillCollide(ship_a Ship, speed_a, angle_a int, ship_b Ship, speed_b, angle_b int) bool {
+func ShipsWillCollide(ship_a *Ship, speed_a, angle_a int, ship_b *Ship, speed_b, angle_b int) bool {
 
 	// Work this out by pretending ship B is standing still, while ship A is moving possibly faster than allowed.
 
@@ -172,7 +172,7 @@ func HashFromString(datastring string) string {
 	return fmt.Sprintf("%x", sum)
 }
 
-func OpeningDockHelper(p Planet, mid_ship Ship) []Port {
+func OpeningDockHelper(p *Planet, mid_ship *Ship) []Port {
 
 	// Returns 2 or 3 points for a ship and its nearby allies to dock at.
 
