@@ -88,6 +88,16 @@ func Angle(x1, y1, x2, y2 float64) int {
 	return deg_int % 360
 }
 
+func UnitVector(x1, y1, x2, y2 float64) (float64, float64) {
+	dx := x2 - x1
+	dy := y2 - y1
+	dist := math.Sqrt(dx * dx + dy * dy)
+	if dist < 0.001 {
+		return 0, 0
+	}
+	return dx / dist, dy / dist
+}
+
 func DegToRad(d float64) float64 {
 	return d / 180 * math.Pi
 }
