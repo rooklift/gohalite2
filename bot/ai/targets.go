@@ -36,6 +36,8 @@ func (self *Overmind) ChooseTargets() {
 			continue
 		}
 
+		// While one might think of using ApproachDist here, in the real world it lost a mu or more...
+
 		sort.Slice(all_problems, func(a, b int) bool {
 			return pilot.Dist(all_problems[a].Entity) / all_problems[a].Value <
 			       pilot.Dist(all_problems[b].Entity) / all_problems[b].Value
