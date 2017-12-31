@@ -36,9 +36,10 @@ func main() {
 	}
 
 	var longest_turn time.Duration
-/*
+
 	defer func() {
 		if p := recover(); p != nil {
+			fmt.Printf("%v", p)
 			game.Log("Quitting: %v", p)
 			game.Log("Last known hash: %s", hal.HashFromString(game.RawWorld()))
 			game.LogOnce("Current ships...... %3d, %3d, %3d, %3d",
@@ -54,7 +55,7 @@ func main() {
 			game.Log("Longest turn took %v", longest_turn)
 		}
 	}()
-*/
+
 	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02T15:04:05Z"))
