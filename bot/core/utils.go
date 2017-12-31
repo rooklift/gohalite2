@@ -40,7 +40,7 @@ func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius
 	a := dx * dx + dy * dy
 
 	b := -2 * (startx * startx - startx * endx - startx * circlex + endx * circlex +
-	           starty * starty - starty * endy - starty * circley + endy * circley)
+			   starty * starty - starty * endy - starty * circley + endy * circley)
 
 	if a == 0.0 {
 		return Dist(startx, starty, circlex, circley) <= radius
@@ -166,48 +166,10 @@ func GetOrderType(s string) string {
 	return "?"
 }
 
-func RemovePointFromSlice(slice []Point, point Point) []Point {
-
-	// Caller should re-assign its slice using the return value.
-
-	for i := 0; i < len(slice); i++ {
-		if slice[i] == point {
-			slice = append(slice[:i], slice[i+1:]...)
-			i--
-		}
-	}
-	return slice
-}
-
 func HashFromString(datastring string) string {
-    data := []byte(datastring)
-    sum := sha1.Sum(data)
-    return fmt.Sprintf("%x", sum)
-}
-
-func IntSliceWithout(slice []int, remove int) []int {
-	var ret []int
-
-	for _, n := range(slice) {
-		if n != remove {
-			ret = append(ret, n)
-		}
-	}
-
-	return ret
-}
-
-func StringSliceIndex(slice []string, s string) int {
-	for i, item := range slice {
-		if item == s {
-			return i
-		}
-	}
-	return -1
-}
-
-func StringSliceContains(slice []string, s string) bool {
-	return StringSliceIndex(slice, s) != -1
+	data := []byte(datastring)
+	sum := sha1.Sum(data)
+	return fmt.Sprintf("%x", sum)
 }
 
 func OpeningDockHelper(p Planet, mid_ship Ship) []Port {
