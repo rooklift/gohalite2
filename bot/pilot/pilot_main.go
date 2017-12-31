@@ -51,6 +51,10 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	switch self.Target.Type() {
 
+	case hal.NOTHING:
+
+		self.PlanThrust(0, 0)
+
 	case hal.PLANET:
 
 		self.PlanetApproachForDock(self.Target.(hal.Planet), avoid_list)

@@ -73,6 +73,8 @@ func (self *Overmind) Step() {
 	self.ExecuteMoves()
 }
 
+// --------------------------------------------
+
 func (self *Overmind) ResetPilots() {
 
 	game := self.Game
@@ -106,6 +108,8 @@ func (self *Overmind) ResetPilots() {
 		}
 	}
 }
+
+// --------------------------------------------
 
 func (self *Overmind) ExecuteMoves() {
 
@@ -154,8 +158,8 @@ func (self *Overmind) ExecuteMoves() {
 		pilot.PlanChase(avoid_list)
 	}
 
-	// Now the only danger is 2 "mobile" ships colliding. Note that it's possible that one
-	// of the colliding ships will not actually be moving.
+	// Since our plans are based on the avoid_list, the only danger is 2 "mobile" ships colliding.
+	// Note that it's possible that one of the colliding ships will not actually be moving.
 
 	pil.ExecuteSafely(mobile_pilots)
 
@@ -169,15 +173,9 @@ func (self *Overmind) ExecuteMoves() {
 			pilot.Message = pil.MSG_ATC_DEACTIVATED
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
+			avoid_list = append(avoid_list, pilot.Ship)
 			i--
 		}
-	}
-
-	// Remake the avoid_list...
-
-	avoid_list = self.Game.AllImmobile()
-	for _, pilot := range frozen_pilots {
-		avoid_list = append(avoid_list, pilot.Ship)
 	}
 
 	// Remake plans for our non-moving ships that we didn't freeze...

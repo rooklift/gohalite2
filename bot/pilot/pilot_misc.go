@@ -127,29 +127,6 @@ func (self *Pilot) ClosestPlanet() hal.Planet {
 
 // -------------------------------------------------------------------
 
-func (self *Pilot) SetMessageFromTarget() {
-
-	switch self.Target.Type() {
-
-	case hal.NOTHING:
-		self.Message = MSG_NO_TARGET
-
-	case hal.PLANET:
-		self.Message = self.Target.(hal.Planet).Id
-
-	case hal.PORT:
-		self.Message = MSG_DOCK_TARGET
-
-	case hal.POINT:
-		self.Message = MSG_POINT_TARGET
-
-	case hal.SHIP:
-		self.Message = MSG_ASSASSINATE
-	}
-}
-
-// -------------------------------------------------------------------
-
 func (self *Pilot) PlanThrust(speed, degrees int) {
 	for degrees < 0 { degrees += 360 }
 	degrees %= 360
