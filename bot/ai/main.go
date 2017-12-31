@@ -197,6 +197,10 @@ func (self *Overmind) ExecuteMoves() {
 }
 
 func (self *Overmind) Combat(combat_pilots []*pil.Pilot, avoid_list []hal.Entity) {
+
+	// Basic idea: use gradiants to give every combat pilot a point to navigate to,
+	// then just run PlanChase on that point.
+
 	for _, pilot := range combat_pilots {
 		pilot.PlanChase(avoid_list)
 	}

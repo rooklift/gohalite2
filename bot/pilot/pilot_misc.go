@@ -11,6 +11,11 @@ const (
 	DEFAULT_ENEMY_SHIP_APPROACH_DIST = 5.45			// GetApproach uses centre-to-edge distances, so 5.5ish.
 )
 
+type Vector struct {
+	Dx					float64
+	Dy					float64
+}
+
 type Pilot struct {
 	hal.Ship
 	Plan				string						// Our planned order, valid for 1 turn only.
@@ -20,6 +25,7 @@ type Pilot struct {
 	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
 	EnemyApproachDist	float64
 	NavStack			[]string
+	Forces				[]Vector					// Used for combat stuff.
 }
 
 func NewPilot(sid int, game *hal.Game) *Pilot {
@@ -56,6 +62,7 @@ func (self *Pilot) ResetPlan() {
 func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return true if we still exist.
 
 	self.NavStack = nil
+	self.Forces = nil
 	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 
