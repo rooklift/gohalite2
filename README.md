@@ -51,7 +51,7 @@ Another problem is local optima. To avoid these, I run multiple chains of evolut
 
 Some key conceptual breakthroughs that seemed to improve the bot were:
 
-* Don't crash our ships into each other. This is accomplished by a fairly crude 3D (2 space + 1 time) grid of occupied locations of discrete size -- see `atc.go`.
+* Don't crash our ships into each other. This is important.
 
 * Never dock when there are enemy ships around. This is obvious in hindsight. Docking is basically suicide. Instead, fight whatever enemy ships are in the area.
 
