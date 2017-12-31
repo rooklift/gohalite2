@@ -100,6 +100,7 @@ func (self *Overmind) ResetPilots() {
 		}
 
 		// The stateless version -- usually -- has no long term targets...
+		// Note that in some sort of semi-failed rush things can get weird.
 
 		if self.RushFlag == false || pilot.Ship.Birth > 5 {
 			if pilot.Target.Type() != hal.PORT {
