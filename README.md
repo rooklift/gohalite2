@@ -25,8 +25,8 @@ I scrapped the above algorithm in version 45, becoming stateless. Now, each turn
 Collision avoidance is fairly straightforward. Each ship starts off with its actual move set to null (stationary) but chooses a preferred move (e.g. thrust 7, 180) that it wants to make, if it can.
 
 * Set each ship's *actual* move to null.
-* Create a list of all entities known not to be moving (planets, docked ships).
-* Make each ship consider (only) those for navigation, and choose each ship's *preferred* move.
+* Create a list of all entities that can't move (planets, docked ships).
+* Avoiding those stationary objects, choose each ship's *preferred* move.
 * Iterate through the ships:
   - Pretend that the ship will get its preferred move.
   - Check for collisions against other ships' *actual* moves.
