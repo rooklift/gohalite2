@@ -110,7 +110,7 @@ func GetCourseRecursive(ship *hal.Ship, target hal.Entity, avoid_list []hal.Enti
 	}
 
 	waypointx, waypointy := hal.Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
-	p := hal.Point{waypointx, waypointy}
+	p := &hal.Point{waypointx, waypointy}
 
 	ns.AddToNavStack("GetCourseRecursive(): collision: %v; recursing with %v", c, p)
 	return GetCourseRecursive(ship, p, avoid_list, depth - 1, side, ns)
@@ -130,7 +130,7 @@ func GetApproach(ship *hal.Ship, target hal.Entity, margin float64, avoid_list [
 	travel_distance := ship.ApproachDist(target) + 0.51 - margin
 	target_point_x, target_point_y := hal.Projection(ship.X, ship.Y, travel_distance, ship.Angle(target))
 
-	p := hal.Point{target_point_x, target_point_y}
+	p := &hal.Point{target_point_x, target_point_y}
 
 	ns.AddToNavStack("GetApproach(): starting; side is %v, true target is %v, target is %v", side, target, p)
 	return GetCourse(ship, p, avoid_list, side, ns)

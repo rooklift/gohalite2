@@ -25,8 +25,12 @@ type Pilot struct {
 func NewPilot(sid int, game *hal.Game) *Pilot {
 	ret := new(Pilot)
 	ret.Game = game
-	ret.Ship, _ = game.GetShip(sid)
-	ret.Target = hal.Nothing{}
+	ship, ok := game.GetShip(sid)
+	if ok == false {
+		panic("NewPilot called with invalid sid")
+	}
+	ret.Ship = ship
+	ret.Target = &hal.Nothing{}
 	return ret
 }
 
@@ -59,9 +63,9 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 
-	current_ship, alive := self.Game.GetShip(self.Id)
+	current_ship, ok := self.Game.GetShip(self.Id)
 
-	if alive == false {
+	if ok == false {
 		return false
 	}
 
@@ -72,7 +76,7 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	// Update the info about our target.
 
 	if self.DockedStatus != hal.UNDOCKED {
-		self.Target = hal.Nothing{}
+		self.Target = &hal.Nothing{}
 	}
 
 	switch self.Target.Type() {
@@ -80,25 +84,13 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
-		} else {
-			var ok bool
-			self.Target, ok = self.Game.GetShip(self.Target.GetId())
-			if ok == false {
-				self.Target = hal.Nothing{}
-			}
+			self.Target = &hal.Nothing{}
 		}
 
 	case hal.PLANET:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
-		} else {
-			var ok bool
-			self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
-			if ok == false {
-				self.Target = hal.Nothing{}
-			}
+			self.Target = &hal.Nothing{}
 		}
 	}
 

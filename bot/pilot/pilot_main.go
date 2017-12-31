@@ -66,25 +66,25 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.POINT:
 
-		point := self.Target.(hal.Point)
+		point := self.Target.(*hal.Point)
 
 		side := self.DecideSideFor(point)
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
-			self.Target = hal.Nothing{}
+			self.Target = &hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees)
 		}
 
 	case hal.PORT:
 
-		port := self.Target.(hal.Port)
+		port := self.Target.(*hal.Port)
 
 		planet, ok := self.Game.GetPlanet(port.PlanetID)
 
 		if ok == false {
-			self.Target = hal.Nothing{}
+			self.Target = &hal.Nothing{}
 			return
 		}
 
@@ -97,7 +97,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetCourse(port, avoid_list, side)
 
 		if err != nil {
-			self.Target = hal.Nothing{}
+			self.Target = &hal.Nothing{}
 		} else {
 			self.PlanThrust(speed, degrees)
 		}
@@ -136,7 +136,7 @@ func (self *Pilot) EngageShipFlee(enemy_ship *hal.Ship, avoid_list []hal.Entity)
 	angle := self.Angle(enemy_ship) + 180
 
 	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
-	flee_point := hal.Point{x2, y2}
+	flee_point := &hal.Point{x2, y2}
 
 	side := self.DecideSideFor(enemy_ship)											// Wrong, but to preserve behaviour while changing things
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)

@@ -103,9 +103,23 @@ func (self *Game) Parse() {
 		self.turn++
 	}
 
-	// Clear some info maps. We will recreate them during parsing.
+	// We are about to remake the ship and planet maps, but we do need to keep the old ones for a bit...
 
-	old_shipmap := self.shipMap					// We need last turn's ship info for inferring movement / birth.
+	old_shipmap := self.shipMap
+	old_planetmap := self.planetMap
+
+	// Set everything to have 0 health.
+	// Thus it shall be seen as dead by anything with references to it, unless updated below...
+
+	for _, ship := range old_shipmap {
+		ship.HP = 0
+	}
+
+	for _, planet := range old_planetmap {
+		planet.HP = 0
+	}
+
+	// Clear some info maps. We will recreate them during parsing.
 
 	self.shipMap = make(map[int]*Ship)
 	self.planetMap = make(map[int]*Planet)
@@ -135,9 +149,12 @@ func (self *Game) Parse() {
 
 		for s := 0; s < ship_count; s++ {
 
-			ship := new(Ship)
-
 			sid := self.token_parser.Int()
+
+			ship, ok := old_shipmap[sid]
+			if ok == false {
+				ship = new(Ship)
+			}
 
 			ship.Id = sid
 			ship.Owner = pid
@@ -191,9 +208,13 @@ func (self *Game) Parse() {
 
 	for p := 0; p < planet_count; p++ {
 
-		planet := new(Planet)
-
 		plid := self.token_parser.Int()
+
+		planet, ok := old_planetmap[plid]
+		if ok == false {
+			planet = new(Planet)
+		}
+
 		planet.Id = plid
 
 		planet.X = self.token_parser.Float()

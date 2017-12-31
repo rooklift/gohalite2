@@ -104,7 +104,7 @@ func (self *Overmind) ResetPilots() {
 
 		if self.RushFlag == false || pilot.Ship.Birth > 5 {
 			if pilot.Target.Type() != hal.PORT {
-				pilot.Target = hal.Nothing{}
+				pilot.Target = &hal.Nothing{}
 			}
 		}
 	}
