@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"math/rand"
 	"sort"
 
 	gen "../genetic"
@@ -119,6 +118,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	var mobile_pilots []*pil.Pilot
 	var frozen_pilots []*pil.Pilot				// Note that this doesn't include docked / docking / undocking ships.
+	var combat_pilots []*pil.Pilot
 
 	for _, pilot := range self.Pilots {
 		if pilot.DockedStatus == hal.UNDOCKED {
@@ -140,7 +140,9 @@ func (self *Overmind) ExecuteMoves() {
 	// Plan moves, add non-moving ships to the avoid list, then scrap other moves and plan them again...
 
 	for _, pilot := range mobile_pilots {
-		pilot.PlanChase(avoid_list)
+		if pilot.Target.Type() != hal.SHIP {
+			pilot.PlanChase(avoid_list)
+		}
 	}
 
 	for i := 0; i < len(mobile_pilots); i++ {
@@ -154,38 +156,23 @@ func (self *Overmind) ExecuteMoves() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.PlanChase(avoid_list)
-	}
-
-	// Since our plans are based on the avoid_list, the only danger is 2 "mobile" ships colliding.
-	// Note that it's possible that one of the colliding ships will not actually be moving.
-
-	pil.ExecuteSafely(mobile_pilots)
-
-	// Randomly give up for half the ships that still aren't moving, and
-	// retry the pathfinding with the other half.
-
-	for i := 0; i < len(mobile_pilots); i++ {
-		pilot := mobile_pilots[i]
-		if pilot.HasExecuted == false && rand.Intn(2) == 0 {
-			pilot.PlanThrust(0, 0)
-			pilot.Message = pil.MSG_ATC_DEACTIVATED
-			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
-			frozen_pilots = append(frozen_pilots, pilot)
-			avoid_list = append(avoid_list, pilot.Ship)
-			i--
-		}
-	}
-
-	// Remake plans for our non-moving ships that we didn't freeze...
-
-	for _, pilot := range mobile_pilots {
-		if pilot.HasExecuted == false {
+		if pilot.Target.Type() != hal.SHIP {
 			pilot.PlanChase(avoid_list)
 		}
 	}
 
-	// And execute. Note that pilots that have already executed won't be affected...
+	// Combat pilots have their own planning routine...
+
+	for _, pilot := range mobile_pilots {
+		if pilot.Target.Type() == hal.SHIP {
+			combat_pilots = append(combat_pilots, pilot)
+		}
+	}
+
+	self.Combat(combat_pilots, avoid_list)
+
+	// Since our plans are based on the avoid_list, the only danger is 2 "mobile" ships colliding.
+	// Note that it's possible that one of the colliding ships will not actually be moving.
 
 	pil.ExecuteSafely(mobile_pilots)
 
@@ -206,5 +193,11 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
+	}
+}
+
+func (self *Overmind) Combat(combat_pilots []*pil.Pilot, avoid_list []hal.Entity) {
+	for _, pilot := range combat_pilots {
+		pilot.PlanChase(avoid_list)
 	}
 }
