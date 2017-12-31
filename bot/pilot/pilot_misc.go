@@ -17,7 +17,7 @@ type Pilot struct {
 	Message				int							// Message for this turn. -1 for no message.
 	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
 	Game				*hal.Game
-	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
+	Target				hal.Entity					// Use the hal.Nothing struct for no target.
 	EnemyApproachDist	float64
 	NavStack			[]string
 }

@@ -152,8 +152,16 @@ func (self *Game) Parse() {
 			sid := self.token_parser.Int()
 
 			ship, ok := old_shipmap[sid]
-			if ok == false {
+
+			// Save the previous state of the ship, if any...
+
+			var last_ship *Ship
+			if ok {
+				last_ship = new(Ship);
+				*last_ship = *ship
+			} else {
 				ship = new(Ship)
+				last_ship = nil
 			}
 
 			ship.Id = sid
@@ -174,9 +182,7 @@ func (self *Game) Parse() {
 			ship.DockingProgress = self.token_parser.Int()
 			self.token_parser.Int()									// Skip deprecated "cooldown"
 
-			last_ship, ok := old_shipmap[sid]
-
-			if ok == false {
+			if last_ship == nil {
 				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
 				self.cumulativeShips[pid]++
 				self.lastmoveMap[sid] = &MoveInfo{Spawned: true}	// All other fields zero.
