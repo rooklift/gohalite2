@@ -63,17 +63,15 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 
-	current_ship, ok := self.Game.GetShip(self.Id)
+	_, ok := self.Game.GetShip(self.Id)
 
 	if ok == false {
 		return false
 	}
 
-	self.Ship = current_ship
-
 	self.ResetPlan()
 
-	// Update the info about our target.
+	// Delete our target if appropriate...
 
 	if self.DockedStatus != hal.UNDOCKED {
 		self.Target = hal.Nothing

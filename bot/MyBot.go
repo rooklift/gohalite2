@@ -36,6 +36,7 @@ func main() {
 	}
 
 	var longest_turn time.Duration
+	var longest_turn_number int
 
 	defer func() {
 		if p := recover(); p != nil {
@@ -52,7 +53,7 @@ func main() {
 				game.GetCumulativeShipCount(1),
 				game.GetCumulativeShipCount(2),
 				game.GetCumulativeShipCount(3))
-			game.Log("Longest turn took %v", longest_turn)
+			game.Log("Longest turn (%d) took %v", longest_turn_number, longest_turn)
 		}
 	}()
 
@@ -83,6 +84,7 @@ func main() {
 
 		if time.Now().Sub(start_time) > longest_turn {
 			longest_turn = time.Now().Sub(start_time)
+			longest_turn_number = game.Turn()
 		}
 	}
 }
