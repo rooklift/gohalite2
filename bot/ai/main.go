@@ -154,7 +154,6 @@ func (self *Overmind) ExecuteMoves() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.ResetPlan()
 		pilot.PlanChase(avoid_list)
 	}
 
