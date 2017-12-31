@@ -17,11 +17,14 @@ func ExecuteSafely(mobile_pilots []*Pilot) {
 
 	for n := 0; n < 10; n++ {
 
+		total_executes := 0
+
 		Pilot1Loop:
 
 		for _, pilot1 := range mobile_pilots {
 
 			if pilot1.HasExecuted {
+				total_executes++
 				continue
 			}
 
@@ -58,6 +61,11 @@ func ExecuteSafely(mobile_pilots []*Pilot) {
 			}
 
 			pilot1.ExecutePlan()
+			total_executes++
+		}
+
+		if total_executes >= len(mobile_pilots) {
+			return
 		}
 	}
 }

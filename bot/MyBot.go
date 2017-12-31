@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"runtime/pprof"
 	"strings"
 	"time"
 
@@ -22,10 +23,17 @@ func main() {
 	config := new(ai.Config)
 	flag.BoolVar(&config.Conservative, "conservative", false, "no rushing")
 	flag.BoolVar(&config.NoMsg, "nomsg", false, "no angle messages")
+	flag.BoolVar(&config.Profile, "profile", false, "run Golang CPU profile")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
 	flag.Parse()
 
 	game := hal.NewGame()
+
+	if config.Profile {
+		outfile, _ := os.Create("profile.prof")
+		pprof.StartCPUProfile(outfile)
+		defer pprof.StopCPUProfile()
+	}
 
 	var longest_turn time.Duration
 

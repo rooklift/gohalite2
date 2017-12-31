@@ -14,6 +14,7 @@ import (
 type Config struct {
 	Conservative			bool
 	NoMsg					bool
+	Profile					bool
 	Timeseed				bool
 }
 
@@ -132,27 +133,20 @@ func (self *Overmind) ExecuteMoves() {
 		})
 	}
 
-	// Choose each ship's plan...
+	// Plan moves, add non-moving ships to the avoid list, then scrap other moves and plan them again...
 
 	for _, pilot := range mobile_pilots {
-		pilot.PlanChase(avoid_list)			// avoid_list is, at this point, planets plus already-docked ships.
+		pilot.PlanChase(avoid_list)
 	}
-
-	// Some pilots may not want to move... consider them frozen...
 
 	for i := 0; i < len(mobile_pilots); i++ {
 		pilot := mobile_pilots[i]
 		if pilot.HasStationaryPlan() {
 			mobile_pilots = append(mobile_pilots[:i], mobile_pilots[i+1:]...)
 			frozen_pilots = append(frozen_pilots, pilot)
+			avoid_list = append(avoid_list, pilot.Ship)
 			i--
 		}
-	}
-
-	// Our PlanChase() above didn't avoid these frozen ships. Remake plans with the new info.
-
-	for _, pilot := range frozen_pilots {
-		avoid_list = append(avoid_list, pilot.Ship)
 	}
 
 	for _, pilot := range mobile_pilots {
@@ -215,50 +209,5 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
-	}
-}
-
-func (self *Overmind) CowardStep() {
-
-	var mobile_pilots []*pil.Pilot
-
-	for _, pilot := range self.Pilots {
-		if pilot.DockedStatus == hal.UNDOCKED {
-			mobile_pilots = append(mobile_pilots, pilot)
-		}
-	}
-
-	all_enemies := self.Game.EnemyShips()
-	avoid_list := self.Game.AllImmobile()
-
-	for _, pilot := range mobile_pilots {
-		pilot.PlanCowardice(all_enemies, avoid_list)
-	}
-
-	pil.ExecuteSafely(mobile_pilots)
-
-	// Also undock any docked ships...
-
-	for _, pilot := range self.Pilots {
-		if pilot.DockedStatus == hal.DOCKED {
-			pilot.PlanUndock()
-			pilot.ExecutePlan()
-		}
-	}
-}
-
-func (self *Overmind) SetCowardFlag() {
-
-	if self.Game.CurrentPlayers() <= 2 {
-		self.CowardFlag = false
-		return
-	}
-
-	if self.CowardFlag {
-		return				// i.e. leave it true
-	}
-
-	if self.Game.CountMyShips() < self.Game.CountEnemyShips() / 10 {
-		self.CowardFlag = true
 	}
 }

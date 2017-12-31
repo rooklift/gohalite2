@@ -6,3 +6,5 @@ otherbots/
 replays/
 holdout/
 reload.py
+*.prof
+open_profile.bat
