@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ShipsWillCollide(ship_a Ship, speed_a, angle_a int, ship_b Ship, speed_b, angle_b int) bool {
+func ShipsWillCollide(ship_a *Ship, speed_a, angle_a int, ship_b *Ship, speed_b, angle_b int) bool {
 
 	// Work this out by pretending ship B is standing still, while ship A is moving possibly faster than allowed.
 
@@ -172,11 +172,11 @@ func HashFromString(datastring string) string {
 	return fmt.Sprintf("%x", sum)
 }
 
-func OpeningDockHelper(p Planet, mid_ship Ship) []Port {
+func OpeningDockHelper(p *Planet, mid_ship *Ship) []*Port {
 
 	// Returns 2 or 3 points for a ship and its nearby allies to dock at.
 
-	var ret []Port
+	var ret []*Port
 
 	switch {
 
@@ -185,21 +185,21 @@ func OpeningDockHelper(p Planet, mid_ship Ship) []Port {
 		degrees := p.Angle(mid_ship)
 		dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees)
 
-		ret = append(ret, Port{dock_x, dock_y, p.Id})
+		ret = append(ret, &Port{dock_x, dock_y, p.Id})
 
 	case p.DockingSpots > 1:
 
 		degrees_mid := p.Angle(mid_ship)
 		dock_mid_x, dock_mid_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid)
 
-		dock_mid := Port{dock_mid_x, dock_mid_y, p.Id}
+		dock_mid := &Port{dock_mid_x, dock_mid_y, p.Id}
 
 		ret = append(ret, dock_mid)
 
 		for n := 1; n < 90; n++ {
 
 			dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid + n)
-			dock := Port{dock_x, dock_y, p.Id}
+			dock := &Port{dock_x, dock_y, p.Id}
 
 			if dock.Dist(dock_mid) > 2 {
 
@@ -208,7 +208,7 @@ func OpeningDockHelper(p Planet, mid_ship Ship) []Port {
 				if p.DockingSpots > 2 {
 
 					dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid - n)
-					dock := Port{dock_x, dock_y, p.Id}
+					dock := &Port{dock_x, dock_y, p.Id}
 					ret = append(ret, dock)
 				}
 

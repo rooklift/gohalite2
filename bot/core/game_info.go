@@ -6,26 +6,26 @@ import (
 
 // ----------------------------------------------
 
-func (self *Game) GetShip(sid int) (Ship, bool) {
+func (self *Game) GetShip(sid int) (*Ship, bool) {
 	ret, ok := self.shipMap[sid]
 	return ret, ok
 }
 
-func (self *Game) GetPlanet(plid int) (Planet, bool) {
+func (self *Game) GetPlanet(plid int) (*Planet, bool) {
 	ret, ok := self.planetMap[plid]
 	return ret, ok
 }
 
 // ----------------------------------------------
 
-func (self *Game) AllShips() []Ship {
-	ret := make([]Ship, len(self.all_ships_cache))
+func (self *Game) AllShips() []*Ship {
+	ret := make([]*Ship, len(self.all_ships_cache))
 	copy(ret, self.all_ships_cache)
 	return ret
 }
 
-func (self *Game) AllPlanets() []Planet {
-	ret := make([]Planet, len(self.all_planets_cache))
+func (self *Game) AllPlanets() []*Planet {
+	ret := make([]*Planet, len(self.all_planets_cache))
 	copy(ret, self.all_planets_cache)
 	return ret
 }
@@ -38,18 +38,18 @@ func (self *Game) AllImmobile() []Entity {						// Returns all planets and all d
 
 // ----------------------------------------------
 
-func (self *Game) ShipsOwnedBy(pid int) []Ship {
-	ret := make([]Ship, len(self.playershipMap[pid]))
+func (self *Game) ShipsOwnedBy(pid int) []*Ship {
+	ret := make([]*Ship, len(self.playershipMap[pid]))
 	copy(ret, self.playershipMap[pid])
 	return ret
 }
 
-func (self *Game) MyShips() []Ship {
+func (self *Game) MyShips() []*Ship {
 	return self.ShipsOwnedBy(self.pid)
 }
 
-func (self *Game) EnemyShips() []Ship {
-	ret := make([]Ship, len(self.enemy_ships_cache))
+func (self *Game) EnemyShips() []*Ship {
+	ret := make([]*Ship, len(self.enemy_ships_cache))
 	copy(ret, self.enemy_ships_cache)
 	return ret
 }
@@ -80,24 +80,24 @@ func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
 	return ret
 }
 
-func (self *Game) ShipsDockedAt(planet Planet) []Ship {
-	ret := make ([]Ship, len(self.dockMap[planet.Id]))
+func (self *Game) ShipsDockedAt(planet *Planet) []*Ship {
+	ret := make ([]*Ship, len(self.dockMap[planet.Id]))
 	copy(ret, self.dockMap[planet.Id])
 	return ret
 }
 
-func (self *Game) LastTurnMoveBy(ship Ship) MoveInfo {
+func (self *Game) LastTurnMoveBy(ship *Ship) *MoveInfo {
 	return self.lastmoveMap[ship.Id]
 }
 
-func (self *Game) LastTurnMoveById(id int) MoveInfo {
+func (self *Game) LastTurnMoveById(id int) *MoveInfo {
 	return self.lastmoveMap[id]
 }
 
-func (self *Game) ClosestPlanet(e Entity) Planet {
+func (self *Game) ClosestPlanet(e Entity) *Planet {
 
 	var best_dist float64 = 9999999
-	var ret Planet
+	var ret *Planet
 
 	for _, planet := range self.AllPlanets() {
 		dist := e.ApproachDist(planet)
@@ -131,7 +131,7 @@ func (self *Game) SurvivingPlayerIDs() []int {
 	return ret
 }
 
-func (self *Game) AllShipsCentreOfGravity() Point {
+func (self *Game) AllShipsCentreOfGravity() *Point {
 	avg_x := 0.0
 	avg_y := 0.0
 
@@ -144,10 +144,10 @@ func (self *Game) AllShipsCentreOfGravity() Point {
 	avg_x /= float64(len(all_ships))
 	avg_y /= float64(len(all_ships))
 
-	return Point{avg_x, avg_y}
+	return &Point{avg_x, avg_y}
 }
 
-func (self *Game) DesiredSpots(planet Planet) int {
+func (self *Game) DesiredSpots(planet *Planet) int {
 
 	// If we don't own it, we want all its spots...
 
@@ -160,28 +160,28 @@ func (self *Game) DesiredSpots(planet Planet) int {
 	return planet.OpenSpots()
 }
 
-func (self *Game) EnemiesNearPlanet(planet Planet) []Ship {
+func (self *Game) EnemiesNearPlanet(planet *Planet) []*Ship {
 
 	// See game.go for exact behaviour. Might not do what you'd expect.
 
-	ret := make([]Ship, len(self.enemies_near_planet[planet.Id]))
+	ret := make([]*Ship, len(self.enemies_near_planet[planet.Id]))
 	copy(ret, self.enemies_near_planet[planet.Id])
 	return ret
 }
 
-func (self *Game) MobileEnemiesNearPlanet(planet Planet) []Ship {
-	ret := make([]Ship, len(self.mobile_enemies_near_planet[planet.Id]))
+func (self *Game) MobileEnemiesNearPlanet(planet *Planet) []*Ship {
+	ret := make([]*Ship, len(self.mobile_enemies_near_planet[planet.Id]))
 	copy(ret, self.mobile_enemies_near_planet[planet.Id])
 	return ret
 }
 
-func (self *Game) FriendsNearPlanet(planet Planet) []Ship {
-	ret := make([]Ship, len(self.friends_near_planet[planet.Id]))
+func (self *Game) FriendsNearPlanet(planet *Planet) []*Ship {
+	ret := make([]*Ship, len(self.friends_near_planet[planet.Id]))
 	copy(ret, self.friends_near_planet[planet.Id])
 	return ret
 }
 
-func (self *Game) LastOwner(planet Planet) int {
+func (self *Game) LastOwner(planet *Planet) int {
 	val, ok := self.lastownerMap[planet.Id]
 	if ok == false {
 		return -1
@@ -197,33 +197,33 @@ func (self *Game) InBounds(x, y float64) bool {
 	return true
 }
 
-func (self *Game) CourseStaysInBounds(ship Ship, speed int, degrees int) bool {
+func (self *Game) CourseStaysInBounds(ship *Ship, speed int, degrees int) bool {
 	x2, y2 := Projection(ship.X, ship.Y, float64(speed), degrees)
 	return self.InBounds(x2, y2)
 }
 
-func (self *Game) NearestEdge(ship Ship) (e Edge, dist float64, point Point) {
+func (self *Game) NearestEdge(ship *Ship) (e Edge, dist float64, point *Point) {
 
 	e = LEFT
 	dist = ship.X
-	point = Point{0, ship.Y}
+	point = &Point{0, ship.Y}
 
 	if float64(self.width) - ship.X < dist {
 		e = RIGHT
 		dist = float64(self.width) - ship.X
-		point = Point{float64(self.width), ship.Y}
+		point = &Point{float64(self.width), ship.Y}
 	}
 
 	if ship.Y < dist {
 		e = TOP
 		dist = ship.Y
-		point = Point{ship.X, 0}
+		point = &Point{ship.X, 0}
 	}
 
 	if float64(self.height) - ship.Y < dist {
 		e = BOTTOM
 		dist = float64(self.height) - ship.Y
-		point = Point{ship.X, float64(self.height)}
+		point = &Point{ship.X, float64(self.height)}
 	}
 
 	return e, dist, point

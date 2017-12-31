@@ -12,7 +12,7 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 		return
 	}
 
-	planet := self.Target.(hal.Planet)
+	planet := self.Target.(*hal.Planet)
 
 	// Is the planet far away?
 
@@ -57,34 +57,34 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	case hal.PLANET:
 
-		self.PlanetApproachForDock(self.Target.(hal.Planet), avoid_list)
+		self.PlanetApproachForDock(self.Target.(*hal.Planet), avoid_list)
 
 	case hal.SHIP:
 
-		other_ship := self.Target.(hal.Ship)
+		other_ship := self.Target.(*hal.Ship)
 		self.EngageShip(other_ship, avoid_list)
 
 	case hal.POINT:
 
-		point := self.Target.(hal.Point)
+		point := self.Target.(*hal.Point)
 
 		side := self.DecideSideFor(point)
 		speed, degrees, err := self.GetCourse(point, avoid_list, side)
 
 		if err != nil {
-			self.Target = hal.Nothing{}
+			self.Target = hal.Nothing
 		} else {
 			self.PlanThrust(speed, degrees)
 		}
 
 	case hal.PORT:
 
-		port := self.Target.(hal.Port)
+		port := self.Target.(*hal.Port)
 
 		planet, ok := self.Game.GetPlanet(port.PlanetID)
 
 		if ok == false {
-			self.Target = hal.Nothing{}
+			self.Target = hal.Nothing
 			return
 		}
 
@@ -97,14 +97,14 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 		speed, degrees, err := self.GetCourse(port, avoid_list, side)
 
 		if err != nil {
-			self.Target = hal.Nothing{}
+			self.Target = hal.Nothing
 		} else {
 			self.PlanThrust(speed, degrees)
 		}
 	}
 }
 
-func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 	// Flee if we're already in weapons range...
 
@@ -118,7 +118,7 @@ func (self *Pilot) EngageShip(enemy_ship hal.Ship, avoid_list []hal.Entity) {
 	self.EngageShipApproach(enemy_ship, avoid_list)
 }
 
-func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 	side := self.DecideSideFor(enemy_ship)
 	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
 	if err != nil {
@@ -128,7 +128,7 @@ func (self *Pilot) EngageShipApproach(enemy_ship hal.Ship, avoid_list []hal.Enti
 	}
 }
 
-func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShipFlee(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 	// We were already within range of our target ship, so we will definitely attack it this turn.
 	// We can therefore back off.
@@ -136,7 +136,7 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 	angle := self.Angle(enemy_ship) + 180
 
 	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
-	flee_point := hal.Point{x2, y2}
+	flee_point := &hal.Point{x2, y2}
 
 	side := self.DecideSideFor(enemy_ship)											// Wrong, but to preserve behaviour while changing things
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
@@ -147,7 +147,7 @@ func (self *Pilot) EngageShipFlee(enemy_ship hal.Ship, avoid_list []hal.Entity) 
 	}
 }
 
-func (self *Pilot) PlanetApproachForDock(planet hal.Planet, avoid_list []hal.Entity) {
+func (self *Pilot) PlanetApproachForDock(planet *hal.Planet, avoid_list []hal.Entity) {
 
 	if self.CanDock(planet) {
 		self.PlanDock(planet)

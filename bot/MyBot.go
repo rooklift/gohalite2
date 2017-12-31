@@ -39,6 +39,7 @@ func main() {
 
 	defer func() {
 		if p := recover(); p != nil {
+			fmt.Printf("%v", p)
 			game.Log("Quitting: %v", p)
 			game.Log("Last known hash: %s", hal.HashFromString(game.RawWorld()))
 			game.LogOnce("Current ships...... %3d, %3d, %3d, %3d",

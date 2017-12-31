@@ -12,12 +12,12 @@ const (
 )
 
 type Pilot struct {
-	hal.Ship
+	*hal.Ship
 	Plan				string						// Our planned order, valid for 1 turn only.
 	Message				int							// Message for this turn. -1 for no message.
 	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
 	Game				*hal.Game
-	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
+	Target				hal.Entity					// Use the hal.Nothing struct for no target.
 	EnemyApproachDist	float64
 	NavStack			[]string
 }
@@ -25,8 +25,12 @@ type Pilot struct {
 func NewPilot(sid int, game *hal.Game) *Pilot {
 	ret := new(Pilot)
 	ret.Game = game
-	ret.Id = sid
-	ret.Target = hal.Nothing{}
+	ship, ok := game.GetShip(sid)
+	if ok == false {
+		panic("NewPilot called with invalid sid")
+	}
+	ret.Ship = ship
+	ret.Target = hal.Nothing
 	return ret
 }
 
@@ -59,9 +63,9 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 
-	current_ship, alive := self.Game.GetShip(self.Id)
+	current_ship, ok := self.Game.GetShip(self.Id)
 
-	if alive == false {
+	if ok == false {
 		return false
 	}
 
@@ -72,7 +76,7 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	// Update the info about our target.
 
 	if self.DockedStatus != hal.UNDOCKED {
-		self.Target = hal.Nothing{}
+		self.Target = hal.Nothing
 	}
 
 	switch self.Target.Type() {
@@ -80,25 +84,13 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	case hal.SHIP:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
-		} else {
-			var ok bool
-			self.Target, ok = self.Game.GetShip(self.Target.GetId())
-			if ok == false {
-				self.Target = hal.Nothing{}
-			}
+			self.Target = hal.Nothing
 		}
 
 	case hal.PLANET:
 
 		if self.Target.Alive() == false {
-			self.Target = hal.Nothing{}
-		} else {
-			var ok bool
-			self.Target, ok = self.Game.GetPlanet(self.Target.GetId())
-			if ok == false {
-				self.Target = hal.Nothing{}
-			}
+			self.Target = hal.Nothing
 		}
 	}
 
@@ -121,7 +113,7 @@ func (self *Pilot) HasTarget() bool {				// We don't use nil ever, so we can e.g
 	return self.Target.Type() != hal.NOTHING
 }
 
-func (self *Pilot) ClosestPlanet() hal.Planet {
+func (self *Pilot) ClosestPlanet() *hal.Planet {
 	return self.Game.ClosestPlanet(self)
 }
 
@@ -133,7 +125,7 @@ func (self *Pilot) PlanThrust(speed, degrees int) {
 	self.Plan = fmt.Sprintf("t %d %d %d", self.Id, speed, degrees)
 }
 
-func (self *Pilot) PlanDock(planet hal.Planet) {
+func (self *Pilot) PlanDock(planet *hal.Planet) {
 	self.Plan = fmt.Sprintf("d %d %d", self.Id, planet.Id)
 }
 

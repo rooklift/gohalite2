@@ -38,11 +38,11 @@ type Game struct {
 	initialPlayers				int					// Stored only once at startup. Never changes.
 	currentPlayers				int
 
-	planetMap					map[int]Planet		// Planet ID --> Planet
-	dockMap						map[int][]Ship		// Planet ID --> Ship slice
-	shipMap						map[int]Ship		// Ship ID --> Ship
-	lastmoveMap					map[int]MoveInfo	// Ship ID --> MoveInfo struct
-	playershipMap				map[int][]Ship		// Player ID --> Ship slice
+	planetMap					map[int]*Planet		// Planet ID --> Planet
+	dockMap						map[int][]*Ship		// Planet ID --> Ship slice
+	shipMap						map[int]*Ship		// Ship ID --> Ship
+	lastmoveMap					map[int]*MoveInfo	// Ship ID --> MoveInfo struct
+	playershipMap				map[int][]*Ship		// Player ID --> Ship slice
 	cumulativeShips				map[int]int			// Player ID --> Count
 	lastownerMap				map[int]int			// Planet ID --> Last owner (check OK for never owned)
 
@@ -57,16 +57,16 @@ type Game struct {
 
 	// These slices are kept as answers to common queries...
 
-	all_ships_cache				[]Ship
-	enemy_ships_cache			[]Ship
-	all_planets_cache			[]Planet
+	all_ships_cache				[]*Ship
+	enemy_ships_cache			[]*Ship
+	all_planets_cache			[]*Planet
 	all_immobile_cache			[]Entity			// Planets and docked ships
 
 	// Some more stuff maybe used by the AI...
 
-	enemies_near_planet			map[int][]Ship
-	mobile_enemies_near_planet	map[int][]Ship
-	friends_near_planet			map[int][]Ship
+	enemies_near_planet			map[int][]*Ship
+	mobile_enemies_near_planet	map[int][]*Ship
+	friends_near_planet			map[int][]*Ship
 	threat_range				float64
 	friend_range				float64
 }
@@ -78,10 +78,10 @@ func NewGame() *Game {
 	game.pid = game.token_parser.Int()
 	game.width = game.token_parser.Int()
 	game.height = game.token_parser.Int()
-	game.planetMap = make(map[int]Planet)
-	game.shipMap = make(map[int]Ship)
-	game.dockMap = make(map[int][]Ship)
-	game.lastmoveMap = make(map[int]MoveInfo)
+	game.planetMap = make(map[int]*Planet)
+	game.shipMap = make(map[int]*Ship)
+	game.dockMap = make(map[int][]*Ship)
+	game.lastmoveMap = make(map[int]*MoveInfo)
 	game.cumulativeShips = make(map[int]int)
 	game.lastownerMap = make(map[int]int)
 	game.threat_range = INITIAL_THREAT_RANGE
@@ -102,8 +102,8 @@ func (self *Game) ParseTime() time.Time { return self.parse_time }
 
 func (self *Game) UpdateEnemyMaps() {
 
-	self.enemies_near_planet = make(map[int][]Ship)
-	self.mobile_enemies_near_planet = make(map[int][]Ship)
+	self.enemies_near_planet = make(map[int][]*Ship)
+	self.mobile_enemies_near_planet = make(map[int][]*Ship)
 
 	all_ships := self.AllShips()
 	all_planets := self.AllPlanets()
@@ -132,7 +132,7 @@ func (self *Game) UpdateEnemyMaps() {
 
 func (self *Game) UpdateFriendMap() {
 
-	self.friends_near_planet = make(map[int][]Ship)
+	self.friends_near_planet = make(map[int][]*Ship)
 
 	my_ships := self.MyShips()
 	all_planets := self.AllPlanets()

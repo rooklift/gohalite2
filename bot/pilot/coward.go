@@ -6,9 +6,9 @@ import (
 	hal "../core"
 )
 
-func (self *Pilot) PlanCowardice(all_enemies []hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) PlanCowardice(all_enemies []*hal.Ship, avoid_list []hal.Entity) {
 
-	if self.DockedStatus != hal.UNDOCKED {
+	if self.Ship.DockedStatus != hal.UNDOCKED {
 		return
 	}
 
@@ -35,7 +35,7 @@ func (self *Pilot) PlanCowardice(all_enemies []hal.Ship, avoid_list []hal.Entity
 	self.Message = msg
 }
 
-func (self *Pilot) PlanEdgeCowardice(edge hal.Edge, all_enemies []hal.Ship) {
+func (self *Pilot) PlanEdgeCowardice(edge hal.Edge, all_enemies []*hal.Ship) {
 
 	self.Message = MSG_COWARD
 

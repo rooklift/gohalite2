@@ -85,7 +85,7 @@ func (self *Overmind) AllProblems() []*Problem {
 	return all_problems
 }
 
-func (self *Overmind) PlanetProblem(planet hal.Planet) *Problem {
+func (self *Overmind) PlanetProblem(planet *hal.Planet) *Problem {
 
 	game := self.Game
 
