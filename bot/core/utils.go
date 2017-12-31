@@ -158,24 +158,12 @@ func CourseFromString(s string) (int, int) {
 	return speed, degrees
 }
 
-func GetOrderType(s string) OrderType {
-
-	tokens := strings.Fields(s)
-
-	if len(tokens) == 0 {
-		return NO_ORDER
-	}
-	if tokens[0] == "t" {
-		return THRUST
-	}
-	if tokens[0] == "d" {
-		return DOCK
-	}
-	if tokens[0] == "u" {
-		return UNDOCK
-	}
-
-	return NO_ORDER
+func GetOrderType(s string) string {
+	if len(s) == 0 { return ""  }
+	if s[0] == 't' { return "t" }
+	if s[0] == 'd' { return "d" }
+	if s[0] == 'u' { return "u" }
+	return "?"
 }
 
 func RemovePointFromSlice(slice []Point, point Point) []Point {

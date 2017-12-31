@@ -27,15 +27,6 @@ const (
 	NOTHING
 )
 
-type OrderType int
-
-const (
-	NO_ORDER OrderType = iota
-	THRUST
-	DOCK
-	UNDOCK
-)
-
 type Edge int
 
 const (
