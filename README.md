@@ -18,7 +18,7 @@ I scrapped the above algorithm in version 45, becoming stateless. Now, each turn
 
 * Generate all problems; each problem has a number of ships required (its "need").
 * Iterate through the ships; go to the nearest problem that still needs help; reduce that need by 1.
-* Make some tactical choices; e.g. if the problem is a planet, we may actually be targetting an enemy ship.
+* Make some tactical choices; e.g. if the problem is a planet, we may actually target an enemy ship.
 
 # Collision Avoidance
 
