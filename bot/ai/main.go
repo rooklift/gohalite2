@@ -202,6 +202,7 @@ func (self *Overmind) Combat(combat_pilots []*pil.Pilot, avoid_list []hal.Entity
 	// then just run PlanChase on that point.
 
 	enemy_ships := self.Game.EnemyShips()
+	my_ships := self.Game.MyShips()
 
 	for _, pilot := range combat_pilots {
 
@@ -212,6 +213,19 @@ func (self *Overmind) Combat(combat_pilots []*pil.Pilot, avoid_list []hal.Entity
 			dist := hal.Dist(pilot.X, pilot.Y, ship.X, ship.Y)
 			unit_vector_x, unit_vector_y := hal.UnitVector(pilot.X, pilot.Y, ship.X, ship.Y)
 			strength := 1000 / (dist * dist)
+
+			pilot.Forces = append(pilot.Forces, &pil.Vector{unit_vector_x * strength, unit_vector_y * strength})
+		}
+
+		for _, ship := range my_ships {
+
+			if ship == pilot.Ship || ship.DockedStatus != hal.UNDOCKED {
+				continue
+			}
+
+			dist := hal.Dist(pilot.X, pilot.Y, ship.X, ship.Y)
+			unit_vector_x, unit_vector_y := hal.UnitVector(pilot.X, pilot.Y, ship.X, ship.Y)
+			strength := -200 / (dist * dist)
 
 			pilot.Forces = append(pilot.Forces, &pil.Vector{unit_vector_x * strength, unit_vector_y * strength})
 		}
