@@ -16,6 +16,23 @@ type Vector struct {
 	Dy					float64
 }
 
+type VectorSlice []*Vector
+
+func (self VectorSlice) Average() (float64, float64) {
+	dx := 0.0
+	dy := 0.0
+
+	for _, v := range self {
+		dx += v.Dx
+		dy += v.Dy
+	}
+
+	dx /= float64(len(self))
+	dy /= float64(len(self))
+
+	return dx, dy
+}
+
 type Pilot struct {
 	hal.Ship
 	Plan				string						// Our planned order, valid for 1 turn only.
@@ -25,7 +42,7 @@ type Pilot struct {
 	Target				hal.Entity					// Use a hal.Nothing{} struct for no target.
 	EnemyApproachDist	float64
 	NavStack			[]string
-	Forces				[]Vector					// Used for combat stuff.
+	Forces				VectorSlice					// Used for combat stuff.
 }
 
 func NewPilot(sid int, game *hal.Game) *Pilot {

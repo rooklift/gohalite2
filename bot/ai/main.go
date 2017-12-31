@@ -201,7 +201,25 @@ func (self *Overmind) Combat(combat_pilots []*pil.Pilot, avoid_list []hal.Entity
 	// Basic idea: use gradiants to give every combat pilot a point to navigate to,
 	// then just run PlanChase on that point.
 
+	enemy_ships := self.Game.EnemyShips()
+
 	for _, pilot := range combat_pilots {
+
+		pilot.Forces = nil
+
+		for _, ship := range enemy_ships {
+
+			dist := hal.Dist(pilot.X, pilot.Y, ship.X, ship.Y)
+			unit_vector_x, unit_vector_y := hal.UnitVector(pilot.X, pilot.Y, ship.X, ship.Y)
+			strength := 1000 / (dist * dist)
+
+			pilot.Forces = append(pilot.Forces, &pil.Vector{unit_vector_x * strength, unit_vector_y * strength})
+		}
+
+		dx, dy := pilot.Forces.Average()
+		unit_vector_x, unit_vector_y := hal.UnitVector(0, 0, dx, dy)
+
+		pilot.Target = hal.Point{pilot.X + unit_vector_x * 7, pilot.Y + unit_vector_y * 7}
 		pilot.PlanChase(avoid_list)
 	}
 }
