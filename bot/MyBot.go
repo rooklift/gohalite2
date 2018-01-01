@@ -15,7 +15,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "55 final"
+	VERSION = "56 final"
 )
 
 func main() {
