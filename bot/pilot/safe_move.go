@@ -40,11 +40,15 @@ func ExecuteSafely(mobile_pilots []*Pilot) {
 
 			for _, pilot2 := range mobile_pilots {
 
-				if pilot1 == pilot2 {
+				if pilot2 == pilot1 {
 					continue
 				}
 
-				if pilot1.Dist(pilot2) > 15 {
+				if pilot2.Dist(pilot1) > 15 {
+					continue
+				}
+
+				if pilot2.Doomed {
 					continue
 				}
 
