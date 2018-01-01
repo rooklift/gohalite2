@@ -14,6 +14,12 @@ const (
 	DEBUG_SHIP_ID = -1
 )
 
+const (
+	NOT_RUSHING = -1
+	UNDECIDED = 0
+	RUSHING = 1
+)
+
 // --------------------------------------------
 
 type Config struct {
@@ -28,7 +34,7 @@ type Overmind struct {
 	Pilots					[]*pil.Pilot
 	Game					*hal.Game
 	CowardFlag				bool
-	RushFlag				bool
+	RushChoice				int
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -53,10 +59,12 @@ func (self *Overmind) Step() {
 
 	self.SetCowardFlag()
 
+	if self.RushChoice == UNDECIDED {
+		self.DecideRush()
+	}
+
 	if self.Game.Turn() == 0 {
-		self.SetRushFlag()
-		if self.RushFlag {
-			self.SetRushTargets()
+		if self.RushChoice == RUSHING {
 			self.TurnZeroCluster()
 			return
 		} else {
@@ -108,7 +116,7 @@ func (self *Overmind) ResetPilots() {
 		// The stateless version -- usually -- has no long term targets...
 		// Note that in some sort of semi-failed rush things can get weird.
 
-		if self.RushFlag == false || pilot.Ship.Birth > 5 {
+		if self.RushChoice != RUSHING || pilot.Id > 5 {
 			if pilot.Target.Type() != hal.PORT {
 				pilot.Target = hal.Nothing
 			}

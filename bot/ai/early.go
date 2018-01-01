@@ -6,16 +6,26 @@ import (
 	hal "../core"
 )
 
-func (self *Overmind) SetRushFlag() {			// Called on Turn 0 only.
+func (self *Overmind) DecideRush() {
 
-	self.RushFlag = false
+	// Can leave things undecided, in which case it will be called again next iteration.
 
-	if self.Config.Conservative || self.Game.InitialPlayers() > 2 {
+	if self.Config.Conservative || self.Game.InitialPlayers() > 2 || len(self.Game.AllShips()) > 6 || len(self.Game.MyShips()) < 3 {
+		self.RushChoice = NOT_RUSHING
 		return
 	}
 
-	if self.Game.MyShips()[0].Dist(self.Game.EnemyShips()[0]) < 125 {
-		self.RushFlag = true
+	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+
+	my_ships := self.Game.MyShips()
+
+	sort.Slice(my_ships, func(a, b int) bool {
+		return my_ships[b].Dist(centre_of_gravity) < my_ships[b].Dist(centre_of_gravity)
+	})
+
+	if my_ships[0].Dist(centre_of_gravity) < 50 && my_ships[1].Dist(centre_of_gravity) < 53 && my_ships[1].Dist(centre_of_gravity) < 56 {
+		self.RushChoice = RUSHING
+		self.SetRushTargets()
 	}
 }
 
