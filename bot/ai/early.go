@@ -23,7 +23,7 @@ func (self *Overmind) DecideRush() {
 		return my_ships[b].Dist(centre_of_gravity) < my_ships[b].Dist(centre_of_gravity)
 	})
 
-	if my_ships[0].Dist(centre_of_gravity) < 45 && my_ships[1].Dist(centre_of_gravity) < 48 && my_ships[1].Dist(centre_of_gravity) < 51 {
+	if my_ships[0].Dist(centre_of_gravity) < 45 && my_ships[1].Dist(centre_of_gravity) < 48 && my_ships[2].Dist(centre_of_gravity) < 51 {
 		self.RushChoice = RUSHING
 		self.SetRushTargets()
 	}
@@ -47,7 +47,9 @@ func (self *Overmind) SetRushTargets() {		// Called on Turn 0 only, iff Rush Fla
 	// Pair pilots with enemies...
 
 	for index, pilot := range self.Pilots {
-		pilot.Target = enemies[index]
+		if len(enemies) > index {
+			pilot.Target = enemies[index]
+		}
 	}
 }
 
