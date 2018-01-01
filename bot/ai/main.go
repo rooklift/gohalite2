@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	DEBUG_TURN = 129
-	DEBUG_SHIP_ID = 391
+	DEBUG_TURN = -1
+	DEBUG_SHIP_ID = -1
 )
 
 // --------------------------------------------
@@ -215,6 +215,9 @@ func (self *Overmind) ExecuteMoves() {
 		pilot.ExecutePlan()
 	}
 }
+
+// --------------------------------------------
+// We can log the Nav Stack for some specific ship in some specific turn...
 
 func (self *Overmind) Debug() {
 	if self.Game.Turn() == DEBUG_TURN {

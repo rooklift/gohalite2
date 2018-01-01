@@ -20,7 +20,7 @@ func (self *NullNavStacker) AddToNavStack() {}
 
 func CheckEntityCollision(ship *hal.Ship, distance float64, degrees int, other hal.Entity) bool {		// Would we hit some specific entity?
 
-	const SAFETY_MARGIN = 0.001		// Needed to avoid floating point errors: the engine gives us data to 4 d.p.
+	const SAFETY_MARGIN = 0.001		// FIXME: not really needed now, can make this a lower value...
 
 	endx, endy := hal.Projection(ship.X, ship.Y, distance, degrees)
 	return hal.IntersectSegmentCircle(ship.X, ship.Y, endx, endy, other.GetX(), other.GetY(), other.GetRadius() + hal.SHIP_RADIUS + SAFETY_MARGIN)
