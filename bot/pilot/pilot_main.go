@@ -34,14 +34,9 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 		return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 	})
 
-	// Only target non-doomed enemies...
+	// We could consider only targetting non-doomed enemies. But this seemed to make it weaker.
 
-	for _, enemy := range enemies {
-		if enemy.Doomed == false {
-			self.Target = enemy
-			break
-		}
-	}
+	self.Target = enemies[0]
 }
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
@@ -132,7 +127,7 @@ func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Ent
 
 func (self *Pilot) EngageShipFlee(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// We were already within range of our target ship, so we will definitely attack it this turn.
+	// We were already within range of an enemy, so we will definitely attack this turn.
 	// We can therefore back off.
 
 	angle := self.Angle(enemy_ship) + 180

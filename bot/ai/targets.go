@@ -92,16 +92,7 @@ func (self *Overmind) PlanetProblem(planet *hal.Planet) *Problem {
 
 	game := self.Game
 
-	enp := game.EnemiesNearPlanet(planet)
-
-	fight_strength := 0
-
-	for _, enemy := range enp {
-		if enemy.Doomed == false {
-			fight_strength += 2
-		}
-	}
-
+	fight_strength := len(game.EnemiesNearPlanet(planet)) * 2
 	capture_strength := game.DesiredSpots(planet)
 
 	// Start with low value, but increase it to 1.0 if there's fighting to be done at the planet (enemies near it),
