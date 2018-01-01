@@ -1,12 +1,7 @@
 TODO
 
-- v58 may well be stronger than v59, i.e. if it's the improved nav that's helping most.
-- v59 may also send too few ships to a place, etc...
-
-- Don't back off if our target is > 15 away
-
-- In late rushes, might need to form up somehow
 - Deal with rushes in 4 player...
+- In late rushes, might need to form up somehow
 - Make genetic algo disallow events where we have 0 ships and enemy has >= 1
 - Intentional reckless (i.e. ramming) behaviour when a ship is low health
 - 10 should be 11 in the ExecuteSafely() loop
