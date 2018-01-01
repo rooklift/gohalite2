@@ -104,9 +104,9 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// Flee if we're already in weapons range, otherwise approach...
+	// Flee if we're firing at time 0...
 
-	if self.Dist(enemy_ship) < hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
+	if self.Firing {
 		self.EngageShipFlee(enemy_ship, avoid_list)
 	} else {
 		self.EngageShipApproach(enemy_ship, avoid_list)

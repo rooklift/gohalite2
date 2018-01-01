@@ -231,10 +231,14 @@ func (self *Game) PredictTimeZero() {
 				continue
 			}
 
-			// They will fire on each other...
+			// They will fire on each other, unless they are docked or dock now...
 
-			all_shots[ship1.Id] = append(all_shots[ship1.Id], ship2.Id)
-			all_shots[ship2.Id] = append(all_shots[ship2.Id], ship1.Id)
+			if ship1.DockedStatus == UNDOCKED {
+				all_shots[ship1.Id] = append(all_shots[ship1.Id], ship2.Id)
+			}
+			if ship2.DockedStatus == UNDOCKED {
+				all_shots[ship2.Id] = append(all_shots[ship2.Id], ship1.Id)
+			}
 		}
 	}
 

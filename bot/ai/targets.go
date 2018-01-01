@@ -74,12 +74,15 @@ func (self *Overmind) AllProblems() []*Problem {
 	}
 
 	for _, ship := range self.Game.EnemyShips() {
-		problem := &Problem{
-			Entity: ship,
-			Value: 1.0,
-			Need: 1,
+
+		if ship.Doomed == false {		// Skip the ship if we expect it to die at time 0
+			problem := &Problem{
+				Entity: ship,
+				Value: 1.0,
+				Need: 1,
+			}
+			all_problems = append(all_problems, problem)
 		}
-		all_problems = append(all_problems, problem)
 	}
 
 	return all_problems

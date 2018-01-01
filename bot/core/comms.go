@@ -201,8 +201,14 @@ func (self *Game) Parse() {
 
 			// Some inferred tactical info that we will set later...
 
+			if ship.Doomed {
+				self.Log("Ship %d survived previous turn despite us predicting its doom.", ship.Id)
+			}
+
 			ship.Firing = false
 			ship.Doomed = false
+
+			// Add the ship to our maps (if needed)...
 
 			self.shipMap[sid] = ship
 			self.playershipMap[pid] = append(self.playershipMap[pid], ship)
