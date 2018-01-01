@@ -9,7 +9,7 @@ import (
 	hal "../core"
 )
 
-type Sim struct {					// Using pointers, unlike in most of the code
+type Sim struct {
 	planets			[]*SimPlanet
 	ships			[]*SimShip
 }
