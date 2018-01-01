@@ -203,7 +203,7 @@ func (self *Sim) Step() {
 					ship_b.actual_targets = append(ship_b.actual_targets, ship_a)
 				}
 
-			} else if event.what == PLANET_COLLISION {				// FIXME: if we use this for real sims, we need to do planet damage.
+			} else if event.what == PLANET_COLLISION {						// FIXME: if we use this for real sims, we need to do planet damage.
 
 				event.ship_a.hp = 0
 
@@ -214,7 +214,7 @@ func (self *Sim) Step() {
 
 		for _, ship := range self.ships {
 			if len(ship.actual_targets) > 0 {
-				damage := 64 / len(ship.actual_targets)				// Right? A straight up integer truncation?
+				damage := hal.WEAPON_DAMAGE / len(ship.actual_targets)		// Right? A straight up integer truncation?
 				for _, target := range ship.actual_targets {
 					target.hp -= damage
 				}

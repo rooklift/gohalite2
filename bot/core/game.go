@@ -210,7 +210,8 @@ func (self *Game) PredictTimeZero() {
 	// Weapons fire at Time 0 is almost entirely predictable (unless ships involved dock, which is generally unlikely).
 	// Therefore, we set 2 flags on every ship indicating about those events.
 
-	var shots = make(map[int][]int)			// Ship ID --> targets
+	var all_shots = make(map[int][]int)		// Ship ID --> target IDs
+	var incoming = make(map[int]int)		// Ship ID --> damage coming in
 
 	all_ships := self.AllShips()
 
@@ -232,10 +233,32 @@ func (self *Game) PredictTimeZero() {
 
 			// They will fire on each other...
 
-			shots[ship1.Id] = append(shots[ship1.Id], ship2.Id)
-			shots[ship2.Id] = append(shots[ship2.Id], ship1.Id)
+			all_shots[ship1.Id] = append(all_shots[ship1.Id], ship2.Id)
+			all_shots[ship2.Id] = append(all_shots[ship2.Id], ship1.Id)
 		}
 	}
 
-	// TODO: more...
+	for _, ship := range all_ships {
+
+		shots := all_shots[ship.Id]
+
+		if len(shots) == 0 {
+			continue
+		} else {
+			ship.Firing = true
+		}
+
+		damage := WEAPON_DAMAGE / len(shots)		// Right? A straight up integer truncation?
+
+		for _, target_id := range shots {
+			incoming[target_id] += damage
+		}
+	}
+
+	for _, ship := range all_ships {
+
+		if incoming[ship.Id] >= ship.HP {
+			ship.Doomed = true
+		}
+	}
 }
