@@ -1,6 +1,7 @@
 TODO
 
-- Note which ships will die at time 0 and don't bother with their collisions.
+- v58 may well be stronger than v59, i.e. if it's the improved nav that's helping most.
+- v59 may also send too few ships to a place, etc...
 
 - In late rushes, might need to form up somehow
 - Deal with rushes in 4 player...
