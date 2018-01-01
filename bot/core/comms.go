@@ -199,6 +199,11 @@ func (self *Game) Parse() {
 				}
 			}
 
+			// Some inferred tactical info that we will set later...
+
+			ship.Firing = false
+			ship.Doomed = false
+
 			self.shipMap[sid] = ship
 			self.playershipMap[pid] = append(self.playershipMap[pid], ship)
 		}
@@ -313,6 +318,7 @@ func (self *Game) Parse() {
 	self.raw = self.token_parser.Tokens(" ")
 	self.UpdateEnemyMaps()
 	self.UpdateFriendMap()
+	self.PredictTimeZero()
 }
 
 // ---------------------------------------

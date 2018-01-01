@@ -204,3 +204,38 @@ func (self *Game) RawOutput(sorted, no_messages bool) string {
 
 	return strings.Join(commands, " ")
 }
+
+func (self *Game) PredictTimeZero() {
+
+	// Weapons fire at Time 0 is almost entirely predictable (unless ships involved dock, which is generally unlikely).
+	// Therefore, we set 2 flags on every ship indicating about those events.
+
+	var shots = make(map[int][]int)			// Ship ID --> targets
+
+	all_ships := self.AllShips()
+
+	for i := 0; i < len(all_ships); i++ {
+
+		ship1 := all_ships[i]
+
+		for k := i + 1; k < len(all_ships); k++ {
+
+			ship2 := all_ships[k]
+
+			if ship1.Owner == ship2.Owner {
+				continue
+			}
+
+			if ship1.Dist(ship2) > WEAPON_RANGE + SHIP_RADIUS * 2 {
+				continue
+			}
+
+			// They will fire on each other...
+
+			shots[ship1.Id] = append(shots[ship1.Id], ship2.Id)
+			shots[ship2.Id] = append(shots[ship2.Id], ship1.Id)
+		}
+	}
+
+	// TODO: more...
+}

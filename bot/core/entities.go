@@ -81,6 +81,9 @@ type Ship struct {
 	DockingProgress		int
 
 	Birth				int			// Turn this ship was first seen
+
+	Firing				bool		// Whether the ship will fire at Time 0 this turn (unless it docks)
+	Doomed				bool		// Whether the ship will die at Time 0 this turn (unless nearby enemy ships dock)
 }
 
 func (s *Ship) CanDock(p *Planet) bool {
