@@ -34,7 +34,9 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 		return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 	})
 
-	// We could consider only targetting non-doomed enemies. But this seemed to make it weaker.
+	// We could consider only targetting non-doomed enemies. Problem: if there are none,
+	// we will target the planet, potentially causing us to dock. But in that case,
+	// a so-called "doomed" enemy can survive, since we didn't shoot it after all!
 
 	self.Target = enemies[0]
 }
