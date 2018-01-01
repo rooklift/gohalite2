@@ -148,7 +148,7 @@ func (self *Overmind) ExecuteMoves() {
 	var frozen_pilots []*pil.Pilot				// Note that this doesn't include docked / docking / undocking ships.
 
 	for _, pilot := range self.Pilots {
-		if pilot.DockedStatus == hal.UNDOCKED /* && pilot.Doomed == false */ {
+		if pilot.DockedStatus == hal.UNDOCKED && pilot.Doomed == false {
 			mobile_pilots = append(mobile_pilots, pilot)
 		}
 	}
