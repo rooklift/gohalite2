@@ -20,25 +20,21 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 		return
 	}
 
-	// Are there enemy ships near the planet? Includes docked enemies.
+	// If no enemies, just return, leaving the planet as target...
 
 	enemies := self.Game.EnemiesNearPlanet(planet)
 
-	if len(enemies) > 0 {
-
-		// Find closest...
-
-		sort.Slice(enemies, func(a, b int) bool {
-			return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
-		})
-
-		self.Target = enemies[0]
+	if len(enemies) == 0 {
 		return
 	}
 
-	// Otherwise, just return (leaving the Target as the planet).
+	// Find closest...
 
-	return
+	sort.Slice(enemies, func(a, b int) bool {
+		return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
+	})
+
+	self.Target = enemies[0]
 }
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
@@ -106,16 +102,13 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// Flee if we're already in weapons range...
+	// Flee if we're already in weapons range, otherwise approach...
 
 	if self.Dist(enemy_ship) < hal.WEAPON_RANGE + hal.SHIP_RADIUS * 2 {
 		self.EngageShipFlee(enemy_ship, avoid_list)
-		return
+	} else {
+		self.EngageShipApproach(enemy_ship, avoid_list)
 	}
-
-	// Approach...
-
-	self.EngageShipApproach(enemy_ship, avoid_list)
 }
 
 func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
