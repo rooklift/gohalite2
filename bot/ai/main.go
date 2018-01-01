@@ -9,6 +9,11 @@ import (
 	pil "../pilot"
 )
 
+const (
+	DEBUG_TURN = 129
+	DEBUG_SHIP_ID = 391
+)
+
 // --------------------------------------------
 
 type Config struct {
@@ -71,6 +76,7 @@ func (self *Overmind) Step() {
 
 	self.ChooseTargets()
 	self.ExecuteMoves()
+	self.Debug()
 }
 
 // --------------------------------------------
@@ -207,5 +213,16 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
+	}
+}
+
+func (self *Overmind) Debug() {
+	if self.Game.Turn() == DEBUG_TURN {
+		for _, pilot := range self.Pilots {
+			if pilot.Id == DEBUG_SHIP_ID {
+				pilot.LogNavStack()
+				break
+			}
+		}
 	}
 }

@@ -1,5 +1,6 @@
 TODO
 
+- Note which ships will die at time 0 and don't bother with their collisions
 - Make genetic algo disallow events where we have 0 ships and enemy has >= 1
 - Intentional reckless (i.e. ramming) behaviour when a ship is low health
 - 10 should be 11 in the ExecuteSafely() loop
