@@ -128,18 +128,17 @@ func (self *Overmind) ResetPilots() {
 
 func (self *Overmind) ExecuteMoves() {
 
-	avoid_list := self.Game.AllImmobile()		// To start with. AllImmobile() is planets + docked ships.
+	raw_avoid_list := self.Game.AllImmobile()
+	var avoid_list []hal.Entity
 
-	// Remove doomed ships from the avoid_list...
-
-	for i := 0; i < len(avoid_list); i++ {
-		entity := avoid_list[i]
-		if entity.Type() == hal.SHIP {
-			ship := entity.(*hal.Ship)
-			if ship.Doomed {
-				avoid_list = append(avoid_list[:i], avoid_list[i+1:]...)
-				i--
+	for _, entity := range raw_avoid_list {
+		switch entity.Type() {
+		case hal.SHIP:
+			if entity.(*hal.Ship).Doomed == false {
+				avoid_list = append(avoid_list, entity)
 			}
+		default:
+			avoid_list = append(avoid_list, entity)
 		}
 	}
 
@@ -149,7 +148,7 @@ func (self *Overmind) ExecuteMoves() {
 	var frozen_pilots []*pil.Pilot				// Note that this doesn't include docked / docking / undocking ships.
 
 	for _, pilot := range self.Pilots {
-		if pilot.DockedStatus == hal.UNDOCKED {
+		if pilot.DockedStatus == hal.UNDOCKED /* && pilot.Doomed == false */ {
 			mobile_pilots = append(mobile_pilots, pilot)
 		}
 	}
