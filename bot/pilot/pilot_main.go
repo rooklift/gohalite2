@@ -34,7 +34,14 @@ func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 		return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
 	})
 
-	self.Target = enemies[0]
+	// Only target non-doomed enemies...
+
+	for _, enemy := range enemies {
+		if enemy.Doomed == false {
+			self.Target = enemy
+			break
+		}
+	}
 }
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
