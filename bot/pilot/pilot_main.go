@@ -41,6 +41,8 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 	// We have our target, but what are we doing about it?
 
+	self.ResetPlan()
+
 	if self.DockedStatus != hal.UNDOCKED {
 		return
 	}
