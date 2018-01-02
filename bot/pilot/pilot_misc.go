@@ -20,6 +20,7 @@ type Pilot struct {
 	Target				hal.Entity					// Use the hal.Nothing struct for no target.
 	EnemyApproachDist	float64
 	NavStack			[]string
+	Inhibition			float64
 }
 
 func NewPilot(sid int, game *hal.Game) *Pilot {
@@ -59,10 +60,6 @@ func (self *Pilot) ResetPlan() {
 
 func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return true if we still exist.
 
-	self.NavStack = nil
-	self.Message = -1
-	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
-
 	_, ok := self.Game.GetShip(self.Id)
 
 	if ok == false {
@@ -70,6 +67,11 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	}
 
 	self.ResetPlan()
+
+	self.NavStack = nil
+	self.Message = -1
+	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
+	self.Inhibition = 0
 
 	// Delete our target if appropriate...
 

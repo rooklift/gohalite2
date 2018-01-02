@@ -108,9 +108,9 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// Flee if we're firing at time 0...
+	// Flee in some cases...
 
-	if self.Firing {
+	if self.Firing || self.Inhibition > 0 {
 		self.EngageShipFlee(enemy_ship, avoid_list)
 	} else {
 		self.EngageShipApproach(enemy_ship, avoid_list)
@@ -159,5 +159,32 @@ func (self *Pilot) PlanetApproachForDock(planet *hal.Planet, avoid_list []hal.En
 		self.Message = MSG_RECURSION
 	} else {
 		self.PlanThrust(speed, degrees)
+	}
+}
+
+func (self *Pilot) SetInhibition(all_ships []*hal.Ship) {
+
+	self.Inhibition = 0
+
+	for _, ship := range all_ships {
+
+		if ship == self.Ship {
+			continue
+		}
+
+		// Skip enemy docked ships (but not our own, it's important we don't flee when defending)...
+
+		if ship.Owner != self.Owner && ship.DockedStatus != hal.UNDOCKED {
+			continue
+		}
+
+		dist := self.Dist(ship)
+		strength := 10000 / (dist * dist)
+
+		if ship.Owner == self.Owner {
+			strength *= -1
+		}
+
+		self.Inhibition += strength
 	}
 }

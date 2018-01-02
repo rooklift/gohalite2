@@ -82,6 +82,7 @@ func (self *Overmind) Step() {
 		return
 	}
 
+	self.SetInhibition()
 	self.ChooseTargets()
 	self.ExecuteMoves()
 	self.Debug()
@@ -233,6 +234,17 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range frozen_pilots {
 		pilot.ExecutePlan()
+	}
+}
+
+// --------------------------------------------
+
+func (self *Overmind) SetInhibition() {
+
+	all_ships := self.Game.AllShips()
+
+	for _, pilot := range self.Pilots {
+		pilot.SetInhibition(all_ships)
 	}
 }
 
