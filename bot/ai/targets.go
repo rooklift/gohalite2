@@ -79,7 +79,7 @@ func (self *Overmind) AllProblems() []*Problem {
 			problem := &Problem{		// Note that we may end up targetting it as a planet's secondary target. See SetTurnTarget().
 				Entity: ship,
 				Value: 1.0,
-				Need: 1,
+				Need: 1,				// Consider making this 2.
 			}
 			all_problems = append(all_problems, problem)
 		}
