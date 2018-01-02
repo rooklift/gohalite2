@@ -65,4 +65,4 @@ Some key conceptual breakthroughs that seemed to improve the bot were:
 
 * Sometimes swapping 2 ships' targets reduces the overall distance they have to travel. So do this.
 
-* Attacks right at the start of the turn are entirely predictable. One can thus determine which ships will definitely die, and pretend they're not there. Using this information wisely is the hard part. To start with, I use it for navigation and skipping unneeded collision avoidance. One might also use it for strategic decisions, but this is harder.
+* Attacks right at the start of the turn are very predictable (only unexpected docking commands can mess this up). One can thus determine which ships will "certainly" die, and pretend they're not there. Using this information wisely is the hard part. At the very least, one can use it for navigation; i.e. skipping unneeded collision avoidance. One might also use it for strategic decisions, but this is harder.
