@@ -109,9 +109,8 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 	// Flee in some cases...
-	// We could consider not fleeing if the range to the enemy is >= 15...
 
-	if self.Firing || self.Inhibition > 0 {
+	if self.Firing || (self.Inhibition > 0 && self.Dist(enemy_ship) <= 15) {
 		self.EngageShipFlee(enemy_ship, avoid_list)
 	} else {
 		self.EngageShipApproach(enemy_ship, avoid_list)
