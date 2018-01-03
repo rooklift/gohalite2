@@ -108,12 +108,21 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
 func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// Flee in some cases...
+	// Sometimes approach, sometimes flee.
+	// When Locked, approach, since that's set for rushes especially.
 
-	if self.Firing || (self.Inhibition > 0 && self.Dist(enemy_ship) <= 15) {
-		self.EngageShipFlee(enemy_ship, avoid_list)
-	} else {
+	if self.Locked {
+
 		self.EngageShipApproach(enemy_ship, avoid_list)
+
+	} else if self.Firing || (self.Inhibition > 0 && self.Dist(enemy_ship) <= 15) {
+
+		self.EngageShipFlee(enemy_ship, avoid_list)
+
+	} else {
+
+		self.EngageShipApproach(enemy_ship, avoid_list)
+
 	}
 }
 
