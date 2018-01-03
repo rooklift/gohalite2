@@ -34,7 +34,12 @@ func (self *Overmind) ChooseTargets() {
 			}
 		}
 
-		if pilot.DockedStatus != hal.UNDOCKED || pilot.Target.Type() != hal.NOTHING {
+		if pilot.DockedStatus != hal.UNDOCKED {
+			continue
+		}
+
+		if pilot.Target.Type() != hal.NOTHING {			// Because our target is locked and so wasn't cleared.
+			pilot.MessageWhileLocked()
 			continue
 		}
 
