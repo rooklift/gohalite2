@@ -47,6 +47,8 @@ The problem is, the simulation needs to know what the opponent will do. I curren
 
 Another problem is local optima. To avoid these, I run multiple chains of evolution at once, with different "heats". Hot chains are allowed to accept bad mutations (the hotter the chain, the looser its standards are). Between iterations, the chains are sorted so that the colder chains have the better genomes. In this way, the cold chains can be pulled out of local optima. I believe this whole process is called "Metropolis Coupling".
 
+Honestly this whole thing is over-engineered and under-performing.
+
 # Global Strategy - Conceptual Breakthroughs
 
 Some key conceptual breakthroughs that seemed to improve the bot were:
