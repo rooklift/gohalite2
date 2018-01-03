@@ -31,7 +31,7 @@ type Config struct {
 
 type Overmind struct {
 	Config					*Config
-	Pilots					[]*pil.Pilot
+	Pilots					[]*pil.Pilot		// Stored in no particular order, sort at will
 	Game					*hal.Game
 	CowardFlag				bool
 	RushChoice				int
@@ -78,12 +78,17 @@ func (self *Overmind) Step() {
 	}
 
 	if self.Config.Conservative == false && self.DetectRushFight() {
-		gen.FightRush(self.Game)
-		return
+
+		self.Check2v1()			// Will set Conservative if need be.
+
+		if self.Config.Conservative == false {
+			gen.FightRush(self.Game)
+			return
+		}
 	}
 
-	self.SetInhibition()
 	self.ChooseTargets()
+	self.SetInhibition()		// We might use target info for this in future...
 	self.ExecuteMoves()
 	self.Debug()
 }
@@ -103,8 +108,7 @@ func (self *Overmind) ResetPilots() {
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
-	// Set various variables to initial state, but keeping current target.
-	// Also update target info from the Game. Also delete pilot if the ship is dead.
+	// Clear various variables, including target in most cases. Also delete pilot if the ship is dead.
 
 	for i := 0; i < len(self.Pilots); i++ {
 		pilot := self.Pilots[i]
@@ -112,15 +116,6 @@ func (self *Overmind) ResetPilots() {
 		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
-		}
-
-		// The stateless version -- usually -- has no long term targets...
-		// Note that in some sort of semi-failed rush things can get weird.
-
-		if self.RushChoice != RUSHING || pilot.Id > 5 {
-			if pilot.Target.Type() != hal.PORT {
-				pilot.Target = hal.Nothing
-			}
 		}
 	}
 }

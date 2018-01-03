@@ -110,6 +110,10 @@ func (s *Ship) Continued(game *Game) *Ship {
 	return ret
 }
 
+func (s *Ship) ShotsToKill() int {
+	return ((s.HP + 63) / 64)		// Exploiting integer division
+}
+
 // ------------------------------------------------------
 
 type Point struct {

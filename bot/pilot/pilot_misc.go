@@ -18,6 +18,7 @@ type Pilot struct {
 	HasExecuted			bool						// Have we actually "sent" the order? (Placed it in the game.orders map.)
 	Game				*hal.Game
 	Target				hal.Entity					// Use the hal.Nothing struct for no target.
+	Locked				bool						// Target is permanent.
 	EnemyApproachDist	float64
 	NavStack			[]string
 	Inhibition			float64
@@ -58,7 +59,7 @@ func (self *Pilot) ResetPlan() {
 	self.Game.RawOrder(self.Id, "")
 }
 
-func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return true if we still exist.
+func (self *Pilot) ResetAndUpdate() bool {						// Usually clears target. Return true if we still exist.
 
 	_, ok := self.Game.GetShip(self.Id)
 
@@ -73,24 +74,40 @@ func (self *Pilot) ResetAndUpdate() bool {						// Doesn't clear Target. Return 
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 	self.Inhibition = 0
 
-	// Delete our target if appropriate...
-
 	if self.DockedStatus != hal.UNDOCKED {
-		self.Target = hal.Nothing
+		self.Locked = false
 	}
 
-	switch self.Target.Type() {
+	// Delete our target if appropriate...
 
-	case hal.SHIP:
+	if self.Locked == false {
 
-		if self.Target.Alive() == false {
-			self.Target = hal.Nothing
-		}
+		self.Target = hal.Nothing
 
-	case hal.PLANET:
+	} else {
 
-		if self.Target.Alive() == false {
-			self.Target = hal.Nothing
+		// Leave the target alone, unless it's dead.
+
+		switch self.Target.Type() {
+
+		case hal.SHIP:
+
+			if self.Target.Alive() == false {
+				self.Target = hal.Nothing
+				self.Locked = false
+			}
+
+		case hal.PLANET:
+
+			if self.Target.Alive() == false {
+				self.Target = hal.Nothing
+				self.Locked = false
+			}
+
+		case hal.NOTHING:
+
+			self.Locked = false
+
 		}
 	}
 

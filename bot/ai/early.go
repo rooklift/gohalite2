@@ -44,11 +44,12 @@ func (self *Overmind) SetRushTargets() {		// Called on Turn 0 only, iff Rush Fla
 		return enemies[a].Y < enemies[b].Y
 	})
 
-	// Pair pilots with enemies...
+	// Pair pilots with enemies, and lock in (prevents getting reset, though they can still swap, right?)
 
 	for index, pilot := range self.Pilots {
 		if len(enemies) > index {
 			pilot.Target = enemies[index]
+			pilot.Locked = true
 		}
 	}
 }
@@ -177,9 +178,10 @@ func (self *Overmind) ChooseThreeDocks() {
 			continue
 		}
 
-		self.Pilots[0].Target = docks[perm[0]]
-		self.Pilots[1].Target = docks[perm[1]]
-		self.Pilots[2].Target = docks[perm[2]]
+		for n := 0; n < 3; n++ {
+			self.Pilots[n].Target = docks[perm[n]]
+			self.Pilots[n].Locked = true
+		}
 
 		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
 			continue
@@ -194,5 +196,38 @@ func (self *Overmind) ChooseThreeDocks() {
 		}
 
 		best_acceptable_dist = dist
+	}
+}
+
+func (self *Overmind) Check2v1() {
+
+	// Called when DetectRushFight() has already returned true, i.e. we are in close proximity to enemy.
+	// This is a special case that loses a lot of games if we don't handle it...
+
+	if self.Game.CountMyShips() < 2 || self.Game.CountEnemyShips() > 1 {
+		return
+	}
+
+	// So, we have 2 or more ships, and the enemy has just 1.
+
+	sort.Slice(self.Pilots, func(a, b int) bool {
+		return self.Pilots[a].HP > self.Pilots[b].HP			// Note reversed sort, highest HP first
+	})
+
+	enemy_ship := self.Game.EnemyShips()[0]
+
+	if enemy_ship.ShotsToKill() <= self.Pilots[0].ShotsToKill() && enemy_ship.DockedStatus == hal.UNDOCKED {
+
+		self.Game.Log("2v1 situation detected, setting Config.Conservative and choosing targets.")
+
+		self.Config.Conservative = true
+
+		self.Pilots[0].Target = enemy_ship
+		self.Pilots[0].Locked = true
+
+		for i := 1; i < len(self.Pilots); i++ {
+			self.Pilots[i].Target = self.Game.FarthestPlanet(self.Pilots[i].Ship)
+			self.Pilots[i].Locked = true
+		}
 	}
 }

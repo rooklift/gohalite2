@@ -110,6 +110,22 @@ func (self *Game) ClosestPlanet(e Entity) *Planet {
 	return ret
 }
 
+func (self *Game) FarthestPlanet(e Entity) *Planet {
+
+	var best_dist float64 = -9999999
+	var ret *Planet
+
+	for _, planet := range self.AllPlanets() {
+		dist := e.ApproachDist(planet)
+		if dist > best_dist {
+			best_dist = dist
+			ret = planet
+		}
+	}
+
+	return ret
+}
+
 func (self *Game) GetCumulativeShipCount(pid int) int {
 	return self.cumulativeShips[pid]
 }

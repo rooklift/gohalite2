@@ -8,7 +8,7 @@ import (
 
 func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
 
-	if self.DockedStatus != hal.UNDOCKED || self.Target.Type() != hal.PLANET {
+	if self.DockedStatus != hal.UNDOCKED || self.Target.Type() != hal.PLANET || self.Locked {
 		return
 	}
 

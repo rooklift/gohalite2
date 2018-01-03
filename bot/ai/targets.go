@@ -128,7 +128,7 @@ func (self *Overmind) OptimisePilots() {
 
 			pilot_a := self.Pilots[i]
 
-			if pilot_a.DockedStatus != hal.UNDOCKED || pilot_a.Target.Type() == hal.PORT {
+			if pilot_a.DockedStatus != hal.UNDOCKED {
 				continue
 			}
 
@@ -136,8 +136,24 @@ func (self *Overmind) OptimisePilots() {
 
 				pilot_b := self.Pilots[j]
 
-				if pilot_b.DockedStatus != hal.UNDOCKED || pilot_b.Target.Type() == hal.PORT {
+				if pilot_b.DockedStatus != hal.UNDOCKED {
 					continue
+				}
+
+				// Don't allow swaps if exactly one pilot is locked.
+
+				if pilot_b.Locked != pilot_a.Locked {
+					continue
+				}
+
+				// Allow "locked" pilots to swap only if targets are both ships.
+				// This is useful for opening rushes. Could cause trouble if we
+				// start to reason incorrectly about "locked" pilots though.
+
+				if pilot_a.Locked && pilot_b.Locked {
+					if pilot_a.Target.Type() != hal.SHIP || pilot_b.Target.Type() != hal.SHIP {
+						continue
+					}
 				}
 
 				// Dist or ApproachDist won't matter here as long as it's consistent.
