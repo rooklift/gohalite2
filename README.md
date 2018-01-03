@@ -67,4 +67,4 @@ Some key conceptual breakthroughs that seemed to improve the bot were:
 
 * Attacks right at the start of the turn are very predictable (only unexpected docking commands can mess this up). One can thus determine which ships will "certainly" die, and pretend they're not there. Using this information wisely is the hard part. At the very least, one can use it for navigation; i.e. skipping unneeded collision avoidance. One might also use it for strategic decisions, but this is harder.
 
-* One should avoid unwise fights. Starting at v62, I use sum-of-distances-squared to decide whether each ship is "inhibited" or not; i.e. whether it has more enemies than friends nearby. If so, it flees.
+* One should avoid unwise fights. Starting at v62 (but with a big number fix at v64), I use sum-of-distances-squared to decide whether each ship is "inhibited" or not; i.e. whether it has more enemies than friends nearby. If so, it flees.
