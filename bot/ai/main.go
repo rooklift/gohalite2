@@ -10,11 +10,6 @@ import (
 )
 
 const (
-	DEBUG_TURN = -1
-	DEBUG_SHIP_ID = -1
-)
-
-const (
 	NOT_RUSHING = -1
 	UNDECIDED = 0
 	RUSHING = 1
@@ -90,7 +85,9 @@ func (self *Overmind) Step() {
 	self.ChooseTargets()
 	self.SetInhibition()		// We might use target info for this in future...
 	self.ExecuteMoves()
-	self.Debug()
+
+	self.DebugNavStack()
+	self.DebugInhibition()
 }
 
 // --------------------------------------------
@@ -244,13 +241,35 @@ func (self *Overmind) SetInhibition() {
 }
 
 // --------------------------------------------
-// We can log the Nav Stack for some specific ship in some specific turn...
 
-func (self *Overmind) Debug() {
+func (self *Overmind) DebugNavStack() {
+
+	const (
+		DEBUG_TURN = -1
+		DEBUG_SHIP_ID = -1
+	)
+
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
 				pilot.LogNavStack()
+				break
+			}
+		}
+	}
+}
+
+func (self *Overmind) DebugInhibition() {
+
+	const (
+		DEBUG_TURN = 30
+		DEBUG_SHIP_ID = 11
+	)
+
+	if self.Game.Turn() == DEBUG_TURN {
+		for _, pilot := range self.Pilots {
+			if pilot.Id == DEBUG_SHIP_ID {
+				pilot.Log("Inhibition: %f; DangerShips: %f", pilot.Inhibition, pilot.DangerShips)
 				break
 			}
 		}
