@@ -172,7 +172,7 @@ func (self *Pilot) SetInhibition(all_ships []*hal.Ship) {
 			continue
 		}
 
-		dist := self.Dist(ship)
+		dist := self.Dist(ship)		// Consider: dist := hal.MaxFloat(5, self.Dist(ship)) // Don't let really close ships affect us too strongly...
 
 		if dist < 20 {
 			if ship.Owner != self.Owner && ship.DockedStatus == hal.UNDOCKED {
