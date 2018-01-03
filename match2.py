@@ -1,12 +1,12 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe",
 	"bot.exe --conservative",
+	".\\otherbots\\v63\\mybot.exe --conservative",
 ]
 
-WIDTH = 240
-HEIGHT = 160
+WIDTH = 360
+HEIGHT = 240
 
 scores = [0,0]
 

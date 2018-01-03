@@ -22,6 +22,7 @@ type Pilot struct {
 	EnemyApproachDist	float64
 	NavStack			[]string
 	Inhibition			float64
+	DangerShips			int							// Enemy ships that could potentially hit us this turn.
 }
 
 func NewPilot(sid int, game *hal.Game) *Pilot {
@@ -73,6 +74,7 @@ func (self *Pilot) ResetAndUpdate() bool {						// Usually clears target. Return
 	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 	self.Inhibition = 0
+	self.DangerShips = 0
 
 	if self.DockedStatus != hal.UNDOCKED {
 		self.Locked = false

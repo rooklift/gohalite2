@@ -109,21 +109,29 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 	// Sometimes approach, sometimes flee.
-	// When Locked, approach, since that's set for rushes especially.
 
-	if self.Locked {
+	if self.Firing {
+		self.EngageShipFlee(enemy_ship, avoid_list)
+		return
+	}
 
-		self.EngageShipApproach(enemy_ship, avoid_list)
+	if (self.Inhibition > 0 && self.Dist(enemy_ship) <= 20) {
 
-	} else if self.Firing || (self.Inhibition > 0 && self.Dist(enemy_ship) <= 15) {
+		// Special case if the enemy ship is docked and there are no dangerous ships nearby...
+
+		if enemy_ship.DockedStatus != hal.UNDOCKED && self.DangerShips == 0 {
+			self.EngageShipApproach(enemy_ship, avoid_list)
+			return
+		}
+
+		// But normally, flee...
 
 		self.EngageShipFlee(enemy_ship, avoid_list)
-
-	} else {
-
-		self.EngageShipApproach(enemy_ship, avoid_list)
-
+		return
 	}
+
+	self.EngageShipApproach(enemy_ship, avoid_list)
+	return
 }
 
 func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
@@ -174,6 +182,7 @@ func (self *Pilot) PlanetApproachForDock(planet *hal.Planet, avoid_list []hal.En
 func (self *Pilot) SetInhibition(all_ships []*hal.Ship) {
 
 	self.Inhibition = 0
+	self.DangerShips = 0
 
 	for _, ship := range all_ships {
 
@@ -188,6 +197,13 @@ func (self *Pilot) SetInhibition(all_ships []*hal.Ship) {
 		}
 
 		dist := self.Dist(ship)
+
+		if dist < 20 {
+			if ship.Owner != self.Owner && ship.DockedStatus == hal.UNDOCKED {
+				self.DangerShips++
+			}
+		}
+
 		strength := 10000 / (dist * dist)
 
 		if ship.Owner == self.Owner {
