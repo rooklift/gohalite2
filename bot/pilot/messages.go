@@ -1,9 +1,5 @@
 package pilot
 
-import (
-	hal "../core"
-)
-
 const (
 	MSG_ATTACK_DOCKED = 121
 	MSG_ORBIT_FIGHT = 122
@@ -20,24 +16,3 @@ const (
 	MSG_DOCK_APPROACH = 179
 	MSG_NO_TARGET = 180
 )
-
-func (self *Pilot) SetMessageFromTarget() {
-
-	switch self.Target.Type() {
-
-	case hal.NOTHING:
-		self.Message = MSG_NO_TARGET
-
-	case hal.PLANET:
-		self.Message = self.Target.GetId()
-
-	case hal.PORT:
-		self.Message = MSG_DOCK_TARGET
-
-	case hal.POINT:
-		self.Message = MSG_POINT_TARGET
-
-	case hal.SHIP:
-		self.Message = MSG_ASSASSINATE
-	}
-}
