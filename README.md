@@ -43,11 +43,9 @@ In 2-player games it's sometimes sensible to rush the enemy, ignoring planets an
 * If the new genome is good, keep it, otherwise discard.
 * Repeat.
 
-The problem is, the simulation needs to know what the opponent will do. I currently do very crude guessing. A more advanced technique would be to evolve the *opponent's* moves as above, and only then evolve our own moves to counteract them.
+The problem is, the simulation seems to need the opponent's moves. I started with some very crude guessing. However, eventually (around v70) I realised we can use a reward function based on moving our ships so that it's impossible for the enemy to do more damage to us than we do to him. Basically this involves our ships being < 13 range of exactly one enemy.
 
 Another problem is local optima. To avoid these, I run multiple chains of evolution at once, with different "heats". Hot chains are allowed to accept bad mutations (the hotter the chain, the looser its standards are). Between iterations, the chains are sorted so that the colder chains have the better genomes. In this way, the cold chains can be pulled out of local optima. I believe this whole process is called "Metropolis Coupling".
-
-Honestly this whole thing is over-engineered and under-performing.
 
 # Global Strategy - Conceptual Breakthroughs
 
