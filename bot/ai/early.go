@@ -19,6 +19,13 @@ func (self *Overmind) DecideRush() {
 
 	my_ships := self.Game.MyShips()
 
+	for _, ship := range my_ships {
+		if ship.DockingStatus != hal.UNDOCKED {
+			self.RushChoice = NOT_RUSHING
+			return
+		}
+	}
+
 	sort.Slice(my_ships, func(a, b int) bool {
 		return my_ships[b].Dist(centre_of_gravity) < my_ships[b].Dist(centre_of_gravity)
 	})
