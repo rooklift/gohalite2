@@ -231,3 +231,31 @@ func (self *Overmind) Check2v1() {
 		}
 	}
 }
+
+func (self *Overmind) FindRushEnemy() {
+
+	self.RushEnemyID = -1
+
+	switch self.Game.InitialPlayers() {
+
+	case 2:
+
+		if self.Game.Pid() == 0 {
+			self.RushEnemyID = 1
+		} else {
+			self.RushEnemyID = 2
+		}
+
+	case 4:
+
+		if self.Game.Pid() == 0 {
+			self.RushEnemyID = 2
+		} else if self.Game.Pid() == 1 {
+			self.RushEnemyID = 3
+		} else if self.Game.Pid() == 2 {
+			self.RushEnemyID = 0
+		} else if self.Game.Pid() == 3 {
+			self.RushEnemyID = 1
+		}
+	}
+}

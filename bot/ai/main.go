@@ -30,6 +30,7 @@ type Overmind struct {
 	Game					*hal.Game
 	CowardFlag				bool
 	RushChoice				int
+	RushEnemyID				int
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -118,7 +119,7 @@ func (self *Overmind) ResetPilots() {
 
 	// Set pilots to ignore inhibition if we are very few. Will include rush situations...
 
-	if len(self.Pilots) <= 4 {
+	if len(self.Pilots) <= 3 {
 		for _, pilot := range self.Pilots {
 			pilot.Fearless = true
 		}
