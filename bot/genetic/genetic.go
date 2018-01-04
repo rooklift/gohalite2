@@ -196,11 +196,127 @@ func EvolveGenome(game *hal.Game, iterations int) *Genome {
 	return genomes[0]
 }
 
+func EvolvePerfect(game *hal.Game, iterations int) *Genome {
+
+	width, height := float64(game.Width()), float64(game.Height())
+
+	sim_without_enemies := SetupSim(game)
+	for i := 0; i < len(sim_without_enemies.ships); i++ {
+		if sim_without_enemies.ships[i].owner != game.Pid() {
+			sim_without_enemies.ships = append(sim_without_enemies.ships[:i], sim_without_enemies.ships[i+1:]...)
+			i--
+		}
+	}
+
+	centre_of_gravity := game.AllShipsCentreOfGravity()
+
+	var genomes []*Genome
+
+	for n := 0; n < CHAINS; n++ {
+		g := new(Genome)
+		g.Init(len(game.MyShips()))
+		genomes = append(genomes, g)
+	}
+
+	for n := 0; n < iterations; n++ {
+
+		for c := 0; c < CHAINS; c++ {
+
+			genome := genomes[c].Copy()
+			genome.Mutate()
+
+			genome.score = 0
+
+			var sim *Sim = sim_without_enemies.Copy()
+
+			var my_sim_ship_ptrs []*SimShip
+
+			for _, ship := range sim.ships {
+				if ship.owner == game.Pid() {
+					my_sim_ship_ptrs = append(my_sim_ship_ptrs, ship)
+				}
+			}
+
+			for i := 0; i < len(my_sim_ship_ptrs); i++ {
+				speed := genome.genes[i].speed
+				angle := genome.genes[i].angle
+				vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
+				my_sim_ship_ptrs[i].vel_x = vel_x
+				my_sim_ship_ptrs[i].vel_y = vel_y
+			}
+
+			sim.Step()
+
+			for _, ship := range my_sim_ship_ptrs {
+
+				if ship.hp <= 0 {
+					genome.score -= 9999999
+				}
+
+				genome.score -= int(ship.Dist(centre_of_gravity) * 10)
+
+				if ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
+					genome.score -= 9999999
+				}
+
+				thirteens := 0
+
+				for _, enemy_ship := range game.EnemyShips() {		// i.e. using their actual game position without simulation.
+					if ship.Dist(enemy_ship) < 13 {
+						thirteens++
+					}
+				}
+
+				if thirteens == 1 {
+					genome.score += 100000
+				}
+
+				if thirteens > 1 {
+					genome.score -= 100000
+				}
+			}
+
+			if float64(genome.score) > float64(genomes[c].score) * thresholds[c] {
+				genomes[c] = genome
+			}
+		}
+
+		sort.Slice(genomes, func(a, b int) bool {
+			return genomes[a].score > genomes[b].score				// Note the reversed sort, high scores come first.
+		})
+
+		if time.Now().Sub(game.ParseTime()) > 1500 * time.Millisecond {
+			game.Log("Emergency timeout in EvolveGenome() after %d iterations.", n)
+			return genomes[0]
+		}
+	}
+
+	return genomes[0]
+}
+
 func FightRush(game *hal.Game) {
 
 	game.LogOnce("Entering dangerous rush situation!")
 
-	genome := EvolveGenome(game, 15000)
+	play_perfect := true
+
+	if len(game.MyShips()) != 3 || len(game.EnemyShips()) != 3 {
+		play_perfect = false
+	} else {
+		for _, ship := range game.EnemyShips() {
+			if ship.DockedStatus != hal.UNDOCKED {
+				play_perfect = false
+			}
+		}
+	}
+
+	var genome *Genome
+
+	if play_perfect {
+		genome = EvolvePerfect(game, 15000)
+	} else {
+		genome = EvolveGenome(game, 15000)
+	}
 
 	var order_elements []int
 

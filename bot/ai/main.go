@@ -19,6 +19,7 @@ const (
 
 type Config struct {
 	Conservative			bool
+	ForceRush				bool
 	NoMsg					bool
 	Profile					bool
 	Timeseed				bool

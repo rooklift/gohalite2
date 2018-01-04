@@ -10,7 +10,18 @@ func (self *Overmind) DecideRush() {
 
 	// Can leave things undecided, in which case it will be called again next iteration.
 
-	if self.Config.Conservative || self.Game.InitialPlayers() > 2 || len(self.Game.AllShips()) > 6 || len(self.Game.MyShips()) < 3 {
+	if self.Game.InitialPlayers() > 2 {
+		self.RushChoice = NOT_RUSHING
+		return
+	}
+
+	if self.Config.ForceRush {
+		self.RushChoice = RUSHING
+		self.SetRushTargets()
+		return
+	}
+
+	if self.Config.Conservative || len(self.Game.AllShips()) > 6 || len(self.Game.MyShips()) < 3 {
 		self.RushChoice = NOT_RUSHING
 		return
 	}
@@ -33,6 +44,7 @@ func (self *Overmind) DecideRush() {
 	if my_ships[0].Dist(centre_of_gravity) < 45 && my_ships[1].Dist(centre_of_gravity) < 48 && my_ships[2].Dist(centre_of_gravity) < 51 {
 		self.RushChoice = RUSHING
 		self.SetRushTargets()
+		return
 	}
 }
 

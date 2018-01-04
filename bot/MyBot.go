@@ -15,13 +15,14 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "69 final"
+	VERSION = "70 dev"
 )
 
 func main() {
 
 	config := new(ai.Config)
 	flag.BoolVar(&config.Conservative, "conservative", false, "no rushing")
+	flag.BoolVar(&config.ForceRush, "forcerush", false, "always rush")
 	flag.BoolVar(&config.NoMsg, "nomsg", false, "no angle messages")
 	flag.BoolVar(&config.Profile, "profile", false, "run Golang CPU profile")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")

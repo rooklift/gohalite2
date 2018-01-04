@@ -1,12 +1,12 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe --conservative",
-	"bot.exe --conservative",
+	"bot.exe --forcerush",
+	".\\otherbots\\v69\\mybot.exe --forcerush",
 ]
 
-FORCED_WIDTH = None
-FORCED_HEIGHT = None
+FORCED_WIDTH = 240		# None
+FORCED_HEIGHT = 160		# None
 
 # ------------------------------------------------------------------------
 
