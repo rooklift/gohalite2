@@ -2,7 +2,7 @@ import json, random, subprocess
 
 processes = [
 	"bot.exe --conservative",
-	".\\otherbots\\v64\\mybot.exe --conservative",
+	".\\otherbots\\v65\\mybot.exe --conservative",
 ]
 
 WIDTH = 360

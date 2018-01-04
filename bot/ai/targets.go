@@ -59,18 +59,28 @@ func (self *Overmind) ChooseTargets() {
 		}
 	}
 
-	// Optimise (swap targets for better overall distance).
+	// Optimise (swap targets for better overall distance). Best do this before choosing short term targets...
 
 	self.OptimisePilots()
+
+	// Choose what tactical target we have this turn; i.e. if our main target is a planet, we may target a ship near that planet...
+
+	for _, pilot := range self.Pilots {
+		pilot.SetTurnTarget()
+	}
 }
+
+// -------------------------------------------------------------------
 
 func (self *Overmind) AllProblems() []*Problem {
 
 	var all_problems []*Problem
 
 	for _, planet := range self.Game.AllPlanets() {
-		problems := self.PlanetProblems(planet)
-		all_problems = append(all_problems, problems...)
+		problem := self.PlanetProblem(planet)
+		if problem != nil {
+			all_problems = append(all_problems, problem)
+		}
 	}
 
 	for _, ship := range self.Game.EnemyShips() {
@@ -79,7 +89,7 @@ func (self *Overmind) AllProblems() []*Problem {
 			problem := &Problem{		// Note that we may end up targetting it as a planet's secondary target. See SetTurnTarget().
 				Entity: ship,
 				Value: 1.0,
-				Need: 1,								// Consider making this 2.
+				Need: 1,							// Consider making this 2.
 				Message: pil.MSG_ASSASSINATE,
 			}
 			all_problems = append(all_problems, problem)
@@ -89,47 +99,40 @@ func (self *Overmind) AllProblems() []*Problem {
 	return all_problems
 }
 
-func (self *Overmind) PlanetProblems(planet *hal.Planet) []*Problem {
-
-	var ret []*Problem
+func (self *Overmind) PlanetProblem(planet *hal.Planet) *Problem {
 
 	game := self.Game
-	enemies := game.EnemiesNearPlanet(planet)
+
+	fight_strength := len(game.EnemiesNearPlanet(planet)) * 2
 	capture_strength := game.DesiredSpots(planet)
 
-	// -----
+	// Start with low value, but increase it to 1.0 if there's fighting to be done at the planet (enemies near it),
+	// or if it's a 4 player game.
+	//
+	// However, since we do this every frame, it's not like the old stateful bot where target choice was made at
+	// the moment that ship spawned and then kept.
 
-	switch len(enemies) {
+	value := 1.0 / 1.4
 
-	case 0:
-
-		if capture_strength > 0 {
-
-			value := 1.0 / 1.4; if self.Game.InitialPlayers() > 2 { value = 1.0 }
-
-			ret = append(ret, &Problem{
-				Entity: planet,
-				Value: value,
-				Need: capture_strength,
-				Message: planet.Id,
-			})
-		}
-
-	default:
-
-		for _, enemy := range enemies {
-
-			ret = append(ret, &Problem{
-				Entity: enemy,
-				Value: 1.0,
-				Need: 2,
-				Message: planet.Id,
-			})
-		}
+	if fight_strength > 0 || self.Game.InitialPlayers() > 2 {
+		value = 1.0
 	}
 
-	return ret
+	if capture_strength > 0 || fight_strength > 0 {
+
+		return &Problem{
+			Entity: planet,
+			Value: value,
+			Need: hal.Max(fight_strength, capture_strength),
+			Message: planet.Id,
+		}
+
+	}
+
+	return nil
 }
+
+// -------------------------------------------------------------------
 
 func (self *Overmind) OptimisePilots() {
 

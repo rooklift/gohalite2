@@ -1,8 +1,45 @@
 package pilot
 
 import (
+	"sort"
+
 	hal "../core"
 )
+
+func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
+
+	if self.DockedStatus != hal.UNDOCKED || self.Target.Type() != hal.PLANET || self.Locked {
+		return
+	}
+
+	planet := self.Target.(*hal.Planet)
+
+	// Is the planet far away?
+
+	if self.ApproachDist(planet) > 100 {
+		return
+	}
+
+	// If no enemies, just return, leaving the planet as target...
+
+	enemies := self.Game.EnemiesNearPlanet(planet)
+
+	if len(enemies) == 0 {
+		return
+	}
+
+	// Find closest...
+
+	sort.Slice(enemies, func(a, b int) bool {
+		return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
+	})
+
+	// We could consider only targetting non-doomed enemies. Problem: if there are none,
+	// we will target the planet, potentially causing us to dock. But in that case,
+	// a so-called "doomed" enemy can survive, since we didn't shoot it after all!
+
+	self.Target = enemies[0]
+}
 
 func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 
@@ -93,13 +130,13 @@ func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 		// Special case if the enemy ship is alone and we can kill it safely...
 		// FIXME: this isn't actually correct, an enemy docked ship could absorb some damage intended for our real target...
-
+/*
 		if enemy_ship.DockedStatus == hal.UNDOCKED && self.DangerShips == 1 && enemy_ship.ShotsToKill() == 1 && self.ShotsToKill() > 1 {
 			self.EngageShipApproach(enemy_ship, avoid_list)
 			self.Log("Safe to ignore Inhibition and go for the kill...")
 			return
 		}
-
+*/
 		// But normally, flee...
 
 		self.EngageShipFlee(enemy_ship, avoid_list)
