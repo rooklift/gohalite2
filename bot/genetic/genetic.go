@@ -158,38 +158,48 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) *Genome {
 
 				sim.Step()
 
+				var good_thirteens = make(map[int]int)
+
 				for _, ship := range my_sim_ship_ptrs {
 
 					if ship.hp > 0 {
 						genome.score += ship.hp * 100
 					}
 
-					genome.score -= int(ship.Dist(centre_of_gravity))
+					genome.score -= int(ship.Dist(centre_of_gravity) * 2)
 
 					if ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
-						genome.score -= 100000
+						genome.score -= 200000
 					}
 
 					// -------------------------------
 
 					if play_perfect && scenario == 0 && ship.hp > 0 {
 
-						thirteens := 0
+						var thirteens []int									// IDs of ships that might be able to hit us.
 
 						for _, enemy_ship := range game.EnemyShips() {		// i.e. using their actual game position without simulation.
 							if ship.Dist(enemy_ship) < 13 {
-								thirteens++
+								thirteens = append(thirteens, enemy_ship.Id)
 							}
 						}
 
-						if thirteens == 1 {
+						if len(thirteens) == 1 {
 							genome.score += 100000
+							enemy_ship_id := thirteens[0]
+							good_thirteens[enemy_ship_id] += 1
 						}
 
-						if thirteens > 1 {
+						if len(thirteens) > 1 {
 							genome.score -= 100000
 						}
 					}
+				}
+
+				// Modest bonus for coordinated thirteens (should be enough)
+
+				for _, hits := range good_thirteens {
+					genome.score += (hits - 1) * 5000
 				}
 
 				for _, ship := range enemy_sim_ship_ptrs {
