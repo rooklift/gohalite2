@@ -174,7 +174,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) *Genome {
 
 					// -------------------------------
 
-					if play_perfect && scenario == 0 && ship.hp > 0 {
+					if play_perfect && scenario == 0 {
 
 						var thirteens []int									// IDs of ships that might be able to hit us.
 
@@ -184,13 +184,13 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) *Genome {
 							}
 						}
 
-						if len(thirteens) == 1 {
+						if len(thirteens) == 1 && ship.hp > 0 {
 							genome.score += 100000
 							enemy_ship_id := thirteens[0]
 							good_thirteens[enemy_ship_id] += 1
 						}
 
-						if len(thirteens) > 1 {
+						if len(thirteens) > 1 {								// Don't check for ship being alive, so that we don't kill self to avoid this.
 							genome.score -= 100000
 						}
 					}
@@ -233,13 +233,12 @@ func FightRush(game *hal.Game) {
 
 	play_perfect := true
 
-	if len(game.MyShips()) != 3 || len(game.EnemyShips()) != 3 {
+	if len(game.MyShips()) == 1 || len(game.MyShips()) < len(game.EnemyShips()) {
 		play_perfect = false
-	} else {
-		for _, ship := range game.EnemyShips() {
-			if ship.DockedStatus != hal.UNDOCKED {
-				play_perfect = false
-			}
+	}
+	for _, ship := range game.EnemyShips() {
+		if ship.DockedStatus != hal.UNDOCKED {
+			play_perfect = false
 		}
 	}
 
