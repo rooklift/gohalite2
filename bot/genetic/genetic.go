@@ -61,7 +61,7 @@ func (self *Genome) Mutate() {
 
 // --------------------------------------------------------------------
 
-func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) *Genome {
+func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) (*Genome, int) {
 
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 	// Perhaps another should be the enemy ships blinking out of existence, so we don't crash into planets.
@@ -87,6 +87,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) *Genome {
 		g.Init(len(game.MyShips()))
 		genomes = append(genomes, g)
 	}
+
+	best_score := -2147483647			// Solely used for
+	iterations_required := 0			// reporting info.
 
 	for n := 0; n < iterations; n++ {
 
@@ -221,13 +224,18 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) *Genome {
 			return genomes[a].score > genomes[b].score		// Note the reversed sort, high scores come first.
 		})
 
+		if genomes[0].score > best_score {
+			best_score = genomes[0].score					// This is for
+			iterations_required = n							// info only.
+		}
+
 		if time.Now().Sub(game.ParseTime()) > 1500 * time.Millisecond {
 			game.Log("Emergency timeout in EvolveGenome() after %d iterations.", n)
-			return genomes[0]
+			return genomes[0], iterations_required
 		}
 	}
 
-	return genomes[0]
+	return genomes[0], iterations_required
 }
 
 func FightRush(game *hal.Game) {
@@ -245,7 +253,7 @@ func FightRush(game *hal.Game) {
 		}
 	}
 
-	genome := EvolveGenome(game, 15000, play_perfect)
+	genome, iterations_required := EvolveGenome(game, 15000, play_perfect)
 
 	var order_elements []int
 
@@ -255,5 +263,5 @@ func FightRush(game *hal.Game) {
 		order_elements = append(order_elements, genome.genes[i].speed, genome.genes[i].angle)
 	}
 
-	game.Log("Rush Evo! Score: %v. Orders: %v", genome.score, order_elements)
+	game.Log("Rush Evo! Score: %v (iter %5v). Orders: %v", genome.score, iterations_required, order_elements)
 }
