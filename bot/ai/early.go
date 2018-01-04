@@ -164,7 +164,38 @@ func (self *Overmind) ChooseThreeDocks() {
 		docks = append(docks, hal.OpeningDockHelper(planet, self.Pilots[0].Ship)...)
 	}
 
-	docks = docks[:3]
+	if len(docks) < 3 {
+		return
+	}
+
+	self.SetNonIntersectingDockPaths(docks[:3])
+
+	// As a special case, never send less than 3 ships to the central planets in 2 player games...
+
+	if self.Game.InitialPlayers() == 2 {
+
+		ships_to_centre := 0
+
+		for _, pilot := range self.Pilots {
+			if pilot.Target.GetId() < 4 {			// Centre planets have ID < 4, unless the engine changes.
+				ships_to_centre++
+			}
+		}
+
+		if ships_to_centre > 0 && ships_to_centre < 3 {
+			self.Game.Log("Was going to send %d ships to centre; sending all instead.", ships_to_centre)
+			self.ChooseCentreDocks()
+		}
+	}
+
+	// Don't allow these targets to change.
+
+	for _, pilot := range self.Pilots {
+		pilot.Locked = true
+	}
+}
+
+func (self *Overmind) SetNonIntersectingDockPaths(docks []*hal.Port) {
 
 	best_acceptable_dist := 999999.9
 
@@ -187,7 +218,6 @@ func (self *Overmind) ChooseThreeDocks() {
 
 		for n := 0; n < 3; n++ {
 			self.Pilots[n].Target = docks[perm[n]]
-			self.Pilots[n].Locked = true
 		}
 
 		if hal.Intersect(self.Pilots[0].Ship, self.Pilots[0].Target, self.Pilots[1].Ship, self.Pilots[1].Target) {
@@ -204,6 +234,34 @@ func (self *Overmind) ChooseThreeDocks() {
 
 		best_acceptable_dist = dist
 	}
+}
+
+func (self *Overmind) ChooseCentreDocks() {
+
+	var centre_planets []*hal.Planet
+
+	for n := 0; n < 4; n++ {
+		planet, ok := self.Game.GetPlanet(n)
+		if ok {
+			centre_planets = append(centre_planets, planet)
+		}
+	}
+
+	sort.Slice(centre_planets, func(a, b int) bool {
+		return self.Pilots[0].Dist(centre_planets[a]) < self.Pilots[0].Dist(centre_planets[b])
+	})
+
+	var docks []*hal.Port
+
+	for _, planet := range centre_planets {
+		docks = append(docks, hal.OpeningDockHelper(planet, self.Pilots[0].Ship)...)
+	}
+
+	if len(docks) < 3 {
+		return
+	}
+
+	self.SetNonIntersectingDockPaths(docks[:3])
 }
 
 func (self *Overmind) Check2v1() {

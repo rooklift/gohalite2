@@ -92,7 +92,7 @@ func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 		if enemy_ship.DockedStatus != hal.UNDOCKED && self.DangerShips == 0 {
 			self.EngageShipApproach(enemy_ship, avoid_list)
-			self.Log("Safe to ignore Inhibition and approach docked ship...")
+			self.Log("Safe to ignore Inhibition and approach docked ship.")
 			return
 		}
 
@@ -101,7 +101,7 @@ func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 		if enemy_ship.DockedStatus == hal.UNDOCKED && self.DangerShips == 1 && enemy_ship.ShotsToKill() == 1 && self.ShotsToKill() > 1 {
 			self.EngageShipApproach(enemy_ship, avoid_list)
-			self.Log("Safe to ignore Inhibition and go for the kill...")
+			self.Log("Safe to ignore Inhibition and go for the kill.")
 			return
 		}
 

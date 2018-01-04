@@ -143,7 +143,7 @@ func (e *NothingType) Type() EntityType { return NOTHING }
 
 func (e *Ship) GetId() int { return e.Id }
 func (e *Point) GetId() int { return -1 }
-func (e *Port) GetId() int { return -1 }
+func (e *Port) GetId() int { return e.PlanetID }
 func (e *Planet) GetId() int { return e.Id }
 func (e *NothingType) GetId() int { return -1 }
 
