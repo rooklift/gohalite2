@@ -20,7 +20,7 @@ func (self *Overmind) DecideRush() {
 	my_ships := self.Game.MyShips()
 
 	for _, ship := range my_ships {
-		if ship.DockingStatus != hal.UNDOCKED {
+		if ship.DockedStatus != hal.UNDOCKED {
 			self.RushChoice = NOT_RUSHING
 			return
 		}
