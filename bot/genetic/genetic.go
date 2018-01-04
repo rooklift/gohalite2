@@ -174,6 +174,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) *Genome {
 
 					// -------------------------------
 
+					// In "perfect" mode we give huge bonuses to moves that can only ever be hit by 1 enemy;
+					// which means being < 13 away from the *starting* location of 1 enemy.
+
 					if play_perfect && scenario == 0 {
 
 						var thirteens []int									// IDs of ships that might be able to hit us.
