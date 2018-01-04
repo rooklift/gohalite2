@@ -19,6 +19,8 @@ func (self *Problem) String() string {
 	return fmt.Sprintf("%v (%d, %f)", self.Entity, self.Need, self.Value)
 }
 
+// -------------------------------------------------------------------------------
+
 func (self *Overmind) ChooseTargets() {
 
 	all_problems := self.AllProblems()
@@ -63,6 +65,8 @@ func (self *Overmind) ChooseTargets() {
 
 	self.OptimisePilots()
 }
+
+// -------------------------------------------------------------------------------
 
 func (self *Overmind) AllProblems() []*Problem {
 
@@ -131,6 +135,8 @@ func (self *Overmind) PlanetProblems(planet *hal.Planet) []*Problem {
 	return ret
 }
 
+// -------------------------------------------------------------------------------
+
 func (self *Overmind) OptimisePilots() {
 
 	for n := 0; n < 5; n++ {
@@ -157,12 +163,21 @@ func (self *Overmind) OptimisePilots() {
 					continue
 				}
 
-				// Allow "locked" pilots to swap only if targets are both ships.
+				// Allow "locked" pilots to swap only if targets are both ships,
+				// and only if they require the same number of shots to kill.
 				// This is useful for opening rushes. Could cause trouble if we
 				// start to reason incorrectly about "locked" pilots though.
 
 				if pilot_a.Locked && pilot_b.Locked {
+
 					if pilot_a.Target.Type() != hal.SHIP || pilot_b.Target.Type() != hal.SHIP {
+						continue
+					}
+
+					ship_a := pilot_a.Target.(*hal.Ship)
+					ship_b := pilot_b.Target.(*hal.Ship)
+
+					if ship_a.ShotsToKill() != ship_b.ShotsToKill() {
 						continue
 					}
 				}
