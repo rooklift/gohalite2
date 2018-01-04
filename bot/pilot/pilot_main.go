@@ -130,13 +130,13 @@ func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 		// Special case if the enemy ship is alone and we can kill it safely...
 		// FIXME: this isn't actually correct, an enemy docked ship could absorb some damage intended for our real target...
-/*
+
 		if enemy_ship.DockedStatus == hal.UNDOCKED && self.DangerShips == 1 && enemy_ship.ShotsToKill() == 1 && self.ShotsToKill() > 1 {
 			self.EngageShipApproach(enemy_ship, avoid_list)
 			self.Log("Safe to ignore Inhibition and go for the kill...")
 			return
 		}
-*/
+
 		// But normally, flee...
 
 		self.EngageShipFlee(enemy_ship, avoid_list)
