@@ -68,22 +68,43 @@ func (self *Overmind) AllProblems() []*Problem {
 
 	var all_problems []*Problem
 
+	var ships_targeted = make(map[int]bool)
+
+	// Get planet-related targets, which are either planets
+	// we need to dock at, or ships we need to kill...
+
 	for _, planet := range self.Game.AllPlanets() {
+
 		problems := self.PlanetProblems(planet)
 		all_problems = append(all_problems, problems...)
+
+		for _, problem := range problems {
+			if problem.Entity.Type() == hal.SHIP {
+				ships_targeted[problem.Entity.GetId()] = true
+			}
+		}
 	}
+
+	// Interstellar ships we haven't targeted already...
 
 	for _, ship := range self.Game.EnemyShips() {
 
-		if ship.Doomed == false {		// Skip the ship (as an assassination target) if we expect it to die at time 0.
-			problem := &Problem{		// Note that we may end up targetting it as a planet's secondary target. See SetTurnTarget().
-				Entity: ship,
-				Value: 1.0,
-				Need: 1,								// Consider making this 2.
-				Message: pil.MSG_ASSASSINATE,
-			}
-			all_problems = append(all_problems, problem)
+		if ships_targeted[ship.Id] {
+			continue
 		}
+
+		if ship.Doomed {				// Skip the ship (as an assassination target) if we expect it to die at time 0.
+			continue
+		}
+
+		problem := &Problem{			// Note that we may end up targetting it as a planet's secondary target. See SetTurnTarget().
+			Entity: ship,
+			Value: 1.0,
+			Need: 1,								// Consider making this 2.
+			Message: pil.MSG_ASSASSINATE,
+		}
+
+		all_problems = append(all_problems, problem)
 	}
 
 	return all_problems
