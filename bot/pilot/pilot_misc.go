@@ -19,6 +19,7 @@ type Pilot struct {
 	Game				*hal.Game
 	Target				hal.Entity					// Use the hal.Nothing struct for no target.
 	Locked				bool						// Target is permanent.
+	Fearless			bool						// Ignore inhibition.
 	EnemyApproachDist	float64
 	NavStack			[]string
 	Inhibition			float64
@@ -75,6 +76,7 @@ func (self *Pilot) ResetAndUpdate() bool {						// Usually clears target. Return
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 	self.Inhibition = 0
 	self.DangerShips = 0
+	self.Fearless = false
 
 	if self.DockedStatus != hal.UNDOCKED {
 		self.Locked = false

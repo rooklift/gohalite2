@@ -20,6 +20,8 @@ const (
 	MSG_POINT_LOCKED = 167
 	MSG_PORT_LOCKED = 168
 
+	MSG_SHIP_LOCKED_FEARLESS = 170
+
 	MSG_DOCK_TARGET = 174
 
 	MSG_RECURSION = 175
@@ -36,11 +38,29 @@ func (self *Pilot) MessageWhileLocked() {
 
 	switch self.Target.Type() {
 
-		case hal.PLANET:	self.Message = MSG_PLANET_LOCKED
-		case hal.SHIP:		self.Message = MSG_SHIP_LOCKED
-		case hal.POINT:		self.Message = MSG_POINT_LOCKED
-		case hal.PORT:		self.Message = MSG_PORT_LOCKED
-		default:			self.Message = MSG_NO_TARGET
+		case hal.PLANET:
+
+			self.Message = MSG_PLANET_LOCKED
+
+		case hal.SHIP:
+
+			if self.Fearless {
+				self.Message = MSG_SHIP_LOCKED_FEARLESS
+			} else {
+				self.Message = MSG_SHIP_LOCKED
+			}
+
+		case hal.POINT:
+
+			self.Message = MSG_POINT_LOCKED
+
+		case hal.PORT:
+
+			self.Message = MSG_PORT_LOCKED
+
+		default:
+
+			self.Message = MSG_NO_TARGET
 
 	}
 }

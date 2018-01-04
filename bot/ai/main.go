@@ -115,6 +115,14 @@ func (self *Overmind) ResetPilots() {
 			i--
 		}
 	}
+
+	// Set pilots to ignore inhibition if we are very few. Will include rush situations...
+
+	if len(self.Pilots) <= 4 {
+		for _, pilot := range self.Pilots {
+			pilot.Fearless = true
+		}
+	}
 }
 
 // --------------------------------------------
@@ -262,14 +270,14 @@ func (self *Overmind) DebugNavStack() {
 func (self *Overmind) DebugInhibition() {
 
 	const (
-		DEBUG_TURN = 30
-		DEBUG_SHIP_ID = 11
+		DEBUG_TURN = -1
+		DEBUG_SHIP_ID = -1
 	)
 
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
-				pilot.Log("Inhibition: %f; DangerShips: %f", pilot.Inhibition, pilot.DangerShips)
+				pilot.Log("Inhibition: %f; DangerShips: %d", pilot.Inhibition, pilot.DangerShips)
 				break
 			}
 		}
