@@ -279,7 +279,8 @@ func (self *Overmind) ChooseCentreDocks() {
 func (self *Overmind) Check2v1() {
 
 	// Called when DetectRushFight() has already returned true, i.e. we are in close proximity to enemy.
-	// This is a special case that loses a lot of games if we don't handle it...
+	// This is a special case that loses occasional games if we don't handle it... basically, if we are
+	// 2v1 up but the opponent ever produced a ship, we can't just chase him forever.
 
 	if self.Game.CountMyShips() < 2 || self.Game.CountEnemyShips() > 1 {
 		return
@@ -293,9 +294,17 @@ func (self *Overmind) Check2v1() {
 
 	enemy_ship := self.Game.EnemyShips()[0]
 
+	enemy_player_id := enemy_ship.Owner
+
+	if self.Game.GetCumulativeShipCount(enemy_player_id) <= self.Game.GetCumulativeShipCount(self.Game.Pid()) {
+		return
+	}
+
+	// So we are indeed in the losing situation...
+
 	if enemy_ship.ShotsToKill() <= self.Pilots[0].ShotsToKill() && enemy_ship.DockedStatus == hal.UNDOCKED {
 
-		self.Game.Log("2v1 situation detected, setting Config.Conservative and choosing targets.")
+		self.Game.Log("Losing 2v1 situation detected, setting Config.Conservative and choosing targets.")
 
 		self.Config.Conservative = true
 
