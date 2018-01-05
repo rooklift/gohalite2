@@ -275,6 +275,12 @@ func (self *Game) Parse() {
 				planet.DockedShips--										// Also needed due to fudge_dock_status()
 			}
 		}
+
+		if planet.DockedShips == 0 {										// Also needed due to fudge_dock_status()
+			planet.Owner = -1
+			planet.Owned = false
+		}
+
 		sort.Slice(self.dockMap[plid], func(a, b int) bool {
 			return self.dockMap[plid][a].Id < self.dockMap[plid][b].Id
 		})

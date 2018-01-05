@@ -138,7 +138,7 @@ func (s *Ship) fudge_dock_status() {
 		s.DockingProgress--
 		if s.DockingProgress == 0 {
 			s.DockedStatus = UNDOCKED
-			s.DockedPlanet = -1
+			s.DockedPlanet = -1						// The parser will fix up the planet's info.
 		}
 	}
 }
