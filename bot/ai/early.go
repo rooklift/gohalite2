@@ -260,7 +260,7 @@ func (self *Overmind) ChooseCentreDocks() {
 	self.SetNonIntersectingDockPaths(docks[:3])
 }
 
-func (self *Overmind) Check2v1() {
+func (self *Overmind) CanAvoidBad2v1() bool {
 
 	// Called when DetectRushFight() has already returned true, i.e. we want to enter the genetic algorithm.
 	// FIXME? Was written assuming we only enter GA in 2p.
@@ -269,13 +269,13 @@ func (self *Overmind) Check2v1() {
 	// 2v1 up but the opponent ever produced a ship, we can't just chase him forever.
 
 	if self.Game.CountMyShips() < 2 || self.Game.CountEnemyShips() > 1 {
-		return
+		return false
 	}
 
 	// So, we have 2 or more ships, and the enemy has just 1.
 
 	sort.Slice(self.Pilots, func(a, b int) bool {
-		return self.Pilots[a].HP > self.Pilots[b].HP			// Note reversed sort, highest HP first
+		return self.Pilots[a].HP > self.Pilots[b].HP			// Note reversed sort, highest HP first - it will chase enemy.
 	})
 
 	enemy_ship := self.Game.EnemyShips()[0]
@@ -283,24 +283,40 @@ func (self *Overmind) Check2v1() {
 	enemy_player_id := enemy_ship.Owner
 
 	if self.Game.GetCumulativeShipCount(enemy_player_id) <= self.Game.GetCumulativeShipCount(self.Game.Pid()) {
-		return
+		return false
 	}
 
-	// So we are indeed in the losing situation... our response is, if possible, to assign 1 ship to chase
-	// the enemy while our other ship(s) dock. Set Conservative so we never try to enter GA again.
+	// So we are indeed in the losing situation...
+	// But can we do anything about it??
 
 	if enemy_ship.ShotsToKill() <= self.Pilots[0].ShotsToKill() && enemy_ship.DockedStatus == hal.UNDOCKED {
+		return true
+	}
 
-		self.Game.Log("Losing 2v1 situation detected, setting Overmind.NeverGA and choosing targets.")
+	return false
+}
 
-		self.RushChoice = RUSHING		// Ensures the chaser continues to chase.
-		self.NeverGA = true
+func (self *Overmind) AvoidBad2v1() {
 
-		self.Pilots[0].Target = enemy_ship
+	self.Game.Log("Avoiding Bad 2v1: setting Overmind.RushChoice, Overmind.NeverGA; and choosing targets.")
 
-		for i := 1; i < len(self.Pilots); i++ {
-			self.Pilots[i].Target = self.Game.FarthestPlanet(self.Pilots[i].Ship)
-		}
+	self.RushChoice = RUSHING									// Ensures the chaser continues to chase.
+	self.NeverGA = true
+
+	sort.Slice(self.Pilots, func(a, b int) bool {
+		return self.Pilots[a].HP > self.Pilots[b].HP			// Note reversed sort, highest HP first - it will chase enemy.
+	})
+
+	all_enemies := self.Game.EnemyShips()
+
+	sort.Slice(all_enemies, func(a, b int) bool {
+		return self.Pilots[0].Dist(all_enemies[a]) < self.Pilots[0].Dist(all_enemies[b])
+	})
+
+	self.Pilots[0].Target = all_enemies[0]
+
+	for i := 1; i < len(self.Pilots); i++ {
+		self.Pilots[i].Target = self.Game.FarthestPlanet(self.Pilots[i].Ship)
 	}
 }
 

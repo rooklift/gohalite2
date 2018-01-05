@@ -88,9 +88,9 @@ func (self *Overmind) Step() {
 
 	if self.NeverGA == false && self.DetectRushFight() {
 
-		self.Check2v1()			// Will set NeverGA and RushChoice, and choose targets if need be.
-
-		if self.NeverGA == false {
+		if self.CanAvoidBad2v1() {
+			self.AvoidBad2v1()
+		} else {
 			gen.FightRush(self.Game, self.RushEnemyID)
 			self.RushChoice = RUSHING
 			return
@@ -99,7 +99,7 @@ func (self *Overmind) Step() {
 
 	self.ChooseTargets()
 	self.OptimisePilots()
-	self.SetInhibition()		// We might use target info for this in future, so put it here.
+	self.SetInhibition()				// We might use target info for this in future, so put it here.
 	self.ExecuteMoves()
 
 	self.DebugNavStack()
