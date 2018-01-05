@@ -178,8 +178,6 @@ func (self *Overmind) OptimisePilots() {
 
 				// RUSH: allow pilots to swap only if targets are both ships,
 				// and only if they require the same number of shots to kill.
-				// This is useful for opening rushes. Could cause trouble if we
-				// start to reason incorrectly about "locked" pilots though.
 
 				if self.RushChoice == RUSHING {
 
