@@ -70,3 +70,9 @@ Some key conceptual breakthroughs that seemed to improve the bot were:
 * Attacks right at the start of the turn are very predictable (only unexpected docking commands can mess this up). One can thus determine which ships will "certainly" die, and pretend they're not there. Using this information wisely is the hard part. At the very least, one can use it for navigation; i.e. skipping unneeded collision avoidance. One might also use it for strategic decisions, but this is harder.
 
 * One should avoid unwise fights. Starting at v62 (but with a big number fix at v64), I use sum-of-distances-squared to decide whether each ship is "inhibited" or not; i.e. whether it has more enemies than friends nearby. If so, it flees.
+
+# My Big Secret
+
+I don't think many people realised this: the first thing that happens in a turn is every ship's DockedStatus is progressed. That means that, if you see a ship that is about to finish docking, you can issue an undock command and it will work. And if you see a ship that is about to finish undocking, you can issue a thrust command and it will work.
+
+This little piece of info saves me 2 turns when defending rushes.
