@@ -44,11 +44,7 @@ func (self *Pilot) MessageWhileLocked() {
 
 		case hal.SHIP:
 
-			if self.Fearless {
-				self.Message = MSG_SHIP_LOCKED_FEARLESS
-			} else {
-				self.Message = MSG_SHIP_LOCKED
-			}
+			self.Message = MSG_SHIP_LOCKED
 
 		case hal.POINT:
 

@@ -60,15 +60,15 @@ func (self *Overmind) ChooseTargets() {
 			all_problems = all_problems[1:]
 		}
 	}
-
-	// Optimise (swap targets for better overall distance).
-
-	self.OptimisePilots()
 }
 
 // -------------------------------------------------------------------------------
 
 func (self *Overmind) AllProblems() []*Problem {
+
+	if self.RushChoice == RUSHING {
+		return self.RushProblems()
+	}
 
 	var all_problems []*Problem
 
@@ -135,6 +135,28 @@ func (self *Overmind) PlanetProblems(planet *hal.Planet) []*Problem {
 	return ret
 }
 
+func (self *Overmind) RushProblems() []*Problem {
+
+	var problems []*Problem
+
+	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+
+	for _, ship := range relevant_enemies {
+
+		if ship.Doomed == false {
+			problem := &Problem{
+				Entity: ship,
+				Value: 1.0,
+				Need: 1,
+				Message: ship.Id,
+			}
+			problems = append(problems, problem)
+		}
+	}
+
+	return problems
+}
+
 // -------------------------------------------------------------------------------
 
 func (self *Overmind) OptimisePilots() {
@@ -157,18 +179,12 @@ func (self *Overmind) OptimisePilots() {
 					continue
 				}
 
-				// Don't allow swaps if exactly one pilot is locked.
-
-				if pilot_b.Locked != pilot_a.Locked {
-					continue
-				}
-
-				// Allow "locked" pilots to swap only if targets are both ships,
+				// RUSH: allow pilots to swap only if targets are both ships,
 				// and only if they require the same number of shots to kill.
 				// This is useful for opening rushes. Could cause trouble if we
 				// start to reason incorrectly about "locked" pilots though.
 
-				if pilot_a.Locked && pilot_b.Locked {
+				if self.RushChoice == RUSHING {
 
 					if pilot_a.Target.Type() != hal.SHIP || pilot_b.Target.Type() != hal.SHIP {
 						continue

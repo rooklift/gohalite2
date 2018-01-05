@@ -32,6 +32,7 @@ type Overmind struct {
 	CowardFlag				bool
 	RushChoice				int
 	RushEnemyID				int
+	NeverGA					bool
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -47,6 +48,13 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 
 	ret.FindRushEnemy()
 
+	if config.Conservative {
+		ret.NeverGA = true
+		ret.RushChoice = NOT_RUSHING
+	} else if config.ForceRush {
+		ret.RushChoice = RUSHING
+	}
+
 	return ret
 }
 
@@ -54,16 +62,15 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 
 func (self *Overmind) Step() {
 
+	if self.RushChoice == UNDECIDED {
+		self.DecideRush()
+	} else if self.RushChoice == RUSHING {
+		self.MaybeEndRush()
+	}
+
 	self.ResetPilots()
 
 	self.SetCowardFlag()
-
-	if self.RushChoice == UNDECIDED {
-		self.DecideRush()
-		if self.RushChoice == RUSHING {
-			self.SetRushTargets()
-		}
-	}
 
 	if self.Game.Turn() == 0 {
 		if self.RushChoice == RUSHING {
@@ -79,19 +86,20 @@ func (self *Overmind) Step() {
 		return
 	}
 
-	if self.Config.Conservative == false && self.DetectRushFight() {
+	if self.NeverGA == false && self.DetectRushFight() {
 
-		self.Check2v1()			// Will set Conservative and choose targets if need be.
+		self.Check2v1()			// Will set NeverGA and RushChoice, and choose targets if need be.
 
-		if self.Config.Conservative == false {
+		if self.NeverGA == false {
 			gen.FightRush(self.Game, self.RushEnemyID)
-			self.SetTargetsAfterGenetic()
+			self.RushChoice = RUSHING
 			return
 		}
 	}
 
 	self.ChooseTargets()
-	self.SetInhibition()		// We might use target info for this in future...
+	self.OptimisePilots()
+	self.SetInhibition()		// We might use target info for this in future, so put it here.
 	self.ExecuteMoves()
 
 	self.DebugNavStack()
@@ -117,18 +125,10 @@ func (self *Overmind) ResetPilots() {
 
 	for i := 0; i < len(self.Pilots); i++ {
 		pilot := self.Pilots[i]
-		alive := pilot.ResetAndUpdate()
+		alive := pilot.ResetAndUpdate(self.RushChoice != RUSHING)			// Reset if not rushing
 		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
-		}
-	}
-
-	// Set pilots to ignore inhibition if we are very few. Will include rush situations...
-
-	if len(self.Pilots) <= 3 {
-		for _, pilot := range self.Pilots {
-			pilot.Fearless = true
 		}
 	}
 }

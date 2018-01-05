@@ -10,17 +10,12 @@ func (self *Overmind) DecideRush() {
 
 	// Can leave things undecided, in which case it will be called again next iteration.
 
-	if self.Config.ForceRush {
-		self.RushChoice = RUSHING
-		return
-	}
-
 	if self.Game.InitialPlayers() > 2 {
 		self.RushChoice = NOT_RUSHING
 		return
 	}
 
-	if self.Config.Conservative || len(self.Game.AllShips()) > 6 || len(self.Game.MyShips()) < 3 {
+	if len(self.Game.AllShips()) > 6 || len(self.Game.MyShips()) < 3 {
 		self.RushChoice = NOT_RUSHING
 		return
 	}
@@ -46,47 +41,37 @@ func (self *Overmind) DecideRush() {
 	}
 }
 
-func (self *Overmind) SetRushTargets() {
-
-	// FIXME: since this can now happen on turns other than 0, we need a better way.
-
-	// Sort our pilots by Y...
-
-	sort.Slice(self.Pilots, func(a, b int) bool {
-		return self.Pilots[a].Y < self.Pilots[b].Y
-	})
-
-	// Sort enemies by Y...
-
-	enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
-	sort.Slice(enemies, func(a, b int) bool {
-		return enemies[a].Y < enemies[b].Y
-	})
-
-	// Pair pilots with enemies, and lock in (prevents getting reset, though they can still swap, right?)
-
-	for index, pilot := range self.Pilots {
-		if len(enemies) > index {
-			pilot.Target = enemies[index]
-			pilot.Locked = true
-		}
+func (self *Overmind) MaybeEndRush() {
+	if len(self.Game.ShipsOwnedBy(self.RushEnemyID)) == 0 {
+		self.RushChoice = NOT_RUSHING
 	}
 }
 
 func (self *Overmind) TurnZeroCluster() {
 
-	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+	if self.Game.InitialPlayers() == 4 {
 
-	if centre_of_gravity.X > self.Pilots[0].X {
-		self.Cluster(7, 15, 6, 0, 7, 345)
-	} else if centre_of_gravity.X < self.Pilots[0].X {
-		self.Cluster(7, 165, 6, 180, 7, 195)
-	} else if centre_of_gravity.Y > self.Pilots[0].Y {
-		self.Cluster(7, 90, 5, 100, 2, 60)
-	} else if centre_of_gravity.Y < self.Pilots[0].Y {
-		self.Cluster(2, 240, 5, 280, 7, 270)
+		switch self.Game.Pid() {
+			case 0: fallthrough
+			case 1:	self.Cluster(7, 90, 5, 100, 2, 60)
+			case 2: fallthrough
+			case 3: self.Cluster(2, 240, 5, 280, 7, 270)
+		}
+
+	} else {
+
+		centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+
+		if centre_of_gravity.X > self.Pilots[0].X {
+			self.Cluster(7, 15, 6, 0, 7, 345)
+		} else if centre_of_gravity.X < self.Pilots[0].X {
+			self.Cluster(7, 165, 6, 180, 7, 195)
+		} else if centre_of_gravity.Y > self.Pilots[0].Y {
+			self.Cluster(7, 90, 5, 100, 2, 60)
+		} else if centre_of_gravity.Y < self.Pilots[0].Y {
+			self.Cluster(2, 240, 5, 280, 7, 270)
+		}
 	}
-
 }
 
 func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
@@ -203,12 +188,6 @@ func (self *Overmind) ChooseThreeDocks() {
 			self.ChooseCentreDocks()
 		}
 	}
-
-	// Don't allow these targets to change.
-
-	for _, pilot := range self.Pilots {
-		pilot.Locked = true
-	}
 }
 
 func (self *Overmind) SetNonIntersectingDockPaths(docks []*hal.Port) {
@@ -283,7 +262,7 @@ func (self *Overmind) ChooseCentreDocks() {
 func (self *Overmind) Check2v1() {
 
 	// Called when DetectRushFight() has already returned true, i.e. we want to enter the genetic algorithm.
-	// FIXME: was written assuming we only enter GA in 2p.
+	// FIXME? Was written assuming we only enter GA in 2p.
 
 	// There is a special case that loses occasional games if we don't handle it... basically, if we are
 	// 2v1 up but the opponent ever produced a ship, we can't just chase him forever.
@@ -311,16 +290,15 @@ func (self *Overmind) Check2v1() {
 
 	if enemy_ship.ShotsToKill() <= self.Pilots[0].ShotsToKill() && enemy_ship.DockedStatus == hal.UNDOCKED {
 
-		self.Game.Log("Losing 2v1 situation detected, setting Config.Conservative and choosing targets.")
+		self.Game.Log("Losing 2v1 situation detected, setting Overmind.NeverGA and choosing targets.")
 
-		self.Config.Conservative = true
+		self.RushChoice = RUSHING		// Ensures the chaser continues to chase.
+		self.NeverGA = true
 
 		self.Pilots[0].Target = enemy_ship
-		self.Pilots[0].Locked = true
 
 		for i := 1; i < len(self.Pilots); i++ {
 			self.Pilots[i].Target = self.Game.FarthestPlanet(self.Pilots[i].Ship)
-			self.Pilots[i].Locked = true
 		}
 	}
 }
@@ -349,74 +327,6 @@ func (self *Overmind) FindRushEnemy() {
 			self.RushEnemyID = 0
 		} else if self.Game.Pid() == 3 {
 			self.RushEnemyID = 1
-		}
-	}
-}
-
-func (self *Overmind) SetTargetsAfterGenetic() {
-
-	// Lets say that entering GA commits us to wiping the enemy out.
-	// Make sure all our ships are targeting the enemy, for when we
-	// drop out of GA, if we do.
-
-	// Note that we're working with a state of the world that hasn't
-	// been updated yet since we haven't sent our GA moves yet.
-
-	is_targeted := make(map[int]bool)
-
-	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
-
-	if len(relevant_enemies) == 0 {				// Should be impossible, the GA wouldn't have been called.
-		return
-	}
-
-	for _, ship := range relevant_enemies {
-		is_targeted[ship.Id] = false
-	}
-
-	for _, pilot := range self.Pilots {
-		if pilot.Target.Type() == hal.SHIP {
-			is_targeted[pilot.Target.GetId()] = true
-		}
-	}
-
-	var new_targets []*hal.Ship
-
-	for sid, _ := range is_targeted {
-		if is_targeted[sid] == false {
-			ship, _ := self.Game.GetShip(sid)
-			new_targets = append(new_targets, ship)
-		}
-	}
-
-	// If there are no untargeted ships, just send our targetless guys at whatever ship...
-
-	if len(new_targets) == 0 {
-		new_targets = relevant_enemies
-	}
-
-	for _, pilot := range self.Pilots {
-
-		// The only way we can have a target is if it was locked in some turns ago.
-		// If it wasn't locked, we would have cleared it at Step() start.
-
-		if pilot.Target.Type() != hal.SHIP {
-
-			sort.Slice(new_targets, func(a, b int) bool {
-				return pilot.Dist(new_targets[a]) < pilot.Dist(new_targets[b])
-			})
-
-			pilot.Target = new_targets[0]
-			pilot.Locked = true
-			pilot.Fearless = true
-
-			pilot.Log("Because of GA, gained target: %v", pilot.Target)
-
-			// Better not send all our guys after the same enemy...
-
-			if len(new_targets) > 1 {
-				new_targets = new_targets[1:]
-			}
 		}
 	}
 }

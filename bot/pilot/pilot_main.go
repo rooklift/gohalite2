@@ -73,11 +73,6 @@ func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
 	// Sometimes approach, sometimes flee.
 
-	if self.Fearless {
-		self.EngageShipApproach(enemy_ship, avoid_list)
-		return
-	}
-
 	if self.Firing {
 		self.EngageShipFlee(enemy_ship, avoid_list)
 		return
