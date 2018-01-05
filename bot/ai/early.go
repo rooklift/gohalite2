@@ -386,7 +386,7 @@ func (self *Overmind) SetTargetsAfterGenetic() {
 
 	for _, pilot := range self.Pilots {
 
-		if pilot.Target.Type() == hal.NOTHING {
+		if pilot.Target.Type() != hal.SHIP {
 
 			sort.Slice(new_targets, func(a, b int) bool {
 				return pilot.Dist(new_targets[a]) < pilot.Dist(new_targets[b])
