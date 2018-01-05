@@ -103,7 +103,7 @@ func (self *Overmind) Step() {
 	self.NormalStep()
 
 	if self.FirstDockTurn == self.Game.Turn() {
-		self.MaybeDefendRush()						// Maybe scraps everything...
+		self.MaybeDefend_4p_Rush()
 	}
 
 	self.DebugNavStack()
@@ -312,7 +312,11 @@ func (self *Overmind) DebugInhibition() {
 
 // --------------------------------------------
 
-func (self *Overmind) WeAreBeingRushed() bool {
+func (self *Overmind) WeAreBeing_4p_Rushed() bool {
+
+	if self.Game.InitialPlayers() <= 2 {
+		return false
+	}
 
 	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
 
@@ -324,11 +328,11 @@ func (self *Overmind) WeAreBeingRushed() bool {
 	return false
 }
 
-func (self *Overmind) MaybeDefendRush() {
+func (self *Overmind) MaybeDefend_4p_Rush() {
 
 	// Called at the time of our first dock.
 
-	if self.WeAreBeingRushed() {
+	if self.WeAreBeing_4p_Rushed() {
 
 		for _, pilot := range self.Pilots {
 			pilot.ResetAndUpdate(true)
