@@ -302,7 +302,7 @@ func (self *Overmind) Check2v1() {
 	}
 
 	// So we are indeed in the losing situation... our response is, if possible, to assign 1 ship to chase
-	// the enemy while our other ship(s) dock.
+	// the enemy while our other ship(s) dock. Set Conservative so we never try to enter GA again.
 
 	if enemy_ship.ShotsToKill() <= self.Pilots[0].ShotsToKill() && enemy_ship.DockedStatus == hal.UNDOCKED {
 
