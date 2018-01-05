@@ -21,6 +21,7 @@ type Config struct {
 	Conservative			bool
 	ForceRush				bool
 	NoMsg					bool
+	Imperfect				bool
 	Profile					bool
 	Timeseed				bool
 }
@@ -33,7 +34,8 @@ type Overmind struct {
 	RushChoice				int					// Affects ChooseTargets(), ResetPilots() and OptimisePilots()
 	RushEnemyID				int
 	NeverGA					bool
-	FirstDockTurn			int					// The turn we first docked. -1 means never.
+	FirstDockingTurn		int					// The turn we first thought about docking. -1 means never.
+	FirstLaunchTurn			int					// The turn we first had a chance to undock. -1 means never.
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -56,7 +58,8 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 		ret.RushChoice = RUSHING
 	}
 
-	ret.FirstDockTurn = -1
+	ret.FirstDockingTurn = -1
+	ret.FirstLaunchTurn = -1
 
 	return ret
 }
@@ -71,7 +74,21 @@ func (self *Overmind) Step() {
 		self.MaybeEndRush()
 	}
 
+	if self.FirstLaunchTurn == -1 {
+		for _, pilot := range self.Pilots {
+			if pilot.DockedStatus == hal.DOCKED {
+				self.FirstLaunchTurn = self.Game.Turn()
+			}
+		}
+	}
+
 	self.ResetPilots()
+
+	if self.FirstLaunchTurn == self.Game.Turn() {			// We have a docked ship for the first time. Emergency undock?
+		if self.LateRushDetector() {
+			self.RushChoice = RUSHING
+		}
+	}
 
 	self.SetCowardFlag()
 
@@ -94,7 +111,7 @@ func (self *Overmind) Step() {
 		if self.CanAvoidBad2v1() {
 			self.AvoidBad2v1()
 		} else {
-			gen.FightRush(self.Game, self.RushEnemyID)
+			gen.FightRush(self.Game, self.RushEnemyID, self.Config.Imperfect)
 			self.RushChoice = RUSHING
 			return
 		}
@@ -102,19 +119,27 @@ func (self *Overmind) Step() {
 
 	self.NormalStep()
 
-	if self.FirstDockTurn == self.Game.Turn() {
+	// Maybe just cancel our whole order...
+
+	if self.FirstDockingTurn == self.Game.Turn() {
 		self.MaybeDefend_4p_Rush()
 	}
 
 	self.DebugNavStack()
 	self.DebugInhibition()
+	self.DebugOrders()
 }
 
 func (self *Overmind) NormalStep() {
+
 	self.ChooseTargets()
 	self.OptimisePilots()
 	self.SetInhibition()							// We might use target info for this in future, so put it here.
 	self.ExecuteMoves()
+
+	if self.RushChoice == RUSHING {
+		self.UndockAll()
+	}
 }
 
 // --------------------------------------------
@@ -255,9 +280,9 @@ func (self *Overmind) ExecuteMoves() {
 
 		pilot.ExecutePlan()
 
-		if self.FirstDockTurn == -1 {
+		if self.FirstDockingTurn == -1 {
 			if hal.GetOrderType(pilot.Plan) == "d" {
-				self.FirstDockTurn = self.Game.Turn()
+				self.FirstDockingTurn = self.Game.Turn()
 			}
 		}
 	}
@@ -310,6 +335,22 @@ func (self *Overmind) DebugInhibition() {
 	}
 }
 
+func (self *Overmind) DebugOrders() {
+
+	const (
+		DEBUG_TURN = 8
+		DEBUG_SHIP_ID = 5
+	)
+
+	if self.Game.Turn() == DEBUG_TURN {
+		for _, pilot := range self.Pilots {
+			if pilot.Id == DEBUG_SHIP_ID {
+				pilot.Log("Docked: %v. Order: %v", pilot.DockedStatus, self.Game.CurrentOrder(pilot.Ship))
+			}
+		}
+	}
+}
+
 // --------------------------------------------
 
 func (self *Overmind) WeAreBeing_4p_Rushed() bool {
@@ -340,8 +381,37 @@ func (self *Overmind) MaybeDefend_4p_Rush() {
 		}
 
 		self.RushChoice = RUSHING
-		self.FirstDockTurn = -1
 
 		self.NormalStep()
+	}
+}
+
+func (self *Overmind) LateRushDetector() bool {
+
+	// Called on the first turn when we can undock.
+
+	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+
+	docked := 0
+
+	for _, enemy := range relevant_enemies {
+		if enemy.DockedStatus != hal.UNDOCKED {
+			docked++
+		}
+	}
+
+	if len(relevant_enemies) - docked > 1 {
+		return true
+	}
+
+	return false
+}
+
+func (self *Overmind) UndockAll() {
+	for _, pilot := range self.Pilots {
+		if pilot.DockedStatus == hal.DOCKED {
+			pilot.PlanUndock()
+			pilot.ExecutePlan()
+		}
 	}
 }

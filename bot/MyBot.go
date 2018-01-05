@@ -23,6 +23,7 @@ func main() {
 	config := new(ai.Config)
 	flag.BoolVar(&config.Conservative, "conservative", false, "no rushing")
 	flag.BoolVar(&config.ForceRush, "forcerush", false, "always rush")
+	flag.BoolVar(&config.Imperfect, "imperfect", false, "don't use \"perfect\" GA")
 	flag.BoolVar(&config.NoMsg, "nomsg", false, "no angle messages")
 	flag.BoolVar(&config.Profile, "profile", false, "run Golang CPU profile")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")

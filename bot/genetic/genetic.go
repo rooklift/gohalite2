@@ -252,7 +252,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 	return genomes[0], iterations_required
 }
 
-func FightRush(game *hal.Game, enemy_pid int) {
+func FightRush(game *hal.Game, enemy_pid int, force_imperfect bool) {
 
 	game.LogOnce("Entering dangerous rush situation!")
 
@@ -267,6 +267,9 @@ func FightRush(game *hal.Game, enemy_pid int) {
 		if ship.DockedStatus != hal.UNDOCKED {
 			play_perfect = false
 		}
+	}
+	if force_imperfect {
+		play_perfect = false
 	}
 
 	genome, iterations_required := EvolveGenome(game, 15000, play_perfect, enemy_pid)
