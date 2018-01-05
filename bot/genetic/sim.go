@@ -59,6 +59,7 @@ type SimShip struct {
 	owner			int
 	hp				int
 	id				int
+	stupid_death	bool				// Crude hack (v73) since we want to avoid this at all costs.
 }
 
 func (self *SimShip) Dist(e hal.Entity) float64 {
@@ -185,6 +186,11 @@ func (self *Sim) Step() {
 				ship_a.hp = 0
 				ship_b.hp = 0
 
+				if ship_a.owner == ship_b.owner {
+					ship_a.stupid_death = true
+					ship_b.stupid_death = true
+				}
+
 			} else if event.what == ATTACK {
 
 				ship_a, ship_b := event.ship_a, event.ship_b
@@ -206,6 +212,7 @@ func (self *Sim) Step() {
 			} else if event.what == PLANET_COLLISION {						// FIXME: if we use this for real sims, we need to do planet damage.
 
 				event.ship_a.hp = 0
+				event.ship_a.stupid_death = true
 
 			}
 		}

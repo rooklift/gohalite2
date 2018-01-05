@@ -161,56 +161,63 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) (*Genome, i
 
 				sim.Step()
 
-				var good_thirteens = make(map[int]int)
-
-				for _, ship := range my_sim_ship_ptrs {
-
-					if ship.hp > 0 {
-						genome.score += ship.hp * 100
-					}
-
-					genome.score -= int(ship.Dist(centre_of_gravity) * 2)
-
-					if ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
-						genome.score -= 200000
-					}
-
-					// -------------------------------
-
-					// In "perfect" mode we give huge bonuses to moves that can only ever be hit by 1 enemy;
-					// which means being < 13 away from the *starting* location of 1 enemy.
-
-					if play_perfect && scenario == 0 {
-
-						var thirteens []int									// IDs of ships that might be able to hit us.
-
-						for _, enemy_ship := range game.EnemyShips() {		// i.e. using their actual game position without simulation.
-							if ship.Dist(enemy_ship) < 13 {
-								thirteens = append(thirteens, enemy_ship.Id)
-							}
-						}
-
-						if len(thirteens) == 1 && ship.hp > 0 {
-							genome.score += 100000
-							enemy_ship_id := thirteens[0]
-							good_thirteens[enemy_ship_id] += 1
-						}
-
-						if len(thirteens) > 1 {								// Don't check for ship being alive, so that we don't kill self to avoid this.
-							genome.score -= 100000
-						}
-					}
-				}
-
-				// Modest bonus for coordinated thirteens (should be enough)
-
-				for _, hits := range good_thirteens {
-					genome.score += (hits - 1) * 5000
-				}
+				// Score for damage...
 
 				for _, ship := range enemy_sim_ship_ptrs {
 					if ship.hp > 0 {
 						genome.score -= ship.hp * 100
+					}
+				}
+
+				for _, ship := range my_sim_ship_ptrs {
+					if ship.hp > 0 {
+						genome.score += ship.hp * 100
+					}
+				}
+
+				if scenario == 0 {
+
+					// Only need to do all this once per ship.
+
+					var good_thirteens = make(map[int]int)
+
+					for _, ship := range my_sim_ship_ptrs {
+
+						genome.score -= int(ship.Dist(centre_of_gravity) * 6)
+
+						if ship.stupid_death || ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
+							genome.score -= 9999999
+						}
+
+						if play_perfect {
+
+							// In "perfect" mode we give huge bonuses to moves that can only ever be hit by 1 enemy;
+							// which means being < 13 away from the *starting* location of 1 enemy.
+
+							var thirteens []int									// IDs of ships that might be able to hit us.
+
+							for _, enemy_ship := range game.EnemyShips() {		// i.e. using their actual game position without simulation.
+								if ship.Dist(enemy_ship) < 13 {
+									thirteens = append(thirteens, enemy_ship.Id)
+								}
+							}
+
+							if len(thirteens) == 1 {
+								genome.score += 100000
+								enemy_ship_id := thirteens[0]
+								good_thirteens[enemy_ship_id] += 1
+							}
+
+							if len(thirteens) > 1 {
+								genome.score -= 100000
+							}
+						}
+					}
+
+					// Modest bonus for coordinated thirteens (should be enough)
+
+					for _, hits := range good_thirteens {
+						genome.score += (hits - 1) * 15000
 					}
 				}
 			}
