@@ -38,14 +38,16 @@ Collision avoidance is fairly straightforward. Each ship starts off with its act
 
 In 2-player games it's sometimes sensible to rush the enemy, ignoring planets and going straight at 'em. In this case, when the ships are close to the enemy, the bot uses a genetic algorithm to find which moves are best, i.e. we generate a random "genome" (list of moves) and then do the following:
 
-* Mutate the genome randomly.
-* Simulate the results.
+* Mutate the genome randomly, giving us a new list of moves.
+* Simulate the result, and score it according to some "fitness" function.
 * If the new genome is good, keep it, otherwise discard.
 * Repeat.
 
-The problem is, the simulation seems to need the opponent's moves. I started with some very crude guessing. However, eventually (around v70) I realised we can use a reward function based on moving our ships so that it's impossible for the enemy to do more damage to us than we do to him. Basically this involves our ships being < 13 range of exactly one enemy.
+When I constructed this, I wasn't sure exactly what fitness function I would end up using. But I wanted to avoid local optima. To avoid these, I run multiple chains of evolution at once, with different "heats". Hot chains are allowed to accept bad mutations (the hotter the chain, the looser its standards are). Between iterations, the chains are sorted so that the colder chains have the better genomes. In this way, the cold chains can be pulled out of local optima. I believe this whole process is called "Metropolis Coupling".
 
-Another problem is local optima. To avoid these, I run multiple chains of evolution at once, with different "heats". Hot chains are allowed to accept bad mutations (the hotter the chain, the looser its standards are). Between iterations, the chains are sorted so that the colder chains have the better genomes. In this way, the cold chains can be pulled out of local optima. I believe this whole process is called "Metropolis Coupling".
+In the end, the fitness function was mostly about moving my ships so that they are all < 13 range of exactly one enemy; so that only that one ship can get near us. If it happens to move at speed 7 towards us, it will be < 6 range, i.e. weapons range, and in that case it'll take damage from 2 or 3 of our ships, while it will be the sole attacker for its side.
+
+The whole thing is probably overkill given how I ended up using it.
 
 # Global Strategy - Conceptual Breakthroughs
 
