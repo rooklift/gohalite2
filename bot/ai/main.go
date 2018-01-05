@@ -67,6 +67,9 @@ func (self *Overmind) Step() {
 
 	if self.RushChoice == UNDECIDED {
 		self.DecideRush()
+		if self.RushChoice == RUSHING {
+			self.ClearAllTargets()
+		}
 	} else if self.RushChoice == RUSHING {
 		self.MaybeEndRush()
 	}
@@ -82,6 +85,7 @@ func (self *Overmind) Step() {
 	self.ResetPilots()
 
 	if self.FirstLaunchTurn == self.Game.Turn() {			// We have a docked ship for the first time. Emergency undock?
+		self.Game.Log("Checking for late rush detection.")
 		if self.LateRushDetector() {
 			self.RushChoice = RUSHING
 		}
@@ -137,14 +141,12 @@ func (self *Overmind) NormalStep() {
 
 func (self *Overmind) ResetPilots() {
 
-	game := self.Game
-
 	// Add new AIs for new ships...
 
-	my_new_ships := game.MyNewShipIDs()
+	my_new_ships := self.Game.MyNewShipIDs()
 
 	for _, sid := range my_new_ships {
-		pilot := pil.NewPilot(sid, game)
+		pilot := pil.NewPilot(sid, self.Game)
 		self.Pilots = append(self.Pilots, pilot)
 	}
 
@@ -157,6 +159,13 @@ func (self *Overmind) ResetPilots() {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
 		}
+	}
+}
+
+func (self *Overmind) ClearAllTargets() {
+	for _, pilot := range self.Pilots {
+		pilot.ResetAndUpdate(true)
+		pilot.Target = hal.Nothing				// Clears PORT targets
 	}
 }
 
@@ -352,6 +361,7 @@ func (self *Overmind) LateRushDetector() bool {
 	}
 
 	if len(relevant_enemies) - docked > 1 {
+		self.Game.Log("LateRushDetector(): %v - %v > 1", len(relevant_enemies), docked)
 		return true
 	}
 

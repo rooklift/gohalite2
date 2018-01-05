@@ -13,24 +13,33 @@ func (self *Overmind) DecideRush() {
 
 	if self.Game.InitialPlayers() > 2 {
 		self.RushChoice = NOT_RUSHING
+		self.Game.Log("Not rushing because: self.Game.InitialPlayers() > 2")
 		return
 	}
 
-	if len(self.Game.AllShips()) > 6 || len(self.Game.MyShips()) < 3 {
+	if len(self.Game.MyShips()) < 3 {
 		self.RushChoice = NOT_RUSHING
+		self.Game.Log("Not rushing because: len(self.Game.MyShips()) < 3")
 		return
 	}
-
-	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
-
+/*
+	if self.Game.WeHaveDockedShips() {
+		self.RushChoice = NOT_RUSHING
+		self.Game.Log("Not rushing because: self.Game.WeHaveDockedShips()")
+		return
+	}
+*/
 	my_ships := self.Game.MyShips()
 
 	for _, ship := range my_ships {
 		if ship.DockedStatus != hal.UNDOCKED {
 			self.RushChoice = NOT_RUSHING
+			self.Game.Log("Not rushing because: ship.DockedStatus != hal.UNDOCKED")
 			return
 		}
 	}
+
+	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
 
 	sort.Slice(my_ships, func(a, b int) bool {
 		return my_ships[b].Dist(centre_of_gravity) < my_ships[b].Dist(centre_of_gravity)
@@ -38,6 +47,7 @@ func (self *Overmind) DecideRush() {
 
 	if my_ships[0].Dist(centre_of_gravity) < 45 && my_ships[1].Dist(centre_of_gravity) < 48 && my_ships[2].Dist(centre_of_gravity) < 51 {
 		self.RushChoice = RUSHING
+		self.Game.Log("RUSHING!")
 		return
 	}
 }

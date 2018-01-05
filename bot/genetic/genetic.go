@@ -254,7 +254,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 func FightRush(game *hal.Game, enemy_pid int, play_perfect bool) {
 
-	game.LogOnce("Entering dangerous rush situation!")
+	game.LogOnce("Entering genetic algorithm!")
 
 	genome, iterations_required := EvolveGenome(game, 15000, play_perfect, enemy_pid)
 
