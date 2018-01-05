@@ -32,6 +32,7 @@ type Overmind struct {
 	CowardFlag				bool
 	RushChoice				int
 	RushEnemyID				int
+	LastTurnWasGenetic		bool				// Crude hack to help transition out of GA back to normal
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -53,6 +54,11 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 func (self *Overmind) Step() {
 
 	self.ResetPilots()
+
+	if self.LastTurnWasGenetic {
+		self.LastTurnWasGenetic = false
+		self.SetTargetsAfterGenetic()
+	}
 
 	self.SetCowardFlag()
 
@@ -76,10 +82,11 @@ func (self *Overmind) Step() {
 
 	if self.Config.Conservative == false && self.DetectRushFight() {
 
-		self.Check2v1()			// Will set Conservative if need be.
+		self.Check2v1()			// Will set Conservative and choose targets if need be.
 
 		if self.Config.Conservative == false {
 			gen.FightRush(self.Game)
+			self.LastTurnWasGenetic = true
 			return
 		}
 	}

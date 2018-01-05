@@ -278,8 +278,9 @@ func (self *Overmind) ChooseCentreDocks() {
 
 func (self *Overmind) Check2v1() {
 
-	// Called when DetectRushFight() has already returned true, i.e. we are in close proximity to enemy.
-	// This is a special case that loses occasional games if we don't handle it... basically, if we are
+	// Called when DetectRushFight() has already returned true, i.e. we want to enter the genetic algorithm.
+
+	// There is a special case that loses occasional games if we don't handle it... basically, if we are
 	// 2v1 up but the opponent ever produced a ship, we can't just chase him forever.
 
 	if self.Game.CountMyShips() < 2 || self.Game.CountEnemyShips() > 1 {
@@ -300,7 +301,8 @@ func (self *Overmind) Check2v1() {
 		return
 	}
 
-	// So we are indeed in the losing situation...
+	// So we are indeed in the losing situation... our response is, if possible, to assign 1 ship to chase
+	// the enemy while our other ship(s) dock.
 
 	if enemy_ship.ShotsToKill() <= self.Pilots[0].ShotsToKill() && enemy_ship.DockedStatus == hal.UNDOCKED {
 
@@ -342,6 +344,63 @@ func (self *Overmind) FindRushEnemy() {
 			self.RushEnemyID = 0
 		} else if self.Game.Pid() == 3 {
 			self.RushEnemyID = 1
+		}
+	}
+}
+
+func (self *Overmind) SetTargetsAfterGenetic() {
+
+	// Exiting the GA and docking is usually unwise.
+
+	// Hopefully all our guys already have targets set, but if not,
+	// this function does something semi-sane.
+
+	is_targeted := make(map[int]bool)
+
+	all_enemy_ships := self.Game.EnemyShips()
+
+	for _, ship := range all_enemy_ships {
+		is_targeted[ship.Id] = false
+	}
+
+	for _, pilot := range self.Pilots {
+		if pilot.Target.Type() == hal.SHIP {
+			is_targeted[pilot.Target.GetId()] = true
+		}
+	}
+
+	var new_targets []*hal.Ship
+
+	for sid, _ := range is_targeted {
+		if is_targeted[sid] == false {
+			ship, _ := self.Game.GetShip(sid)
+			new_targets = append(new_targets, ship)
+		}
+	}
+
+	// If there are no untargeted ships, just send our targetless guys at whatever ship...
+
+	if len(new_targets) == 0 {
+		new_targets = all_enemy_ships
+	}
+
+	for _, pilot := range self.Pilots {
+
+		if pilot.Target.Type() == hal.NOTHING {
+
+			sort.Slice(new_targets, func(a, b int) bool {
+				return pilot.Dist(new_targets[a]) < pilot.Dist(new_targets[b])
+			})
+
+			pilot.Target = new_targets[0]
+			pilot.Locked = true
+			pilot.Fearless = true
+
+			// Better not send all our guys after the same enemy...
+
+			if len(new_targets) > 1 {
+				new_targets = new_targets[1:]
+			}
 		}
 	}
 }
