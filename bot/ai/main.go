@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"sort"
 
-	gen "../genetic"
 	hal "../core"
 	pil "../pilot"
 )
@@ -111,7 +110,7 @@ func (self *Overmind) Step() {
 		if self.CanAvoidBad2v1() {
 			self.AvoidBad2v1()
 		} else {
-			gen.FightRush(self.Game, self.RushEnemyID, self.Config.Imperfect)
+			self.EnterGeneticAlgorithm()
 			self.RushChoice = RUSHING
 			return
 		}

@@ -252,25 +252,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 	return genomes[0], iterations_required
 }
 
-func FightRush(game *hal.Game, enemy_pid int, force_imperfect bool) {
+func FightRush(game *hal.Game, enemy_pid int, play_perfect bool) {
 
 	game.LogOnce("Entering dangerous rush situation!")
-
-	relevant_enemies := game.ShipsOwnedBy(enemy_pid)
-
-	play_perfect := true
-
-	if len(game.MyShips()) == 1 || len(game.MyShips()) < len(relevant_enemies) {
-		play_perfect = false
-	}
-	for _, ship := range relevant_enemies {
-		if ship.DockedStatus != hal.UNDOCKED {
-			play_perfect = false
-		}
-	}
-	if force_imperfect {
-		play_perfect = false
-	}
 
 	genome, iterations_required := EvolveGenome(game, 15000, play_perfect, enemy_pid)
 

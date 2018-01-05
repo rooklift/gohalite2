@@ -3,6 +3,7 @@ package ai
 import (
 	"sort"
 
+	gen "../genetic"
 	hal "../core"
 )
 
@@ -346,4 +347,30 @@ func (self *Overmind) FindRushEnemy() {
 			self.RushEnemyID = 1
 		}
 	}
+}
+
+func (self *Overmind) EnterGeneticAlgorithm() {
+
+	play_perfect := self.Config.Imperfect == false
+
+	if play_perfect {		// Sometimes we need to turn it off anyway
+
+		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+
+		if len(self.Game.MyShips()) > len(relevant_enemies) && self.Game.InitialPlayers() > 2 {
+			play_perfect = false
+		}
+
+		if len(self.Game.MyShips()) == 1 || len(self.Game.MyShips()) < len(relevant_enemies) {
+			play_perfect = false
+		}
+
+		for _, ship := range relevant_enemies {
+			if ship.DockedStatus != hal.UNDOCKED {
+				play_perfect = false
+			}
+		}
+	}
+
+	gen.FightRush(self.Game, self.RushEnemyID, play_perfect)
 }
