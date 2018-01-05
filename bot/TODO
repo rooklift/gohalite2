@@ -1,9 +1,7 @@
 TODO (IMPORTANT)
 
 - Deal with rushes in 4 player...
-- Fix GA exit for 4p case.
 - Fix 2v1 check for 4p case.
-- Fix TurnZeroCluster for 4p case.
 
 TODO (SOMEWHAT)
 
