@@ -410,7 +410,7 @@ func (self *Overmind) SetTargetsAfterGenetic() {
 			pilot.Locked = true
 			pilot.Fearless = true
 
-			pilot.Log("Exiting GA, gained target: %v", pilot.Target)
+			pilot.Log("Because of GA, gained target: %v", pilot.Target)
 
 			// Better not send all our guys after the same enemy...
 
