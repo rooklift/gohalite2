@@ -111,6 +111,12 @@ func (self *Overmind) DetectRushFight() bool {
 	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)			// In 4p, this is only the ships of the closest player
 	my_ships := self.Game.MyShips()
 
+	// Enemy exists...
+
+	if len(relevant_enemies) == 0 {
+		return false
+	}
+
 	// <= 3 ships each
 
 	if len(my_ships) > 3 || len(relevant_enemies) > 3 {
@@ -349,16 +355,22 @@ func (self *Overmind) FindRushEnemy() {
 
 func (self *Overmind) SetTargetsAfterGenetic() {
 
-	// Exiting the GA and docking is usually unwise.
+	// Lets say that entering GA commits us to wiping the enemy out.
+	// Make sure all our ships are targeting the enemy, for when we
+	// drop out of GA, if we do.
 
-	// Hopefully all our guys already have targets set, but if not,
-	// this function does something semi-sane.
+	// Note that we're working with a state of the world that hasn't
+	// been updated yet since we haven't sent our GA moves yet.
 
 	is_targeted := make(map[int]bool)
 
-	all_enemy_ships := self.Game.EnemyShips()
+	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
 
-	for _, ship := range all_enemy_ships {
+	if len(relevant_enemies) == 0 {				// Should be impossible, the GA wouldn't have been called.
+		return
+	}
+
+	for _, ship := range relevant_enemies {
 		is_targeted[ship.Id] = false
 	}
 
@@ -380,7 +392,7 @@ func (self *Overmind) SetTargetsAfterGenetic() {
 	// If there are no untargeted ships, just send our targetless guys at whatever ship...
 
 	if len(new_targets) == 0 {
-		new_targets = all_enemy_ships
+		new_targets = relevant_enemies
 	}
 
 	for _, pilot := range self.Pilots {
