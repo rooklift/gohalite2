@@ -386,6 +386,9 @@ func (self *Overmind) SetTargetsAfterGenetic() {
 
 	for _, pilot := range self.Pilots {
 
+		// The only way we can have a target is if it was locked in some turns ago.
+		// If it wasn't locked, we would have cleared it at Step() start.
+
 		if pilot.Target.Type() != hal.SHIP {
 
 			sort.Slice(new_targets, func(a, b int) bool {
@@ -395,6 +398,8 @@ func (self *Overmind) SetTargetsAfterGenetic() {
 			pilot.Target = new_targets[0]
 			pilot.Locked = true
 			pilot.Fearless = true
+
+			pilot.Log("Exiting GA, gained target: %v", pilot.Target)
 
 			// Better not send all our guys after the same enemy...
 
