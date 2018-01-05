@@ -30,7 +30,7 @@ type Overmind struct {
 	Pilots					[]*pil.Pilot		// Stored in no particular order, sort at will
 	Game					*hal.Game
 	CowardFlag				bool
-	RushChoice				int
+	RushChoice				int					// Affects ChooseTargets() and ResetPilots()
 	RushEnemyID				int
 	NeverGA					bool
 }

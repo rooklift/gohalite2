@@ -97,11 +97,8 @@ func (self *Overmind) PlanetProblems(planet *hal.Planet) []*Problem {
 
 	var ret []*Problem
 
-	game := self.Game
-	enemies := game.EnemiesNearPlanet(planet)
-	capture_strength := game.DesiredSpots(planet)
-
-	// -----
+	enemies := self.Game.EnemiesNearPlanet(planet)
+	capture_strength := self.Game.DesiredSpots(planet)
 
 	switch len(enemies) {
 
