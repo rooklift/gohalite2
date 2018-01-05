@@ -174,6 +174,7 @@ func (self *Game) Parse() {
 			self.token_parser.Float()								// Skip deprecated "speedy"
 			ship.DockedStatus = self.token_parser.DockedStatus()
 			ship.DockedPlanet = self.token_parser.Int()
+			ship.DockingProgress = self.token_parser.Int()
 
 			ship.fudge_dock_status()								// Correct for Halite's oddity about docking status
 
@@ -181,7 +182,6 @@ func (self *Game) Parse() {
 				ship.DockedPlanet = -1
 			}
 
-			ship.DockingProgress = self.token_parser.Int()
 			self.token_parser.Int()									// Skip deprecated "cooldown"
 
 			if last_ship == nil {
