@@ -1,9 +1,11 @@
 TODO (IMPORTANT)
 
 - Deal with rushes in 4 player...
+- Fix our 2p behaviour when enemy down to 1 or 2 ships but we're not close - don't dock if he hasn't
 
 TODO (SOMEWHAT)
 
+- Implement the "twelve" concept for not penalising 2 hits of 13 so much?
 - Better bad-combat-avoidance (not based on own target??)
 
 OTHER
