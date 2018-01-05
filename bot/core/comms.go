@@ -255,11 +255,12 @@ func (self *Game) Parse() {
 		}
 
 		planet.DockedShips = self.token_parser.Int()
+		official_docked_ships := planet.DockedShips					// How many ships the engine will send us, regardless of truth...
 
 		// The dockMap is kept separately due to an old design decision...
 		// i.e. the Planet struct itself does not get the following data:
 
-		for s := 0; s < planet.DockedShips; s++ {
+		for s := 0; s < official_docked_ships; s++ {
 
 			// This relies on the fact that we've already been given info about the ships...
 
