@@ -54,6 +54,10 @@ func (self *Game) EnemyShips() []*Ship {
 	return ret
 }
 
+func (self *Game) WeHaveDockedShips() bool {
+	return self.we_have_docked_ships
+}
+
 // ----------------------------------------------
 
 func (self *Game) CountMyShips() int {
