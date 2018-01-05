@@ -33,7 +33,6 @@ type Overmind struct {
 	RushChoice				int					// Affects ChooseTargets(), ResetPilots() and OptimisePilots()
 	RushEnemyID				int
 	NeverGA					bool
-	FirstDockingTurn		int					// The turn we first thought about docking. -1 means never.
 	FirstLaunchTurn			int					// The turn we first had a chance to undock. -1 means never.
 }
 
@@ -57,7 +56,6 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 		ret.RushChoice = RUSHING
 	}
 
-	ret.FirstDockingTurn = -1
 	ret.FirstLaunchTurn = -1
 
 	return ret
@@ -117,12 +115,6 @@ func (self *Overmind) Step() {
 	}
 
 	self.NormalStep()
-
-	// Maybe just cancel our whole order...
-
-	if self.FirstDockingTurn == self.Game.Turn() {
-		self.MaybeDefend_4p_Rush()
-	}
 
 	self.DebugNavStack()
 	self.DebugInhibition()
@@ -276,14 +268,7 @@ func (self *Overmind) ExecuteMoves() {
 	// Don't forget our non-mobile ships!
 
 	for _, pilot := range frozen_pilots {
-
 		pilot.ExecutePlan()
-
-		if self.FirstDockingTurn == -1 {
-			if hal.GetOrderType(pilot.Plan) == "d" {
-				self.FirstDockingTurn = self.Game.Turn()
-			}
-		}
 	}
 }
 
@@ -351,39 +336,6 @@ func (self *Overmind) DebugOrders() {
 }
 
 // --------------------------------------------
-
-func (self *Overmind) WeAreBeing_4p_Rushed() bool {
-
-	if self.Game.InitialPlayers() <= 2 {
-		return false
-	}
-
-	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
-
-	if len(relevant_enemies) == 0 {
-		return false
-	}
-
-	// return true
-	return false
-}
-
-func (self *Overmind) MaybeDefend_4p_Rush() {
-
-	// Called at the time of our first dock.
-
-	if self.WeAreBeing_4p_Rushed() {
-
-		for _, pilot := range self.Pilots {
-			pilot.ResetAndUpdate(true)
-			pilot.Target = hal.Nothing			// Needed because ResetAndUpdate() won't clear PORT targets.
-		}
-
-		self.RushChoice = RUSHING
-
-		self.NormalStep()
-	}
-}
 
 func (self *Overmind) LateRushDetector() bool {
 
