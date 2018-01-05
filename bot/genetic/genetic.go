@@ -78,7 +78,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 		}
 	}
 
-	centre_of_gravity := game.AllShipsCentreOfGravity()
+	centre_of_gravity := game.PartialCentreOfGravity(game.Pid(), enemy_pid)
 
 	var genomes []*Genome
 
