@@ -47,7 +47,7 @@ func (self *Overmind) SetCowardFlag() {
 
 	// So currently CowardFlag is false; should we make it true?
 
-	if self.Game.CountPlanets() - self.Game.CountOwnedPlanets() > 5 {
+	if self.Game.Turn() < 100 {
 		return
 	}
 
