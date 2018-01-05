@@ -43,6 +43,7 @@ func (self *Overmind) DecideRush() {
 
 func (self *Overmind) MaybeEndRush() {
 	if len(self.Game.ShipsOwnedBy(self.RushEnemyID)) == 0 {
+		self.Game.Log("Ending rush!")
 		self.RushChoice = NOT_RUSHING
 	}
 }
@@ -314,7 +315,7 @@ func (self *Overmind) FindRushEnemy() {
 		if self.Game.Pid() == 0 {
 			self.RushEnemyID = 1
 		} else {
-			self.RushEnemyID = 2
+			self.RushEnemyID = 0
 		}
 
 	case 4:
