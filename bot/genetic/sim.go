@@ -251,13 +251,20 @@ func (self *Sim) Step() {
 	}
 }
 
-func SetupSim(game *hal.Game) *Sim {
+func SetupSim(game *hal.Game, enemy_pid int) *Sim {
+
+	var relevant_ships []*hal.Ship
+
+	// It's important that my own ships are in order, but that's handled by a sort in comms.go
+
+	relevant_ships = append(relevant_ships, game.MyShips()...)
+	relevant_ships = append(relevant_ships, game.ShipsOwnedBy(enemy_pid)...)
 
 	sim := new(Sim)
 
 	for _, planet := range game.AllPlanets() {
 
-		for _, ship := range game.AllShips() {
+		for _, ship := range relevant_ships {
 
 			if planet.Dist(ship) < planet.Radius + 8 {		// Only include relevant planets
 
@@ -274,7 +281,8 @@ func SetupSim(game *hal.Game) *Sim {
 		}
 	}
 
-	for _, ship := range game.AllShips() {					// Guaranteed sorted by ship ID
+	for _, ship := range relevant_ships {
+
 		sim.ships = append(sim.ships, &SimShip{
 			SimEntity: SimEntity{
 				x: ship.X,

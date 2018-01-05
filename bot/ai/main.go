@@ -45,6 +45,8 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 		game.SetThreatRange(10)
 	}
 
+	ret.FindRushEnemy()
+
 	return ret
 }
 
@@ -58,6 +60,9 @@ func (self *Overmind) Step() {
 
 	if self.RushChoice == UNDECIDED {
 		self.DecideRush()
+		if self.RushChoice == RUSHING {
+			self.SetRushTargets()
+		}
 	}
 
 	if self.Game.Turn() == 0 {
@@ -79,7 +84,7 @@ func (self *Overmind) Step() {
 		self.Check2v1()			// Will set Conservative and choose targets if need be.
 
 		if self.Config.Conservative == false {
-			gen.FightRush(self.Game)
+			gen.FightRush(self.Game, self.RushEnemyID)
 			self.SetTargetsAfterGenetic()
 			return
 		}

@@ -10,14 +10,13 @@ func (self *Overmind) DecideRush() {
 
 	// Can leave things undecided, in which case it will be called again next iteration.
 
-	if self.Game.InitialPlayers() > 2 {
-		self.RushChoice = NOT_RUSHING
+	if self.Config.ForceRush {
+		self.RushChoice = RUSHING
 		return
 	}
 
-	if self.Config.ForceRush {
-		self.RushChoice = RUSHING
-		self.SetRushTargets()
+	if self.Game.InitialPlayers() > 2 {
+		self.RushChoice = NOT_RUSHING
 		return
 	}
 
@@ -43,12 +42,13 @@ func (self *Overmind) DecideRush() {
 
 	if my_ships[0].Dist(centre_of_gravity) < 45 && my_ships[1].Dist(centre_of_gravity) < 48 && my_ships[2].Dist(centre_of_gravity) < 51 {
 		self.RushChoice = RUSHING
-		self.SetRushTargets()
 		return
 	}
 }
 
-func (self *Overmind) SetRushTargets() {		// Called on Turn 0 only, iff Rush Flag is set.
+func (self *Overmind) SetRushTargets() {
+
+	// FIXME: since this can now happen on turns other than 0, we need a better way.
 
 	// Sort our pilots by Y...
 
@@ -58,7 +58,7 @@ func (self *Overmind) SetRushTargets() {		// Called on Turn 0 only, iff Rush Fla
 
 	// Sort enemies by Y...
 
-	enemies := self.Game.EnemyShips()
+	enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
 	sort.Slice(enemies, func(a, b int) bool {
 		return enemies[a].Y < enemies[b].Y
 	})
@@ -108,26 +108,18 @@ func (self *Overmind) Cluster(s0, d0, s1, d1, s2, d2 int) {
 
 func (self *Overmind) DetectRushFight() bool {
 
-	// 2 players
-
-	players := self.Game.SurvivingPlayerIDs()
-
-	if len(players) != 2 {
-		return false
-	}
+	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)			// In 4p, this is only the ships of the closest player
+	my_ships := self.Game.MyShips()
 
 	// <= 3 ships each
 
-	for _, pid := range players {
-		ships := self.Game.ShipsOwnedBy(pid)
-		if len(ships) > 3 {
-			return false
-		}
+	if len(my_ships) > 3 || len(relevant_enemies) > 3 {
+		return false
 	}
 
 	// My ships all undocked
 
-	for _, ship := range self.Game.MyShips() {
+	for _, ship := range my_ships {
 		if ship.DockedStatus != hal.UNDOCKED {
 			return false
 		}
@@ -135,9 +127,15 @@ func (self *Overmind) DetectRushFight() bool {
 
 	// All ships near centre of gravity
 
-	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
+	centre_of_gravity := self.Game.PartialCentreOfGravity(self.Game.Pid(), self.RushEnemyID)
 
-	for _, ship := range self.Game.AllShips() {
+	for _, ship := range relevant_enemies {
+		if ship.Dist(centre_of_gravity) > 20 {
+			return false
+		}
+	}
+
+	for _, ship := range my_ships {
 		if ship.Dist(centre_of_gravity) > 20 {
 			return false
 		}
@@ -145,8 +143,8 @@ func (self *Overmind) DetectRushFight() bool {
 
 	// Now, return true if any of my ships is within critical distance of any enemy ship
 
-	for _, my_ship := range self.Game.MyShips() {
-		for _, enemy_ship := range self.Game.EnemyShips() {
+	for _, my_ship := range my_ships {
+		for _, enemy_ship := range relevant_enemies {
 			if my_ship.Dist(enemy_ship) <= 20 {
 				return true
 			}
@@ -279,6 +277,7 @@ func (self *Overmind) ChooseCentreDocks() {
 func (self *Overmind) Check2v1() {
 
 	// Called when DetectRushFight() has already returned true, i.e. we want to enter the genetic algorithm.
+	// FIXME: was written assuming we only enter GA in 2p.
 
 	// There is a special case that loses occasional games if we don't handle it... basically, if we are
 	// 2v1 up but the opponent ever produced a ship, we can't just chase him forever.

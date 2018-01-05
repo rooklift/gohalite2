@@ -61,14 +61,14 @@ func (self *Genome) Mutate() {
 
 // --------------------------------------------------------------------
 
-func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) (*Genome, int) {
+func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid int) (*Genome, int) {
 
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 	// Perhaps another should be the enemy ships blinking out of existence, so we don't crash into planets.
 
 	width, height := float64(game.Width()), float64(game.Height())
 
-	initial_sim := SetupSim(game)
+	initial_sim := SetupSim(game, enemy_pid)
 
 	sim_without_enemies := initial_sim.Copy()
 	for i := 0; i < len(sim_without_enemies.ships); i++ {
@@ -124,12 +124,19 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) (*Genome, i
 					}
 				}
 
+				previous_sid := -1
+
 				for i := 0; i < len(my_sim_ship_ptrs); i++ {
 					speed := genome.genes[i].speed
 					angle := genome.genes[i].angle
 					vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
 					my_sim_ship_ptrs[i].vel_x = vel_x
 					my_sim_ship_ptrs[i].vel_y = vel_y
+
+					if my_sim_ship_ptrs[i].id <= previous_sid {
+						game.LogOnce(" >>>>>>>>>>>>>> MAJOR ERROR: my_sim_ship_ptrs not in order <<<<<<<<<<<<<<")
+					}
+					previous_sid = my_sim_ship_ptrs[i].id
 				}
 
 				for i := 0; i < len(enemy_sim_ship_ptrs); i++ {
@@ -194,9 +201,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) (*Genome, i
 							// In "perfect" mode we give huge bonuses to moves that can only ever be hit by 1 enemy;
 							// which means being < 13 away from the *starting* location of 1 enemy.
 
-							var thirteens []int									// IDs of ships that might be able to hit us.
+							var thirteens []int											// IDs of ships that might be able to hit us.
 
-							for _, enemy_ship := range game.EnemyShips() {		// i.e. using their actual game position without simulation.
+							for _, enemy_ship := range game.ShipsOwnedBy(enemy_pid) {	// i.e. using their actual game position without simulation.
 								if ship.Dist(enemy_ship) < 13 {
 									thirteens = append(thirteens, enemy_ship.Id)
 								}
@@ -245,22 +252,24 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool) (*Genome, i
 	return genomes[0], iterations_required
 }
 
-func FightRush(game *hal.Game) {
+func FightRush(game *hal.Game, enemy_pid int) {
 
 	game.LogOnce("Entering dangerous rush situation!")
 
+	relevant_enemies := game.ShipsOwnedBy(enemy_pid)
+
 	play_perfect := true
 
-	if len(game.MyShips()) == 1 || len(game.MyShips()) < len(game.EnemyShips()) {
+	if len(game.MyShips()) == 1 || len(game.MyShips()) < len(relevant_enemies) {
 		play_perfect = false
 	}
-	for _, ship := range game.EnemyShips() {
+	for _, ship := range relevant_enemies {
 		if ship.DockedStatus != hal.UNDOCKED {
 			play_perfect = false
 		}
 	}
 
-	genome, iterations_required := EvolveGenome(game, 15000, play_perfect)
+	genome, iterations_required := EvolveGenome(game, 15000, play_perfect, enemy_pid)
 
 	var order_elements []int
 
