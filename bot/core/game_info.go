@@ -147,20 +147,31 @@ func (self *Game) SurvivingPlayerIDs() []int {
 	return ret
 }
 
-func (self *Game) AllShipsCentreOfGravity() *Point {
+func (self *Game) CentreOfGravity(ships []*Ship) *Point {
+	if len(ships) == 0 {
+		return &Point{float64(self.width) / 2, float64(self.height) / 2}
+	}
 	avg_x := 0.0
 	avg_y := 0.0
-
-	all_ships := self.AllShips()
-
-	for _, ship := range all_ships {
+	for _, ship := range ships {
 		avg_x += ship.X
 		avg_y += ship.Y
 	}
-	avg_x /= float64(len(all_ships))
-	avg_y /= float64(len(all_ships))
-
+	avg_x /= float64(len(ships))
+	avg_y /= float64(len(ships))
 	return &Point{avg_x, avg_y}
+}
+
+func (self *Game) AllShipsCentreOfGravity() *Point {
+	return self.CentreOfGravity(self.AllShips())
+}
+
+func (self *Game) PartialCentreOfGravity(player_ids ...int) *Point {
+	var ships []*Ship
+	for _, n := range player_ids {
+		ships = append(ships, self.ShipsOwnedBy(n)...)
+	}
+	return self.CentreOfGravity(ships)
 }
 
 func (self *Game) DesiredSpots(planet *Planet) int {

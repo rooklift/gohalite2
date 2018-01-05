@@ -184,6 +184,8 @@ func (self *Game) Parse() {
 
 			if last_ship == nil {
 				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
+				ship.SpawnX = ship.X
+				ship.SpawnY = ship.Y
 				self.cumulativeShips[pid]++
 				self.lastmoveMap[sid] = &MoveInfo{Spawned: true}	// All other fields zero.
 			} else {

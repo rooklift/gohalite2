@@ -81,6 +81,8 @@ type Ship struct {
 	DockingProgress		int
 
 	Birth				int			// Turn this ship was first seen
+	SpawnX				float64
+	SpawnY				float64
 
 	Firing				bool		// Whether the ship will fire at Time 0 this turn (unless it docks)
 	Doomed				bool		// Whether the ship will die at Time 0 this turn (unless nearby enemy ships dock)
