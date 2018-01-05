@@ -64,6 +64,20 @@ func (self *Game) CountEnemyShips() int {
 	return len(self.enemy_ships_cache)
 }
 
+func (self *Game) CountPlanets() int {
+	return len(self.all_planets_cache)
+}
+
+func (self *Game) CountOwnedPlanets() int {
+	ret := 0
+	for _, planet := range self.all_planets_cache {
+		if planet.Owned {
+			ret++
+		}
+	}
+	return ret
+}
+
 // ----------------------------------------------
 
 func (self *Game) MyNewShipIDs() []int {			// My ships born this turn.
