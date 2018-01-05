@@ -116,6 +116,33 @@ func (s *Ship) ShotsToKill() int {
 	return ((s.HP + 63) / 64)		// Exploiting integer division
 }
 
+func (s *Ship) fudge_dock_status() {
+
+	// Since docking status is the first thing updated in a turn,
+	// we should really push it forward one step. We might get
+	// a command in an iteration earlier due to this.
+	//
+	// The parser calls this.
+
+	switch s.DockedStatus {
+
+	case DOCKING:
+
+		s.DockingProgress--
+		if s.DockingProgress == 0 {
+			s.DockedStatus = DOCKED
+		}
+
+	case UNDOCKING:
+
+		s.DockingProgress--
+		if s.DockingProgress == 0 {
+			s.DockedStatus = UNDOCKED
+			s.DockedPlanet = -1
+		}
+	}
+}
+
 // ------------------------------------------------------
 
 type Point struct {

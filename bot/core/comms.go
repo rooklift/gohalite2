@@ -175,6 +175,8 @@ func (self *Game) Parse() {
 			ship.DockedStatus = self.token_parser.DockedStatus()
 			ship.DockedPlanet = self.token_parser.Int()
 
+			ship.fudge_dock_status()								// Correct for Halite's oddity about docking status
+
 			if ship.DockedStatus == UNDOCKED {
 				ship.DockedPlanet = -1
 			}
@@ -254,7 +256,7 @@ func (self *Game) Parse() {
 
 		planet.DockedShips = self.token_parser.Int()
 
-		// The dockMap is kept separately so that the Planet struct has no mutable fields.
+		// The dockMap is kept separately due to an old design decision...
 		// i.e. the Planet struct itself does not get the following data:
 
 		for s := 0; s < planet.DockedShips; s++ {
@@ -266,7 +268,12 @@ func (self *Game) Parse() {
 			if ok == false {
 				panic("Parser choked on GetShip(sid)")
 			}
-			self.dockMap[plid] = append(self.dockMap[plid], ship)
+
+			if ship.DockedStatus != UNDOCKED {								// Can be false due to fudge_dock_status()
+				self.dockMap[plid] = append(self.dockMap[plid], ship)
+			} else {
+				planet.DockedShips--										// Also needed due to fudge_dock_status()
+			}
 		}
 		sort.Slice(self.dockMap[plid], func(a, b int) bool {
 			return self.dockMap[plid][a].Id < self.dockMap[plid][b].Id
