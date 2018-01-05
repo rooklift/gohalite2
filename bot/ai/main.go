@@ -30,9 +30,10 @@ type Overmind struct {
 	Pilots					[]*pil.Pilot		// Stored in no particular order, sort at will
 	Game					*hal.Game
 	CowardFlag				bool
-	RushChoice				int					// Affects ChooseTargets() and ResetPilots()
+	RushChoice				int					// Affects ChooseTargets(), ResetPilots() and OptimisePilots()
 	RushEnemyID				int
 	NeverGA					bool
+	FirstDockTurn			int					// The turn we first docked. -1 means never.
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -54,6 +55,8 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	} else if config.ForceRush {
 		ret.RushChoice = RUSHING
 	}
+
+	ret.FirstDockTurn = -1
 
 	return ret
 }
@@ -97,13 +100,21 @@ func (self *Overmind) Step() {
 		}
 	}
 
-	self.ChooseTargets()
-	self.OptimisePilots()
-	self.SetInhibition()				// We might use target info for this in future, so put it here.
-	self.ExecuteMoves()
+	self.NormalStep()
+
+	if self.FirstDockTurn == self.Game.Turn() {
+		self.MaybeDefendRush()						// Maybe scraps everything...
+	}
 
 	self.DebugNavStack()
 	self.DebugInhibition()
+}
+
+func (self *Overmind) NormalStep() {
+	self.ChooseTargets()
+	self.OptimisePilots()
+	self.SetInhibition()							// We might use target info for this in future, so put it here.
+	self.ExecuteMoves()
 }
 
 // --------------------------------------------
@@ -241,7 +252,14 @@ func (self *Overmind) ExecuteMoves() {
 	// Don't forget our non-mobile ships!
 
 	for _, pilot := range frozen_pilots {
+
 		pilot.ExecutePlan()
+
+		if self.FirstDockTurn == -1 {
+			if hal.GetOrderType(pilot.Plan) == "d" {
+				self.FirstDockTurn = self.Game.Turn()
+			}
+		}
 	}
 }
 
@@ -289,5 +307,37 @@ func (self *Overmind) DebugInhibition() {
 				break
 			}
 		}
+	}
+}
+
+// --------------------------------------------
+
+func (self *Overmind) WeAreBeingRushed() bool {
+
+	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+
+	if len(relevant_enemies) == 0 {
+		return false
+	}
+
+	// return true
+	return false
+}
+
+func (self *Overmind) MaybeDefendRush() {
+
+	// Called at the time of our first dock.
+
+	if self.WeAreBeingRushed() {
+
+		for _, pilot := range self.Pilots {
+			pilot.ResetAndUpdate(true)
+			pilot.Target = hal.Nothing			// Needed because ResetAndUpdate() won't clear PORT targets.
+		}
+
+		self.RushChoice = RUSHING
+		self.FirstDockTurn = -1
+
+		self.NormalStep()
 	}
 }

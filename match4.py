@@ -1,7 +1,7 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe --forcerush",
+	"bot.exe",
 	".\\otherbots\\v73\\mybot.exe",
 	".\\otherbots\\v73\\mybot.exe",
 	".\\otherbots\\v73\\mybot.exe",

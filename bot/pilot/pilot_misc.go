@@ -59,7 +59,7 @@ func (self *Pilot) ResetPlan() {
 	self.Game.RawOrder(self.Id, "")
 }
 
-func (self *Pilot) ResetAndUpdate(reset_targets bool) bool {					// Usually clears target. Return true if we still exist.
+func (self *Pilot) ResetAndUpdate(reset_targets bool) bool {				// Return true if we still exist.
 
 	_, ok := self.Game.GetShip(self.Id)
 
