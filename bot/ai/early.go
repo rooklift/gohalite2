@@ -337,16 +337,34 @@ func (self *Overmind) FindRushEnemy() {
 			self.RushEnemyID = 0
 		}
 
+		my_first_ship := self.Game.MyShips()[0]
+
+		if my_first_ship.X < float64(self.Game.Width()) / 2 - 20 {
+			self.MyRushSide = hal.LEFT
+		} else if my_first_ship.X > float64(self.Game.Width()) / 2 + 20 {
+			self.MyRushSide = hal.RIGHT
+		} else if my_first_ship.Y < float64(self.Game.Height()) / 2 - 20 {
+			self.MyRushSide = hal.TOP
+		} else if my_first_ship.Y > float64(self.Game.Height()) / 2 + 20 {
+			self.MyRushSide = hal.BOTTOM
+		} else {
+			panic("Couldn't determine MyRushSide")
+		}
+
 	case 4:
 
 		if self.Game.Pid() == 0 {
 			self.RushEnemyID = 2
+			self.MyRushSide = hal.TOP
 		} else if self.Game.Pid() == 1 {
 			self.RushEnemyID = 3
+			self.MyRushSide = hal.TOP
 		} else if self.Game.Pid() == 2 {
 			self.RushEnemyID = 0
+			self.MyRushSide = hal.BOTTOM
 		} else if self.Game.Pid() == 3 {
 			self.RushEnemyID = 1
+			self.MyRushSide = hal.BOTTOM
 		}
 	}
 }

@@ -32,6 +32,7 @@ type Overmind struct {
 	CowardFlag				bool
 	RushChoice				int					// Affects ChooseTargets(), ResetPilots() and OptimisePilots()
 	RushEnemyID				int
+	MyRushSide				hal.Edge			// Which side I am on when facing a rush (e.g. I might be LEFT side)
 	NeverGA					bool
 	FirstLaunchTurn			int					// The turn we first had a chance to undock. -1 means never.
 }
@@ -389,16 +390,16 @@ func (self *Overmind) LateRushDetector() bool {
 
 	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
 
-	docked := 0
+	dangerous := 0
 
 	for _, enemy := range relevant_enemies {
-		if enemy.DockedStatus != hal.UNDOCKED {
-			docked++
+		if enemy.DockedStatus == hal.UNDOCKED {
+			dangerous++
 		}
 	}
 
-	if len(relevant_enemies) - docked > 1 {
-		self.Game.Log("LateRushDetector(): %v - %v > 1", len(relevant_enemies), docked)
+	if dangerous > 1 {
+		self.Game.Log("LateRushDetector(): dangerous == %v", dangerous)
 		return true
 	}
 

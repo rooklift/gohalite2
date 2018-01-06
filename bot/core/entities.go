@@ -122,7 +122,6 @@ func (s *Ship) VagueDirection() Edge {
 	return TOP
 }
 
-
 func (s *Ship) fudge_dock_status() {
 
 	// Since docking status is the first thing updated in a turn,
