@@ -69,24 +69,31 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	}
 }
 
-func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// Sometimes approach, sometimes flee.
+	// Protect it if it's friendly...
 
-	if self.Firing {
-		self.EngageShipFlee(enemy_ship, avoid_list)
+	if other_ship.Owner == self.Game.Pid() {
+		self.ProtectShip(other_ship, avoid_list)
 		return
 	}
 
-	if (self.Inhibition > 0 && self.Dist(enemy_ship) <= 20) {
+	// Otherwise: sometimes approach, sometimes flee...
+
+	if self.Firing {
+		self.EngageShipFlee(other_ship, avoid_list)
+		return
+	}
+
+	if (self.Inhibition > 0 && self.Dist(other_ship) <= 20) {
 
 		// We are close to our enemy ship; if we both approach each other we will fight.
 		// But should we actually approach?
 
 		// Special case if the enemy ship is docked and there are no dangerous ships nearby...
 
-		if enemy_ship.DockedStatus != hal.UNDOCKED && self.DangerShips == 0 {
-			self.EngageShipApproach(enemy_ship, avoid_list)
+		if other_ship.DockedStatus != hal.UNDOCKED && self.DangerShips == 0 {
+			self.EngageShipApproach(other_ship, avoid_list)
 			self.Log("Safe to ignore Inhibition and approach docked ship.")
 			return
 		}
@@ -94,20 +101,30 @@ func (self *Pilot) EngageShip(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 		// Special case if the enemy ship is alone and we can kill it safely...
 		// FIXME: this isn't actually correct, an enemy docked ship could absorb some damage intended for our real target...
 
-		if enemy_ship.DockedStatus == hal.UNDOCKED && self.DangerShips == 1 && enemy_ship.ShotsToKill() == 1 && self.ShotsToKill() > 1 {
-			self.EngageShipApproach(enemy_ship, avoid_list)
+		if other_ship.DockedStatus == hal.UNDOCKED && self.DangerShips == 1 && other_ship.ShotsToKill() == 1 && self.ShotsToKill() > 1 {
+			self.EngageShipApproach(other_ship, avoid_list)
 			self.Log("Safe to ignore Inhibition and go for the kill.")
 			return
 		}
 
 		// But normally, flee...
 
-		self.EngageShipFlee(enemy_ship, avoid_list)
+		self.EngageShipFlee(other_ship, avoid_list)
 		return
 	}
 
-	self.EngageShipApproach(enemy_ship, avoid_list)
+	self.EngageShipApproach(other_ship, avoid_list)
 	return
+}
+
+func (self *Pilot) ProtectShip(other_ship *hal.Ship, avoid_list []hal.Entity) {
+	side := self.DecideSideFor(other_ship)
+	speed, degrees, err := self.GetApproach(other_ship, 0, avoid_list, side)
+	if err != nil {
+		self.Message = MSG_RECURSION
+	} else {
+		self.PlanThrust(speed, degrees)
+	}
 }
 
 func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
@@ -189,44 +206,3 @@ func (self *Pilot) SetInhibition(all_ships []*hal.Ship) {
 		self.Inhibition += strength
 	}
 }
-
-
-
-/*
-
-func (self *Pilot) SetTurnTarget() {				// Set our short term tactical target.
-
-	if self.DockedStatus != hal.UNDOCKED || self.Target.Type() != hal.PLANET || self.Locked {
-		return
-	}
-
-	planet := self.Target.(*hal.Planet)
-
-	// Is the planet far away?
-
-	if self.ApproachDist(planet) > 100 {
-		return
-	}
-
-	// If no enemies, just return, leaving the planet as target...
-
-	enemies := self.Game.EnemiesNearPlanet(planet)
-
-	if len(enemies) == 0 {
-		return
-	}
-
-	// Find closest...
-
-	sort.Slice(enemies, func(a, b int) bool {
-		return enemies[a].Dist(self.Ship) < enemies[b].Dist(self.Ship)
-	})
-
-	// We could consider only targetting non-doomed enemies. Problem: if there are none,
-	// we will target the planet, potentially causing us to dock. But in that case,
-	// a so-called "doomed" enemy can survive, since we didn't shoot it after all!
-
-	self.Target = enemies[0]
-}
-
-*/

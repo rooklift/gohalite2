@@ -136,11 +136,18 @@ func (self *Overmind) RushProblems() []*Problem {
 
 	var problems []*Problem
 
-	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+	var helpable_docked_ships []*hal.Ship
 
-	for _, ship := range relevant_enemies {
+	for _, ship := range self.Game.MyShips() {
+		if ship.DockedStatus != hal.UNDOCKED && ship.Doomed == false {
+			helpable_docked_ships = append(helpable_docked_ships, ship)
+		}
+	}
 
-		if ship.Doomed == false {
+	if len(helpable_docked_ships) > 0 {
+
+		for _, ship := range helpable_docked_ships {
+
 			problem := &Problem{
 				Entity: ship,
 				Value: 1.0,
@@ -148,6 +155,23 @@ func (self *Overmind) RushProblems() []*Problem {
 				Message: ship.Id,
 			}
 			problems = append(problems, problem)
+		}
+
+	} else {
+
+		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+
+		for _, ship := range relevant_enemies {
+
+			if ship.Doomed == false {
+				problem := &Problem{
+					Entity: ship,
+					Value: 1.0,
+					Need: 1,
+					Message: ship.Id,
+				}
+				problems = append(problems, problem)
+			}
 		}
 	}
 
