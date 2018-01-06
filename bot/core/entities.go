@@ -108,6 +108,19 @@ func (s *Ship) ShotsToKill() int {
 	return ((s.HP + 63) / 64)		// Exploiting integer division
 }
 
+func (s *Ship) VagueDirection() Edge {
+
+	// Was the ship's last move mostly up, down, left, or right?
+
+	if s.LastAngle > 360 { panic("VagueDirection(): ship had angle > 360") }
+
+	if s.LastAngle >= 315 || s.LastAngle < 45 { return RIGHT }
+	if s.LastAngle >= 135 && s.LastAngle < 225 { return LEFT }
+	if s.LastAngle < 180 { return BOTTOM }
+	return TOP
+}
+
+
 func (s *Ship) fudge_dock_status() {
 
 	// Since docking status is the first thing updated in a turn,
