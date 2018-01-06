@@ -305,6 +305,7 @@ func (self *Overmind) AvoidBad2v1() {
 
 	self.RushChoice = RUSHING									// Ensures the chaser continues to chase.
 	self.NeverGA = true
+	self.AvoidingBad2v1 = true
 
 	sort.Slice(self.Pilots, func(a, b int) bool {
 		return self.Pilots[a].HP > self.Pilots[b].HP			// Note reversed sort, highest HP first - it will chase enemy.

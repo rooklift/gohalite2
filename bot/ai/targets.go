@@ -66,7 +66,7 @@ func (self *Overmind) ChooseTargets() {
 
 func (self *Overmind) AllProblems() []*Problem {
 
-	if self.RushChoice == RUSHING {
+	if self.RushChoice == RUSHING && self.AvoidingBad2v1 == false {
 		return self.RushProblems()
 	}
 

@@ -35,6 +35,7 @@ type Overmind struct {
 	MyRushSide				hal.Edge			// Which side I am on when facing a rush (e.g. I might be LEFT side)
 	NeverGA					bool
 	FirstLaunchTurn			int					// The turn we first had a chance to undock. -1 means never.
+	AvoidingBad2v1			bool				// AvoidBad2v1() has been called.
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -85,7 +86,7 @@ func (self *Overmind) Step() {
 
 	self.ResetPilots()
 
-	if self.FirstLaunchTurn == self.Game.Turn() {			// We have a docked ship for the first time. Emergency undock?
+	if self.FirstLaunchTurn == self.Game.Turn() && self.AvoidingBad2v1 == false {	// We have a docked ship for the first time. Emergency undock?
 		self.Game.Log("Checking for late rush detection.")
 		if self.LateRushDetector() {
 			self.RushChoice = RUSHING
@@ -135,7 +136,7 @@ func (self *Overmind) NormalStep() {
 	self.SetInhibition()							// We might use target info for this in future, so put it here.
 	self.ExecuteMoves()
 
-	if self.RushChoice == RUSHING {
+	if self.RushChoice == RUSHING && self.AvoidingBad2v1 == false {
 		self.UndockAll()
 	}
 }
