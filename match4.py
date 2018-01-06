@@ -1,9 +1,9 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe",
-	"bot.exe",
-	"bot.exe",
+	"bot.exe --split",
+	"bot.exe --split",
+	"bot.exe --split",
 	"bot.exe --forcerush --imperfect",
 ]
 

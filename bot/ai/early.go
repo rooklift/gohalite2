@@ -166,7 +166,11 @@ func (self *Overmind) ChooseThreeDocks() {
 	var docks []*hal.Port
 
 	for _, planet := range closest_three {
-		docks = append(docks, hal.OpeningDockHelper(planet, self.Pilots[0].Ship)...)
+		if self.Config.Split {
+			docks = append(docks, hal.OpeningDockHelper(2, planet, self.Pilots[0].Ship)...)
+		} else {
+			docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
+		}
 	}
 
 	if len(docks) < 3 {
@@ -253,7 +257,7 @@ func (self *Overmind) ChooseCentreDocks() {
 	var docks []*hal.Port
 
 	for _, planet := range centre_planets {
-		docks = append(docks, hal.OpeningDockHelper(planet, self.Pilots[0].Ship)...)
+		docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
 	}
 
 	if len(docks) < 3 {

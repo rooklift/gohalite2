@@ -15,7 +15,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "79 final"
+	VERSION = "80 dev"
 )
 
 func main() {
@@ -26,6 +26,7 @@ func main() {
 	flag.BoolVar(&config.Imperfect, "imperfect", false, "don't use \"perfect\" GA")
 	flag.BoolVar(&config.NoMsg, "nomsg", false, "no angle messages")
 	flag.BoolVar(&config.Profile, "profile", false, "run Golang CPU profile")
+	flag.BoolVar(&config.Split, "split", false, "split ships at start")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
 	flag.Parse()
 

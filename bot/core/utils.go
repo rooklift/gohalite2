@@ -172,22 +172,25 @@ func HashFromString(datastring string) string {
 	return fmt.Sprintf("%x", sum)
 }
 
-func OpeningDockHelper(p *Planet, mid_ship *Ship) []*Port {
+func OpeningDockHelper(max int, p *Planet, mid_ship *Ship) []*Port {
 
-	// Returns 2 or 3 points for a ship and its nearby allies to dock at.
+	// Return up to 3 points for a ship and its nearby allies to dock at.
+	// Won't return more than the planet has docks.
 
 	var ret []*Port
 
+	max = Min(max, p.DockingSpots)		// How many docks to return.
+
 	switch {
 
-	case p.DockingSpots == 1:
+	case max == 1:
 
 		degrees := p.Angle(mid_ship)
 		dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees)
 
 		ret = append(ret, &Port{dock_x, dock_y, p.Id})
 
-	case p.DockingSpots > 1:
+	case max > 1:
 
 		degrees_mid := p.Angle(mid_ship)
 		dock_mid_x, dock_mid_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid)
@@ -205,7 +208,7 @@ func OpeningDockHelper(p *Planet, mid_ship *Ship) []*Port {
 
 				ret = append(ret, dock)
 
-				if p.DockingSpots > 2 {
+				if max > 2 {
 
 					dock_x, dock_y := Projection(p.X, p.Y, p.Radius + 1.05, degrees_mid - n)
 					dock := &Port{dock_x, dock_y, p.Id}

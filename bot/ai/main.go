@@ -22,6 +22,7 @@ type Config struct {
 	NoMsg					bool
 	Imperfect				bool
 	Profile					bool
+	Split					bool
 	Timeseed				bool
 }
 
