@@ -101,6 +101,8 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 			genome.score = 0
 
+			// We run some different scenarios of what the enemy will do.
+
 			for scenario := 0; scenario < 3; scenario++ {
 
 				var sim *Sim
@@ -243,11 +245,19 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							// In "perfect" mode we give huge bonuses to moves that can only ever be hit by 1 enemy;
 							// which means being < 13 away from the *starting* location of 1 enemy.
 
-							var thirteens []int											// IDs of ships that might be able to hit us.
+							var thirteens	[]int										// IDs of ships that might be able to hit us.
+							var twelves		[]int										// As above, but with some tolerance.
+							var eights		[]int										// IDs of ships that might be able to ram us.
 
 							for _, enemy_ship := range real_enemy_ships {				// Must use real_enemy_ships, since enemy_sim_ship_ptrs is []
 								if ship.Dist(enemy_ship) < 13 {
 									thirteens = append(thirteens, enemy_ship.Id)
+								}
+								if ship.Dist(enemy_ship) < 12 {
+									twelves = append(twelves, enemy_ship.Id)
+								}
+								if ship.Dist(enemy_ship) < 8 {
+									eights = append(eights, enemy_ship.Id)
 								}
 							}
 
@@ -259,6 +269,14 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 							if len(thirteens) > 1 {
 								genome.score -= 100000
+							}
+
+							if len(twelves) > 1 {			// We have this in case we just can't find a way to avoid > 2 thirteens.
+								genome.score -= 200000		// In which case we need to punish it more if it goes even worse.
+							}
+
+							if len(eights) > 0 {			// Note > 0. This stops us getting accidentally rammed when enemy ship is solo.
+								genome.score -= 300000
 							}
 						}
 					}
