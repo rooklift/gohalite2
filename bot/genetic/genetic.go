@@ -78,8 +78,6 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 		}
 	}
 
-	centre_of_gravity := game.PartialCentreOfGravity(game.Pid(), enemy_pid)
-
 	var genomes []*Genome
 
 	for n := 0; n < CHAINS; n++ {
@@ -184,13 +182,57 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 				if scenario == 0 {
 
+					// Note that enemy_sim_ship_ptrs is empty here, so use real ships...
+
+					real_enemy_ships := game.ShipsOwnedBy(enemy_pid)
+
+					// Minimise the biggest distances... (but with a small, overridable score)
+
+					highest_enemy_clearance := -1.0
+
+					for _, enemy := range real_enemy_ships {
+
+						closest_range := 999999.9
+
+						for _, ship := range my_sim_ship_ptrs {
+							d := ship.Dist(enemy)
+							if d < closest_range {
+								closest_range = d
+							}
+						}
+
+						if closest_range > highest_enemy_clearance {
+							highest_enemy_clearance = closest_range
+						}
+					}
+
+					highest_friendly_clearance := -1.0
+
+					for _, ship := range my_sim_ship_ptrs {
+
+						closest_range := 999999.9
+
+						for _, enemy := range real_enemy_ships {
+							d := ship.Dist(enemy)
+							if d < closest_range {
+								closest_range = d
+							}
+						}
+
+						if closest_range > highest_friendly_clearance {
+							highest_friendly_clearance = closest_range
+						}
+					}
+
+					genome.score -= int(highest_enemy_clearance * 6)
+					genome.score -= int(highest_friendly_clearance * 6)
+
+					// Do the "perfect" thirteen distance trick.
 					// Only need to do all this once per ship.
 
 					var good_thirteens = make(map[int]int)
 
 					for _, ship := range my_sim_ship_ptrs {
-
-						genome.score -= int(ship.Dist(centre_of_gravity) * 6)
 
 						if ship.stupid_death || ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
 							genome.score -= 9999999
@@ -203,7 +245,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 							var thirteens []int											// IDs of ships that might be able to hit us.
 
-							for _, enemy_ship := range game.ShipsOwnedBy(enemy_pid) {	// i.e. using their actual game position without simulation.
+							for _, enemy_ship := range real_enemy_ships {				// Must use real_enemy_ships, since enemy_sim_ship_ptrs is []
 								if ship.Dist(enemy_ship) < 13 {
 									thirteens = append(thirteens, enemy_ship.Id)
 								}
