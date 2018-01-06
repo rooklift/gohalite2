@@ -394,7 +394,9 @@ func (self *Overmind) LateRushDetector() bool {
 
 	for _, enemy := range relevant_enemies {
 		if enemy.DockedStatus == hal.UNDOCKED {
-			dangerous++
+			if enemy.VagueDirection() == self.MyRushSide {
+				dangerous++
+			}
 		}
 	}
 
