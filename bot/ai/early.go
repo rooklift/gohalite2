@@ -371,17 +371,17 @@ func (self *Overmind) FindRushEnemy() {
 
 func (self *Overmind) EnterGeneticAlgorithm() {
 
-	play_perfect := self.Config.Imperfect == false
+	play_perfect := (self.Config.Imperfect == false)
 
 	if play_perfect {		// Sometimes we need to turn it off anyway
 
 		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
 
-		if len(self.Game.MyShips()) > len(relevant_enemies) && self.Game.InitialPlayers() > 2 {
+		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) == 1 && self.Game.InitialPlayers() > 2 {
 			play_perfect = false
 		}
 
-		if len(self.Game.MyShips()) == 1 || len(self.Game.MyShips()) < len(relevant_enemies) {
+		if len(self.Game.MyShips()) == 1 {
 			play_perfect = false
 		}
 
