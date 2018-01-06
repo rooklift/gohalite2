@@ -124,14 +124,24 @@ func (self *Overmind) DetectRushFight() bool {
 
 	centre_of_gravity := self.Game.PartialCentreOfGravity(self.Game.Pid(), self.RushEnemyID)
 
+	threshold := 50.0
 	for _, ship := range relevant_enemies {
-		if ship.Dist(centre_of_gravity) > 50 {		// Not clear what this should be. Experiment with high.
+		if ship.DockedStatus != hal.UNDOCKED {				// Don't let a single mobile ship drag us away easily.
+			threshold -= 15
+		}
+	}
+	if threshold < 20 {
+		threshold = 20
+	}
+
+	for _, ship := range relevant_enemies {
+		if ship.Dist(centre_of_gravity) > threshold {		// Not clear what this should be. Experiment with high.
 			return false
 		}
 	}
 
 	for _, ship := range my_ships {
-		if ship.Dist(centre_of_gravity) > 50 {
+		if ship.Dist(centre_of_gravity) > threshold {
 			return false
 		}
 	}
