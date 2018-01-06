@@ -111,7 +111,9 @@ func (s *Ship) ShotsToKill() int {
 func (s *Ship) VagueDirection() Edge {
 
 	// Was the ship's last move mostly up, down, left, or right?
+	// Note that stationary ships return RIGHT.
 
+	if s.LastSpeed == 0 { return RIGHT }
 	if s.LastAngle > 360 { panic("VagueDirection(): ship had angle > 360") }
 
 	if s.LastAngle >= 315 || s.LastAngle < 45 { return RIGHT }
