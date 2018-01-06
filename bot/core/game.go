@@ -41,7 +41,6 @@ type Game struct {
 	planetMap					map[int]*Planet		// Planet ID --> Planet
 	dockMap						map[int][]*Ship		// Planet ID --> Ship slice
 	shipMap						map[int]*Ship		// Ship ID --> Ship
-	lastmoveMap					map[int]*MoveInfo	// Ship ID --> MoveInfo struct
 	playershipMap				map[int][]*Ship		// Player ID --> Ship slice
 	cumulativeShips				map[int]int			// Player ID --> Count
 	lastownerMap				map[int]int			// Planet ID --> Last owner (check OK for never owned)
@@ -82,7 +81,6 @@ func NewGame() *Game {
 	game.planetMap = make(map[int]*Planet)
 	game.shipMap = make(map[int]*Ship)
 	game.dockMap = make(map[int][]*Ship)
-	game.lastmoveMap = make(map[int]*MoveInfo)
 	game.cumulativeShips = make(map[int]int)
 	game.lastownerMap = make(map[int]int)
 	game.threat_range = INITIAL_THREAT_RANGE

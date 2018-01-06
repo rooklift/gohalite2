@@ -109,14 +109,6 @@ func (self *Game) ShipsDockedAt(planet *Planet) []*Ship {
 	return ret
 }
 
-func (self *Game) LastTurnMoveBy(ship *Ship) *MoveInfo {
-	return self.lastmoveMap[ship.Id]
-}
-
-func (self *Game) LastTurnMoveById(id int) *MoveInfo {
-	return self.lastmoveMap[id]
-}
-
 func (self *Game) ClosestPlanet(e Entity) *Planet {
 
 	var best_dist float64 = 9999999

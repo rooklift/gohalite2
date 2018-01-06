@@ -368,8 +368,8 @@ func (self *Overmind) DebugOrders() {
 func (self *Overmind) DebugTargets() {
 
 	const (
-		DEBUG_TURN = 16
-		DEBUG_SHIP_ID = 0
+		DEBUG_TURN = -1
+		DEBUG_SHIP_ID = -1
 	)
 
 	if self.Game.Turn() == DEBUG_TURN {

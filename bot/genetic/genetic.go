@@ -154,9 +154,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
 
 						case 1:
-							last_move := game.LastTurnMoveById(enemy_sim_ship_ptrs[i].id)
-							enemy_sim_ship_ptrs[i].vel_x = last_move.Dx
-							enemy_sim_ship_ptrs[i].vel_y = last_move.Dy
+							real_ship, _ := game.GetShip(enemy_sim_ship_ptrs[i].id)
+							enemy_sim_ship_ptrs[i].vel_x = real_ship.Dx
+							enemy_sim_ship_ptrs[i].vel_y = real_ship.Dy
 
 						case 2:
 							enemy_sim_ship_ptrs[i].vel_x = 0

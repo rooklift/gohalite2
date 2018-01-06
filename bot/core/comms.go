@@ -124,7 +124,6 @@ func (self *Game) Parse() {
 	self.shipMap = make(map[int]*Ship)
 	self.planetMap = make(map[int]*Planet)
 	self.dockMap = make(map[int][]*Ship)
-	self.lastmoveMap = make(map[int]*MoveInfo)
 	self.playershipMap = make(map[int][]*Ship)
 
 	// Player parsing.............................................................................
@@ -189,18 +188,11 @@ func (self *Game) Parse() {
 				ship.SpawnX = ship.X
 				ship.SpawnY = ship.Y
 				self.cumulativeShips[pid]++
-				self.lastmoveMap[sid] = &MoveInfo{Spawned: true}	// All other fields zero.
 			} else {
-				dx := ship.X - last_ship.X
-				dy := ship.Y - last_ship.Y
-				self.lastmoveMap[sid] = &MoveInfo{
-					Dx: dx,
-					Dy: dy,
-					Speed: Round(math.Sqrt(dx * dx + dy * dy)),
-					Degrees: Angle(last_ship.X, last_ship.Y, ship.X, ship.Y),
-					DockedStatus: ship.DockedStatus,
-					Spawned: false,
-				}
+				ship.Dx = ship.X - last_ship.X
+				ship.Dy = ship.Y - last_ship.Y
+				ship.LastSpeed = Round(math.Sqrt(ship.Dx * ship.Dx + ship.Dy * ship.Dy))
+				ship.LastAngle = Angle(last_ship.X, last_ship.Y, ship.X, ship.Y)
 			}
 
 			// Some inferred tactical info that we will set later...

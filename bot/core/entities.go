@@ -86,6 +86,11 @@ type Ship struct {
 
 	Firing				bool		// Whether the ship will fire at Time 0 this turn (unless it docks)
 	Doomed				bool		// Whether the ship will die at Time 0 this turn (unless nearby enemy ships dock)
+
+	Dx					float64
+	Dy					float64
+	LastSpeed			int
+	LastAngle			int
 }
 
 func (s *Ship) CanDock(p *Planet) bool {
@@ -97,19 +102,6 @@ func (s *Ship) CanDock(p *Planet) bool {
 
 func (s *Ship) CanMove() bool {
 	return s.DockedStatus == UNDOCKED
-}
-
-func (s *Ship) Continued(game *Game) *Ship {
-
-	last_move := game.LastTurnMoveBy(s)
-
-	ret := new(Ship)
-	*ret = *s
-
-	ret.X += last_move.Dx
-	ret.Y += last_move.Dy
-
-	return ret
 }
 
 func (s *Ship) ShotsToKill() int {
