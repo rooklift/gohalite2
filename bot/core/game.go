@@ -52,6 +52,7 @@ type Game struct {
 	logfile						*Logfile
 	token_parser				*TokenParser
 	raw							string
+	run_of_sames				int
 
 	parse_time					time.Time
 
@@ -99,6 +100,7 @@ func (self *Game) Height() int { return self.height }
 func (self *Game) InitialPlayers() int { return self.initialPlayers }
 func (self *Game) CurrentPlayers() int { return self.currentPlayers }
 func (self *Game) ParseTime() time.Time { return self.parse_time }
+func (self *Game) RunOfSames() int { return self.run_of_sames }
 
 func (self *Game) UpdateEnemyMaps() {
 

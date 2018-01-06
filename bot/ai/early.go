@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"math/rand"
 	"sort"
 
 	gen "../genetic"
@@ -370,6 +371,10 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 			if ship.DockedStatus != hal.UNDOCKED {
 				play_perfect = false
 			}
+		}
+
+		if self.Game.RunOfSames() > 10 && rand.Intn(5) == 0 {
+			play_perfect = false
 		}
 	}
 

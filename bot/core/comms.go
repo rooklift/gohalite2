@@ -337,7 +337,15 @@ func (self *Game) Parse() {
 	// Some meta info...
 
 	self.currentPlayers = players_with_ships
+
+	old_raw := self.raw
 	self.raw = self.token_parser.Tokens(" ")
+	if old_raw == self.raw {
+		self.run_of_sames++
+	} else {
+		self.run_of_sames = 0
+	}
+
 	self.UpdateEnemyMaps()
 	self.UpdateFriendMap()
 	self.PredictTimeZero()
