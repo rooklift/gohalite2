@@ -5,8 +5,8 @@ processes = [
 	"bot.exe --conservative --split",
 ]
 
-FORCED_WIDTH = 360		# None
-FORCED_HEIGHT = 240		# None
+FORCED_WIDTH = 240		# None
+FORCED_HEIGHT = 160		# None
 
 # ------------------------------------------------------------------------
 

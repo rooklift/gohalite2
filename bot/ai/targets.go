@@ -201,7 +201,7 @@ func (self *Overmind) OptimisePilots() {
 				}
 
 				// RUSH: allow pilots to swap only if targets are both ships,
-				// and only if they require the same number of shots to kill.
+				// and only if it doesn't change the tactical situation re: shots to kill.
 
 				if self.RushChoice == RUSHING {
 
@@ -209,10 +209,10 @@ func (self *Overmind) OptimisePilots() {
 						continue
 					}
 
-					ship_a := pilot_a.Target.(*hal.Ship)
-					ship_b := pilot_b.Target.(*hal.Ship)
+					target_a := pilot_a.Target.(*hal.Ship)
+					target_b := pilot_b.Target.(*hal.Ship)
 
-					if ship_a.ShotsToKill() != ship_b.ShotsToKill() {
+					if (target_a.ShotsToKill() != target_b.ShotsToKill()) && (pilot_a.ShotsToKill() != pilot_b.ShotsToKill()) {
 						continue
 					}
 				}
