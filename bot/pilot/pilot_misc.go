@@ -59,7 +59,7 @@ func (self *Pilot) ResetPlan() {
 	self.Game.RawOrder(self.Id, "")
 }
 
-func (self *Pilot) ResetAndUpdate(reset_targets bool) bool {				// Return true if we still exist.
+func (self *Pilot) ResetAndUpdate(reset_target bool) bool {				// Return true if we still exist.
 
 	_, ok := self.Game.GetShip(self.Id)
 
@@ -77,28 +77,27 @@ func (self *Pilot) ResetAndUpdate(reset_targets bool) bool {				// Return true i
 
 	// Delete our target if appropriate...
 
-	if self.DockedStatus != hal.UNDOCKED {
+	if reset_target == true {
+
 		self.Target = hal.Nothing
-	}
-
-	if self.Target.Type() == hal.PLANET || self.Target.Type() == hal.SHIP {
-		if self.Target.Alive() == false {
-			self.Target = hal.Nothing
-		}
-	}
-
-	if self.Target.Type() == hal.PORT {				// Don't reset port targets.
-
-		_, ok := self.Game.GetPlanet(self.Target.GetId())
-
-		if ok == false {
-			self.Target = hal.Nothing
-		}
 
 	} else {
 
-		if reset_targets == true {
+		if self.DockedStatus != hal.UNDOCKED {
 			self.Target = hal.Nothing
+		}
+
+		if self.Target.Type() == hal.PLANET || self.Target.Type() == hal.SHIP {
+			if self.Target.Alive() == false {
+				self.Target = hal.Nothing
+			}
+		}
+
+		if self.Target.Type() == hal.PORT {
+			_, ok := self.Game.GetPlanet(self.Target.GetId())
+			if ok == false {
+				self.Target = hal.Nothing
+			}
 		}
 	}
 

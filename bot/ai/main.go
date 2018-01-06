@@ -88,6 +88,7 @@ func (self *Overmind) Step() {
 		self.Game.Log("Checking for late rush detection.")
 		if self.LateRushDetector() {
 			self.RushChoice = RUSHING
+			self.ClearAllTargets()
 		}
 	}
 
@@ -123,6 +124,7 @@ func (self *Overmind) Step() {
 	self.DebugNavStack()
 	self.DebugInhibition()
 	self.DebugOrders()
+	self.DebugTargets()
 }
 
 func (self *Overmind) NormalStep() {
@@ -153,8 +155,27 @@ func (self *Overmind) ResetPilots() {
 	// Clear various variables, including target in most cases. Also delete pilot if the ship is dead.
 
 	for i := 0; i < len(self.Pilots); i++ {
+
 		pilot := self.Pilots[i]
-		alive := pilot.ResetAndUpdate(self.RushChoice != RUSHING)			// Reset if not rushing
+		needs_reset := true				// We mostly reset our target every turn. But exceptions:
+
+		/* Rush situation, and target is enemy ship. */
+		if self.RushChoice == RUSHING && pilot.Target.Type() == hal.SHIP && pilot.Target.(*hal.Ship).Owner != self.Game.Pid() {
+			needs_reset = false
+		}
+
+		/* Rush situation, and target is planet. */
+		if self.RushChoice == RUSHING && pilot.Target.Type() == hal.PLANET {
+			needs_reset = false
+		}
+
+		/* Target is port (used in opening). */
+		if pilot.Target.Type() == hal.PORT {
+			needs_reset = false
+		}
+
+		alive := pilot.ResetAndUpdate(needs_reset)
+
 		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
@@ -331,14 +352,30 @@ func (self *Overmind) DebugInhibition() {
 func (self *Overmind) DebugOrders() {
 
 	const (
-		DEBUG_TURN = 8
-		DEBUG_SHIP_ID = 5
+		DEBUG_TURN = -1
+		DEBUG_SHIP_ID = -1
 	)
 
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
 				pilot.Log("Docked: %v. Order: %v", pilot.DockedStatus, self.Game.CurrentOrder(pilot.Ship))
+			}
+		}
+	}
+}
+
+func (self *Overmind) DebugTargets() {
+
+	const (
+		DEBUG_TURN = 16
+		DEBUG_SHIP_ID = 0
+	)
+
+	if self.Game.Turn() == DEBUG_TURN {
+		for _, pilot := range self.Pilots {
+			if pilot.Id == DEBUG_SHIP_ID {
+				pilot.Log("Target: %v", pilot.Target)
 			}
 		}
 	}

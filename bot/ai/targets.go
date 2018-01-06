@@ -40,7 +40,7 @@ func (self *Overmind) ChooseTargets() {
 			continue
 		}
 
-		if pilot.Target.Type() != hal.NOTHING {			// Because our target is locked and so wasn't cleared.
+		if pilot.Target.Type() != hal.NOTHING {			// Because our target wasn't reset for some reason.
 			pilot.MessageWhileLocked()
 			continue
 		}
