@@ -62,8 +62,6 @@ type Game struct {
 	all_planets_cache			[]*Planet
 	all_immobile_cache			[]Entity			// Planets and docked ships
 
-	we_have_docked_ships		bool
-
 	// Some more stuff maybe used by the AI...
 
 	enemies_near_planet			map[int][]*Ship

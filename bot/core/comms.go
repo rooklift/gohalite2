@@ -127,8 +127,6 @@ func (self *Game) Parse() {
 	self.lastmoveMap = make(map[int]*MoveInfo)
 	self.playershipMap = make(map[int][]*Ship)
 
-	self.we_have_docked_ships = false
-
 	// Player parsing.............................................................................
 
 	self.parse_time = time.Now()				// MUST happen AFTER the first token parse. <------------------------------------- important
@@ -182,10 +180,6 @@ func (self *Game) Parse() {
 
 			if ship.DockedStatus == UNDOCKED {
 				ship.DockedPlanet = -1
-			} else {
-				if ship.Owner == self.pid {
-					self.we_have_docked_ships = true
-				}
 			}
 
 			self.token_parser.Int()									// Skip deprecated "cooldown"

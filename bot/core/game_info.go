@@ -55,7 +55,12 @@ func (self *Game) EnemyShips() []*Ship {
 }
 
 func (self *Game) WeHaveDockedShips() bool {
-	return self.we_have_docked_ships
+	for _, ship := range self.playershipMap[self.pid] {
+		if ship.DockedStatus != UNDOCKED {
+			return true
+		}
+	}
+	return false
 }
 
 // ----------------------------------------------
