@@ -2,7 +2,7 @@ import json, random, subprocess
 
 processes = [
 	"bot.exe",
-	".\\otherbots\\v69\\mybot.exe --forcerush",
+	"bot.exe --forcerush --imperfect",
 ]
 
 FORCED_WIDTH = 360		# None

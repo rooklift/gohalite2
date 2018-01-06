@@ -125,13 +125,13 @@ func (self *Overmind) DetectRushFight() bool {
 	centre_of_gravity := self.Game.PartialCentreOfGravity(self.Game.Pid(), self.RushEnemyID)
 
 	for _, ship := range relevant_enemies {
-		if ship.Dist(centre_of_gravity) > 20 {
+		if ship.Dist(centre_of_gravity) > 30 {
 			return false
 		}
 	}
 
 	for _, ship := range my_ships {
-		if ship.Dist(centre_of_gravity) > 20 {
+		if ship.Dist(centre_of_gravity) > 30 {
 			return false
 		}
 	}
