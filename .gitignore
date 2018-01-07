@@ -9,3 +9,4 @@ reload.py
 *.prof
 open_profile.bat
 *.json
+*.c

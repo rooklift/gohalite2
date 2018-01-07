@@ -106,7 +106,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 			genome := genomes[c].Copy()
 
-			if n > 0 {
+			if n > 0 {						// Don't mutate first iteration, so we get a true score for our initial genome. Makes the results stable.
 				genome.Mutate()
 			}
 
