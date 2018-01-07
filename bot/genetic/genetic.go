@@ -193,8 +193,20 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 					}
 				}
 
+				if scenario == 2 {
+
+					// A good scenario to run our stupidity checks in.
+
+					for _, ship := range my_sim_ship_ptrs {
+						if ship.stupid_death || ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
+							genome.score -= 9999999
+						}
+					}
+				}
+
 				if scenario == 0 {
 
+					// A good scenario to run every other check in.
 					// Note that enemy_sim_ship_ptrs is empty here, so use real ships...
 
 					real_enemy_ships := game.ShipsOwnedBy(enemy_pid)
@@ -246,10 +258,6 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 					var good_thirteens = make(map[int]int)
 
 					for _, ship := range my_sim_ship_ptrs {
-
-						if ship.stupid_death || ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
-							genome.score -= 9999999
-						}
 
 						if play_perfect {
 
