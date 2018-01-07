@@ -80,7 +80,7 @@ func (self *Overmind) AllProblems() []*Problem {
 	for _, ship := range self.Game.EnemyShips() {
 
 		if ship.Doomed == false {		// Skip the ship (as an assassination target) if we expect it to die at time 0.
-			problem := &Problem{		// Note that we may end up targetting it as a planet's secondary target. See SetTurnTarget().
+			problem := &Problem{		// Note that we may end up targetting it as a planet's secondary target.
 				Entity: ship,
 				Value: 1.0,
 				Need: 1,								// Consider making this 2.
@@ -119,6 +119,8 @@ func (self *Overmind) PlanetProblems(planet *hal.Planet) []*Problem {
 	default:
 
 		for _, enemy := range enemies {
+
+			// We can't skip Doomed targets here because we need to actually doom them before we dock.
 
 			ret = append(ret, &Problem{
 				Entity: enemy,

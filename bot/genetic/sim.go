@@ -191,6 +191,13 @@ func (self *Sim) Step() {
 					ship_b.stupid_death = true
 				}
 
+				if ship_a.dockedstatus != hal.UNDOCKED {
+					ship_b.stupid_death = true
+				}
+				if ship_b.dockedstatus != hal.UNDOCKED {
+					ship_a.stupid_death = true
+				}
+
 			} else if event.what == ATTACK {
 
 				ship_a, ship_b := event.ship_a, event.ship_b

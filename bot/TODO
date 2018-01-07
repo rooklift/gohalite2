@@ -1,5 +1,7 @@
 TODO (IMPORTANT)
 
+- Leave the GA alone
+
 - Better bad-combat-avoidance (not based on own target??)
 - Threat detection for planets based on.. what each ship's closest interesting planet is??
 - Psyho Strategy: target docked ships only, falling back if needed.

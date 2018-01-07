@@ -112,6 +112,12 @@ func (self *Overmind) DetectRushFight() bool {
 		return false
 	}
 
+	// I have more than 1 ship
+
+	if len(my_ships) == 1 {
+		return false
+	}
+
 	// My ships all undocked
 
 	for _, ship := range my_ships {
