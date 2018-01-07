@@ -112,10 +112,14 @@ func (self *Overmind) DetectRushFight() bool {
 		return false
 	}
 
-	// I have more than 1 ship
+	// I have more than 1 ship, or the enemy isn't docked at all.
 
 	if len(my_ships) == 1 {
-		return false
+		for _, ship := range relevant_enemies {
+			if ship.DockedStatus != hal.UNDOCKED {
+				return false
+			}
+		}
 	}
 
 	// My ships all undocked
