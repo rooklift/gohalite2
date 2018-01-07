@@ -250,6 +250,11 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							var eights		[]int										// IDs of ships that might be able to ram us.
 
 							for _, enemy_ship := range real_enemy_ships {				// Must use real_enemy_ships, since enemy_sim_ship_ptrs is []
+
+								if enemy_ship.Doomed {
+									continue				// No need to worry about getting to the right distance away from doomed ships.
+								}
+
 								if ship.Dist(enemy_ship) < 13 {
 									thirteens = append(thirteens, enemy_ship.Id)
 								}
