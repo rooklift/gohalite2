@@ -198,8 +198,21 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 					// A good scenario to run our stupidity checks in.
 
 					for _, ship := range my_sim_ship_ptrs {
+
 						if ship.stupid_death || ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
 							genome.score -= 9999999
+						}
+
+						// Modest penalty for getting near edge of space...
+
+						horiz_clearance := hal.MinFloat(ship.x, width - ship.x)
+						vert_clearance := hal.MinFloat(ship.y, height - ship.y)
+
+						if horiz_clearance < 20 {
+							genome.score -= int(1000.0 - horiz_clearance)
+						}
+						if vert_clearance < 20 {
+							genome.score -= int(1000.0 - vert_clearance)
 						}
 					}
 				}
