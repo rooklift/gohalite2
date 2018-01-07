@@ -35,12 +35,16 @@ func (self *Genome) Copy() *Genome {
 	return ret
 }
 
-func (self *Genome) Init(size int) {
+func (self *Genome) Init(size int, randomise bool) {
 	self.genes = nil
 	for i := 0; i < size; i++ {
+
+		speed, angle := 0, 0;
+		if randomise { speed, angle = rand.Intn(8), rand.Intn(360) }
+
 		self.genes = append(self.genes, &Gene{
-			speed: rand.Intn(8),
-			angle: rand.Intn(360),
+			speed: speed,
+			angle: angle,
 		})
 	}
 	self.score = -2147483647
@@ -82,7 +86,11 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 	for n := 0; n < CHAINS; n++ {
 		g := new(Genome)
-		g.Init(len(game.MyShips()))
+		if n == 0 {
+			g.Init(len(game.MyShips()), false)		// Don't randomise the coldest genome; start with thrust 0 angle 0.
+		} else {
+			g.Init(len(game.MyShips()), true)
+		}
 		genomes = append(genomes, g)
 	}
 
@@ -97,7 +105,10 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 		for c := 0; c < CHAINS; c++ {
 
 			genome := genomes[c].Copy()
-			genome.Mutate()
+
+			if n > 0 {
+				genome.Mutate()
+			}
 
 			genome.score = 0
 
@@ -299,7 +310,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 			}
 		}
 
-		sort.Slice(genomes, func(a, b int) bool {
+		sort.SliceStable(genomes, func(a, b int) bool {
 			return genomes[a].score > genomes[b].score		// Note the reversed sort, high scores come first.
 		})
 

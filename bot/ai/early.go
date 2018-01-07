@@ -413,6 +413,9 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 		}
 
 		if self.Game.RunOfSames() > 10 && rand.Intn(5) == 0 {
+			if play_perfect {
+				self.Game.Log("Taking a stab in the dark")
+			}
 			play_perfect = false
 		}
 	}
