@@ -18,6 +18,12 @@ func (self *Overmind) DecideRush() {
 		return
 	}
 
+	if len(self.Game.EnemyShips()) < 3 {	// If enemy ships crash, just beat the enemy normally.
+		self.RushChoice = NOT_RUSHING
+		self.Game.Log("Not rushing because: len(self.Game.EnemyShips()) < 3")
+		return
+	}
+
 	if len(self.Game.MyShips()) < 3 {
 		self.RushChoice = NOT_RUSHING
 		self.Game.Log("Not rushing because: len(self.Game.MyShips()) < 3")
