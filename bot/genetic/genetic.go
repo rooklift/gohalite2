@@ -285,14 +285,19 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 								}
 							}
 
-							if len(thirteens) == 1 {
+							if len(thirteens) == 1 && ship.fires_at_time_0 == false {
 								genome.score += 100000
 								enemy_ship_id := thirteens[0]
 								good_thirteens[enemy_ship_id] += 1
 							}
 
-							if len(thirteens) > 1 {
-								genome.score -= 100000
+							ideal_thirteens := 1
+							if ship.fires_at_time_0 {
+								ideal_thirteens = 0
+							}
+
+							if len(thirteens) > ideal_thirteens {
+								genome.score -= 100000 * (len(thirteens) - ideal_thirteens)
 							}
 
 							if len(twelves) > 1 {			// We have this in case we just can't find a way to avoid > 2 thirteens.
