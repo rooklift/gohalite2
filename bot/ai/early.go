@@ -136,43 +136,9 @@ func (self *Overmind) DetectRushFight() bool {
 		}
 	}
 
-	// All ships near centre of gravity
+	// Experimentally, removed distance checks. What happens?
 
-	centre_of_gravity := self.Game.PartialCentreOfGravity(self.Game.Pid(), self.RushEnemyID)
-
-	threshold := 50.0
-	for _, ship := range relevant_enemies {
-		if ship.DockedStatus != hal.UNDOCKED {				// Don't let a single mobile ship drag us away easily.
-			threshold -= 15
-		}
-	}
-	if threshold < 20 {
-		threshold = 20
-	}
-
-	for _, ship := range relevant_enemies {
-		if ship.Dist(centre_of_gravity) > threshold {		// Not clear what this should be. Experiment with high.
-			return false
-		}
-	}
-
-	for _, ship := range my_ships {
-		if ship.Dist(centre_of_gravity) > threshold {
-			return false
-		}
-	}
-
-	// Now, return true if any of my ships is within critical distance of any enemy ship
-
-	for _, my_ship := range my_ships {
-		for _, enemy_ship := range relevant_enemies {
-			if my_ship.Dist(enemy_ship) <= 20 {
-				return true
-			}
-		}
-	}
-
-	return false
+	return true
 }
 
 func (self *Overmind) ChooseThreeDocks() {
@@ -221,6 +187,10 @@ func (self *Overmind) ChooseThreeDocks() {
 			self.Game.Log("Was going to send %d ships to centre; sending all instead.", ships_to_centre)
 			self.ChooseCentreDocks()
 		}
+	}
+
+	for _, pilot := range self.Pilots {
+		pilot.Locked = true
 	}
 }
 
@@ -348,9 +318,11 @@ func (self *Overmind) AvoidBad2v1() {
 	})
 
 	self.Pilots[0].Target = all_enemies[0]
+	self.Pilots[0].Locked = true
 
 	for i := 1; i < len(self.Pilots); i++ {
 		self.Pilots[i].Target = self.Game.FarthestPlanet(self.Pilots[i].Ship)
+		self.Pilots[i].Locked = true
 	}
 }
 
@@ -407,6 +379,7 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 	if play_perfect {		// Sometimes we need to turn it off anyway
 
 		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+		my_ships := self.Game.MyShips()
 
 		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) == 1 && self.Game.InitialPlayers() > 2 {
 			play_perfect = false
@@ -427,6 +400,22 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 				self.Game.Log("Taking a stab in the dark")
 			}
 			play_perfect = false
+		}
+
+		// All ships near centre of gravity?
+
+		centre_of_gravity := self.Game.PartialCentreOfGravity(self.Game.Pid(), self.RushEnemyID)
+
+		for _, ship := range relevant_enemies {
+			if ship.Dist(centre_of_gravity) > 50 {		// Not clear what this should be. Experiment with high.
+				play_perfect = false
+			}
+		}
+
+		for _, ship := range my_ships {
+			if ship.Dist(centre_of_gravity) > 50 {
+				play_perfect = false
+			}
 		}
 	}
 

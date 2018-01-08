@@ -91,6 +91,8 @@ type Ship struct {
 	Dy					float64
 	LastSpeed			int
 	LastAngle			int
+
+	ClosestEnemy		*Ship
 }
 
 func (s *Ship) CanDock(p *Planet) bool {
@@ -120,6 +122,28 @@ func (s *Ship) VagueDirection() Edge {
 	if s.LastAngle >= 135 && s.LastAngle < 225 { return LEFT }
 	if s.LastAngle < 180 { return BOTTOM }
 	return TOP
+}
+
+func (s *Ship) find_closest_enemy(game *Game) *Ship {
+
+	var ret *Ship
+
+	closest_dist := 9999.9
+
+	for _, other := range game.AllShips() {
+
+		if other.Owner == s.Owner {
+			continue
+		}
+
+		d := s.Dist(other)
+		if d < closest_dist {
+			ret = other
+			closest_dist = d
+		}
+	}
+
+	return ret
 }
 
 func (s *Ship) fudge_dock_status() {

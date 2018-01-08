@@ -266,3 +266,9 @@ func (self *Game) PredictTimeZero() {
 		}
 	}
 }
+
+func (self *Game) UpdateShipNearestEnemies() {
+	for _, ship := range self.all_ships_cache {
+		ship.ClosestEnemy = ship.find_closest_enemy(self)
+	}
+}

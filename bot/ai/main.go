@@ -93,8 +93,8 @@ func (self *Overmind) Step() {
 	self.ResetPilots()
 
 	if self.FirstLaunchTurn == self.Game.Turn() && self.AvoidingBad2v1 == false {	// We have a docked ship for the first time. Emergency undock?
-		self.Game.Log("Checking for late rush detection.")
 		if self.Config.Conservative == false && self.LateRushDetector() {
+			self.Game.Log("Checking for late rush detection.")
 			self.RushChoice = RUSHING
 			self.ClearAllTargets()
 		}
@@ -102,13 +102,8 @@ func (self *Overmind) Step() {
 
 	self.SetCowardFlag()
 
-	if self.Game.Turn() == 0 {
-		if self.RushChoice == RUSHING {
-			self.TurnZeroCluster()
-			return
-		} else {
-			self.ChooseThreeDocks()
-		}
+	if self.Game.Turn() == 0 && self.RushChoice != RUSHING {
+		self.ChooseThreeDocks()
 	}
 
 	if self.CowardFlag {
@@ -116,13 +111,12 @@ func (self *Overmind) Step() {
 		return
 	}
 
-	if self.NeverGA == false && self.DetectRushFight() {
+	if self.NeverGA == false && self.RushChoice == RUSHING && self.DetectRushFight() {
 
 		if self.CanAvoidBad2v1() {
 			self.AvoidBad2v1()
 		} else {
 			self.EnterGeneticAlgorithm()
-			self.RushChoice = RUSHING
 			return
 		}
 	}
@@ -163,27 +157,8 @@ func (self *Overmind) ResetPilots() {
 	// Clear various variables, including target in most cases. Also delete pilot if the ship is dead.
 
 	for i := 0; i < len(self.Pilots); i++ {
-
 		pilot := self.Pilots[i]
-		needs_reset := true				// We mostly reset our target every turn. But exceptions:
-
-		/* Rush situation, and target is enemy ship. */
-		if self.RushChoice == RUSHING && pilot.Target.Type() == hal.SHIP && pilot.Target.(*hal.Ship).Owner != self.Game.Pid() {
-			needs_reset = false
-		}
-
-		/* Rush situation, and target is planet. */
-		if self.RushChoice == RUSHING && pilot.Target.Type() == hal.PLANET {
-			needs_reset = false
-		}
-
-		/* Target is port (used in opening). */
-		if pilot.Target.Type() == hal.PORT {
-			needs_reset = false
-		}
-
-		alive := pilot.ResetAndUpdate(needs_reset)
-
+		alive := pilot.ResetAndUpdate()
 		if alive == false {
 			self.Pilots = append(self.Pilots[:i], self.Pilots[i+1:]...)
 			i--
@@ -193,7 +168,8 @@ func (self *Overmind) ResetPilots() {
 
 func (self *Overmind) ClearAllTargets() {
 	for _, pilot := range self.Pilots {
-		pilot.ResetAndUpdate(true)
+		pilot.Locked = false
+		pilot.ResetAndUpdate()
 		pilot.Target = hal.Nothing				// Clears PORT targets
 	}
 }
@@ -204,6 +180,8 @@ func (self *Overmind) ExecuteMoves() {
 
 	raw_avoid_list := self.Game.AllImmobile()
 	var avoid_list []hal.Entity
+
+	ignore_inhibition := (self.RushChoice == RUSHING)
 
 	for _, entity := range raw_avoid_list {
 		switch entity.Type() {
@@ -241,7 +219,7 @@ func (self *Overmind) ExecuteMoves() {
 	// Plan moves, add non-moving ships to the avoid list, then scrap other moves and plan them again...
 
 	for _, pilot := range mobile_pilots {
-		pilot.PlanChase(avoid_list)
+		pilot.PlanChase(avoid_list, ignore_inhibition)
 	}
 
 	for i := 0; i < len(mobile_pilots); i++ {
@@ -255,7 +233,7 @@ func (self *Overmind) ExecuteMoves() {
 	}
 
 	for _, pilot := range mobile_pilots {
-		pilot.PlanChase(avoid_list)
+		pilot.PlanChase(avoid_list, ignore_inhibition)
 	}
 
 	// Since our plans are based on the avoid_list, the only danger is 2 "mobile" ships colliding.
@@ -282,7 +260,7 @@ func (self *Overmind) ExecuteMoves() {
 
 	for _, pilot := range mobile_pilots {
 		if pilot.HasExecuted == false {
-			pilot.PlanChase(avoid_list)
+			pilot.PlanChase(avoid_list, ignore_inhibition)
 		}
 	}
 

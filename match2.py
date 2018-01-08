@@ -1,7 +1,7 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe --conservative",
+	"bot.exe --forcerush",
 	"bot.exe --conservative",
 ]
 

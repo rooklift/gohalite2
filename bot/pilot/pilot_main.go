@@ -4,7 +4,7 @@ import (
 	hal "../core"
 )
 
-func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
+func (self *Pilot) PlanChase(avoid_list []hal.Entity, ignore_inhibition bool) {
 
 	// We have our target, but what are we doing about it?
 
@@ -27,7 +27,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	case hal.SHIP:
 
 		other_ship := self.Target.(*hal.Ship)
-		self.EngageShip(other_ship, avoid_list)
+		self.EngageShip(other_ship, avoid_list, ignore_inhibition)
 
 	case hal.POINT:
 
@@ -69,7 +69,7 @@ func (self *Pilot) PlanChase(avoid_list []hal.Entity) {
 	}
 }
 
-func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity) {
+func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity, ignore_inhibition bool) {
 
 	// Protect it if it's friendly...
 
@@ -79,6 +79,11 @@ func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity) {
 	}
 
 	// Otherwise: sometimes approach, sometimes flee...
+
+	if ignore_inhibition {
+		self.EngageShipApproach(other_ship, avoid_list)
+		return
+	}
 
 	if self.Firing {
 		self.EngageShipFlee(other_ship, avoid_list)
@@ -139,15 +144,14 @@ func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Ent
 
 func (self *Pilot) EngageShipFlee(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// We were already within range of an enemy, so we will definitely attack this turn.
-	// We can therefore back off.
+	// EXPERIMENT (v90): ignore our target and retreat from the closest enemy instead.
 
-	angle := self.Angle(enemy_ship) + 180
+	angle := self.Angle(self.ClosestEnemy) + 180
 
-	x2, y2 := hal.Projection(self.X, self.Y, 7, angle)
+	x2, y2 := hal.Projection(self.ClosestEnemy.X, self.ClosestEnemy.Y, 14, angle)	// 13 + 1 which is fudged below (IIRC)
 	flee_point := &hal.Point{x2, y2}
 
-	side := self.DecideSideFor(enemy_ship)											// Wrong, but to preserve behaviour while changing things
+	side := self.DecideSideFor(flee_point)
 	speed, degrees, err := self.GetApproach(flee_point, 1, avoid_list, side)
 	if err != nil {
 		self.Message = MSG_RECURSION

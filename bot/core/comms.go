@@ -341,6 +341,7 @@ func (self *Game) Parse() {
 	self.UpdateEnemyMaps()
 	self.UpdateFriendMap()
 	self.PredictTimeZero()
+	self.UpdateShipNearestEnemies()
 }
 
 // ---------------------------------------

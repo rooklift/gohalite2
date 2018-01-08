@@ -163,16 +163,30 @@ func (self *Overmind) RushProblems() []*Problem {
 
 		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
 
+		some_are_docked := false
+
+		for _, ship := range relevant_enemies {
+			if ship.DockedStatus != hal.UNDOCKED {
+				some_are_docked = true
+				break
+			}
+		}
+
 		for _, ship := range relevant_enemies {
 
-			if ship.Doomed == false {
-				problem := &Problem{
-					Entity: ship,
-					Value: 1.0,
-					Need: 1,
-					Message: ship.Id,
+			if ship.DockedStatus != hal.UNDOCKED || some_are_docked == false {
+
+				if ship.Doomed == false {
+
+					problem := &Problem{
+						Entity: ship,
+						Value: 1.0,
+						Need: 1,
+						Message: ship.Id,
+					}
+
+					problems = append(problems, problem)
 				}
-				problems = append(problems, problem)
 			}
 		}
 	}
@@ -201,7 +215,7 @@ func (self *Overmind) OptimisePilots() {
 				if pilot_b.DockedStatus != hal.UNDOCKED {
 					continue
 				}
-
+/*
 				// RUSH: allow pilots to swap only if targets are both ships,
 				// and only if it doesn't change the tactical situation re: shots to kill.
 
@@ -218,7 +232,7 @@ func (self *Overmind) OptimisePilots() {
 						continue
 					}
 				}
-
+*/
 				// Dist or ApproachDist won't matter here as long as it's consistent.
 				// Either way the comparison will come out the same.
 

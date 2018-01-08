@@ -21,6 +21,7 @@ type Pilot struct {
 	EnemyApproachDist	float64
 	NavStack			[]string
 	Inhibition			float64
+	Locked				bool						// Whether Target can change. Use super-sparingly.
 	DangerShips			int							// Enemy ships that could potentially hit us this turn.
 }
 
@@ -59,7 +60,7 @@ func (self *Pilot) ResetPlan() {
 	self.Game.RawOrder(self.Id, "")
 }
 
-func (self *Pilot) ResetAndUpdate(reset_target bool) bool {				// Return true if we still exist.
+func (self *Pilot) ResetAndUpdate() bool {				// Return true if we still exist.
 
 	_, ok := self.Game.GetShip(self.Id)
 
@@ -77,7 +78,7 @@ func (self *Pilot) ResetAndUpdate(reset_target bool) bool {				// Return true if
 
 	// Delete our target if appropriate...
 
-	if reset_target == true {
+	if self.Locked == false {
 
 		self.Target = hal.Nothing
 
@@ -99,6 +100,10 @@ func (self *Pilot) ResetAndUpdate(reset_target bool) bool {				// Return true if
 				self.Target = hal.Nothing
 			}
 		}
+	}
+
+	if self.Target == hal.Nothing {
+		self.Locked = false
 	}
 
 	return true
