@@ -10,3 +10,5 @@ reload.py
 open_profile.bat
 *.json
 *.c
+offbots/DanielVF_v5/*
+*.jar
