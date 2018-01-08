@@ -1,8 +1,8 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe  --conservative",
-	".\\otherbots\\v90\\mybot.exe --conservative",
+	"bot.exe  --forcerush",
+	".\\otherbots\\v90\\mybot.exe --conservative --split",
 ]
 
 FORCED_WIDTH = 240		# None

@@ -260,10 +260,15 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 						if closest_range > highest_friendly_clearance {
 							highest_friendly_clearance = closest_range
 						}
+
+						// While we're at it, make sure the ship wants to move nearer to some enemy.
+						// Otherwise, it might stand still if it's not affecting the clearances.
+
+						genome.score -= int(closest_range * 2)
 					}
 
-					genome.score -= int(highest_enemy_clearance * 6)
-					genome.score -= int(highest_friendly_clearance * 6)
+					genome.score -= int(highest_enemy_clearance * 9)		// Use different numbers such that this can override
+					genome.score -= int(highest_friendly_clearance * 6)		// the desire to approach the nearest enemy if need be.
 
 					// Do the "perfect" thirteen distance trick.
 					// Only need to do all this once per ship.

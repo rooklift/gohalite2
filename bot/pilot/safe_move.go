@@ -15,7 +15,7 @@ func ExecuteSafely(mobile_pilots []*Pilot) {
 	// Assumption: we have already taken steps to ensure that any ship not included in the mobile_pilots
 	// is avoided, i.e. those ships were explicitly avoided in the earlier navigation search.
 
-	for n := 0; n < 10; n++ {
+	for n := 0; n < 11; n++ {
 
 		total_executes := 0
 

@@ -15,7 +15,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "91 dev"
+	VERSION = "91 final"
 )
 
 func main() {
@@ -82,6 +82,9 @@ func main() {
 		start_time := time.Now()
 
 		game.Parse()
+		if config.Timeseed == false {
+			rand.Seed(int64(game.Turn()))
+		}
 		overmind.Step()
 		game.Send(config.NoMsg)
 
