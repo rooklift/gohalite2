@@ -14,6 +14,11 @@ const (
 	RUSHING = 1
 )
 
+const (
+	DEBUG_TURN = -1
+	DEBUG_SHIP_ID = -1
+)
+
 // --------------------------------------------
 
 type Config struct {
@@ -319,12 +324,6 @@ func (self *Overmind) SetInhibition() {
 // --------------------------------------------
 
 func (self *Overmind) DebugNavStack() {
-
-	const (
-		DEBUG_TURN = -1
-		DEBUG_SHIP_ID = -1
-	)
-
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
@@ -336,12 +335,6 @@ func (self *Overmind) DebugNavStack() {
 }
 
 func (self *Overmind) DebugInhibition() {
-
-	const (
-		DEBUG_TURN = -1
-		DEBUG_SHIP_ID = -1
-	)
-
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
@@ -353,12 +346,6 @@ func (self *Overmind) DebugInhibition() {
 }
 
 func (self *Overmind) DebugOrders() {
-
-	const (
-		DEBUG_TURN = -1
-		DEBUG_SHIP_ID = -1
-	)
-
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
@@ -369,12 +356,6 @@ func (self *Overmind) DebugOrders() {
 }
 
 func (self *Overmind) DebugTargets() {
-
-	const (
-		DEBUG_TURN = -1
-		DEBUG_SHIP_ID = -1
-	)
-
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
