@@ -71,6 +71,8 @@ Some key conceptual breakthroughs that seemed to improve the bot were:
 
 * One should avoid unwise fights. Starting at v62 (but with a big number fix at v64), I use sum-of-distances-squared to decide whether each ship is "inhibited" or not; i.e. whether it has more enemies than friends nearby. If so, it flees.
 
+* Fleeing to a distance based on nearest enemy location helps with emergent clustering (v90).
+
 # My Big Secret
 
 I don't think many people realised this: the first thing that happens in a turn is every ship's DockedStatus is progressed. That means that, if you see a ship that is about to finish docking, you can issue an undock command and it will work. And if you see a ship that is about to finish undocking, you can issue a thrust command and it will work.
