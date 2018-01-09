@@ -208,10 +208,10 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 						horiz_clearance := hal.MinFloat(ship.x, width - ship.x)
 						vert_clearance := hal.MinFloat(ship.y, height - ship.y)
 
-						if horiz_clearance < 20 {
+						if horiz_clearance < 7 {
 							genome.score -= int(1000.0 - horiz_clearance)
 						}
-						if vert_clearance < 20 {
+						if vert_clearance < 7 {
 							genome.score -= int(1000.0 - vert_clearance)
 						}
 
