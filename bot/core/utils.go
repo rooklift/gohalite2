@@ -10,10 +10,10 @@ import (
 
 func ShipsWillCollide(ship_a *Ship, speed_a, angle_a, msg1 int, ship_b *Ship, speed_b, angle_b, msg2 int) bool {
 
-	// Sadly, messages cause slight discrepancies, so account for them...
+	// Sadly, messages cause slight discrepancies, so account for them... (note: -1 is no message)
 
-	if msg1 > 0 && msg1 <= 180 { angle_a = ((msg1 + 1) * 360) + angle_a }
-	if msg2 > 0 && msg2 <= 180 { angle_b = ((msg2 + 1) * 360) + angle_b }
+	if msg1 >= 0 && msg1 <= 180 { angle_a = ((msg1 + 1) * 360) + angle_a }
+	if msg2 >= 0 && msg2 <= 180 { angle_b = ((msg2 + 1) * 360) + angle_b }
 
 	// Work this out by pretending ship B is standing still, while ship A is moving possibly faster than allowed.
 
