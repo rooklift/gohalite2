@@ -220,7 +220,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							clearance := hal.Dist(ship.x, ship.y, planet.x, planet.y) - (planet.radius + 0.5)
 
 							if clearance < 0.5 {
-								genome.score -= 10		// Should be enough.
+								genome.score -= (10 - int(clearance * 20))		// Should be enough.
 							}
 						}
 					}
