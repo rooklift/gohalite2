@@ -47,7 +47,7 @@ func main() {
 			fmt.Printf("%v", p)
 			game.Log("Quitting: %v", p)
 			game.Log("Last known hash: %s", hal.HashFromString(game.RawWorld()))
-			game.LogOnce("Current ships...... %3d, %3d, %3d, %3d",
+			game.Log("Current ships...... %3d, %3d, %3d, %3d",
 				len(game.ShipsOwnedBy(0)),
 				len(game.ShipsOwnedBy(1)),
 				len(game.ShipsOwnedBy(2)),

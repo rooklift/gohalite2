@@ -319,8 +319,8 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							}
 
 							ideal_thirteens := 1
-							if ship.fires_at_time_0 {
-								ideal_thirteens = 0
+							if ship.fires_at_time_0 {		// If we're already committed to shooting (because a target's in range
+								ideal_thirteens = 0			// already) then we should just back away from everything if we can.
 							}
 
 							if len(thirteens) > ideal_thirteens {
