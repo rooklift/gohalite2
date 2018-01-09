@@ -85,7 +85,7 @@ func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity, ign
 		return
 	}
 
-	if self.Firing {
+	if self.Firing && self.DangerShips > 0 {
 		self.EngageShipFlee(other_ship, avoid_list)
 		return
 	}
