@@ -53,7 +53,8 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	if game.InitialPlayers() == 2 {
 		game.SetThreatRange(20)					// This value seems to be surprisingly fine-tuned
 	} else {
-		game.SetThreatRange(10)
+		//game.SetThreatRange(10)
+		game.SetThreatRange(20)					// EXPERIMENT
 	}
 
 	ret.FindRushEnemy()
