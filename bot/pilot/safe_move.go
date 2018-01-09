@@ -33,6 +33,7 @@ func ExecuteSafely(mobile_pilots []*Pilot) {
 			}
 
 			pilot1_desired_speed, pilot1_desired_angle := pilot1.CourseFromPlan()
+			msg1 := pilot1.Message
 
 			if game.CourseStaysInBounds(pilot1.Ship, pilot1_desired_speed, pilot1_desired_angle) == false {
 				continue
@@ -59,7 +60,9 @@ func ExecuteSafely(mobile_pilots []*Pilot) {
 					pilot2_speed, pilot2_angle = hal.CourseFromString(game.CurrentOrder(pilot2.Ship))
 				}
 
-				if hal.ShipsWillCollide(pilot1.Ship, pilot1_desired_speed, pilot1_desired_angle, pilot2.Ship, pilot2_speed, pilot2_angle) {
+				msg2 := pilot2.Message
+
+				if hal.ShipsWillCollide(pilot1.Ship, pilot1_desired_speed, pilot1_desired_angle, msg1, pilot2.Ship, pilot2_speed, pilot2_angle, msg2) {
 					continue Pilot1Loop
 				}
 			}

@@ -179,6 +179,10 @@ func (self *Overmind) ClearAllTargets() {
 
 func (self *Overmind) ExecuteMoves() {
 
+	sort.Slice(self.Pilots, func(a, b int) bool {
+		return self.Pilots[a].Dist(self.Pilots[a].Target) < self.Pilots[b].Dist(self.Pilots[b].Target)
+	})
+
 	raw_avoid_list := self.Game.AllImmobile()
 	var avoid_list []hal.Entity
 
@@ -276,7 +280,7 @@ func (self *Overmind) ExecuteMoves() {
 		if pilot.HasExecuted == false {
 			if pilot.Plan != "" {
 				pilot.PlanThrust(0, 0)
-				pilot.Message = pil.MSG_ATC_RESTRICT
+				// pilot.Message = pil.MSG_ATC_RESTRICT
 				pilot.ExecutePlan()
 			}
 		}

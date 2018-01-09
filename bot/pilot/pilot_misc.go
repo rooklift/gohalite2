@@ -208,7 +208,7 @@ func (self *Pilot) SlowPlanDown() {
 	speed--
 
 	self.PlanThrust(speed, degrees)
-	self.Message = MSG_ATC_SLOWED
+	// self.Message = MSG_ATC_SLOWED
 }
 
 // -------------------------------------------------------------------
