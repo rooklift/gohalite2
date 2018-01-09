@@ -30,6 +30,8 @@ type Config struct {
 	Profile					bool
 	Split					bool
 	Timeseed				bool
+
+	TestGA					int
 }
 
 type Overmind struct {

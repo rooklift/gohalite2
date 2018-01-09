@@ -29,6 +29,7 @@ func main() {
 	flag.BoolVar(&config.Profile, "profile", false, "run Golang CPU profile")
 	flag.BoolVar(&config.Split, "split", false, "split ships at start")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
+	flag.IntVar(&config.TestGA, "testga", -1, "test GA on thus turn")
 	flag.Parse()
 
 	game := hal.NewGame()
@@ -83,9 +84,19 @@ func main() {
 		start_time := time.Now()
 
 		game.Parse()
+
 		if config.Timeseed == false {
 			rand.Seed(int64(game.Turn()))
 		}
+
+		if config.TestGA > -1 {								// No moves except on test turn...
+			if game.Turn() == config.TestGA {
+				overmind.EnterGeneticAlgorithm()
+			}
+			game.Send(config.NoMsg)
+			continue
+		}
+
 		overmind.Step()
 		game.Send(config.NoMsg)
 

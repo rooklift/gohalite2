@@ -410,6 +410,9 @@ func (self *Overmind) FindRushEnemy() {
 
 func (self *Overmind) EnterGeneticAlgorithm() {
 
+	// NOTE! Can be called by MyBot.go for debugging purposes, in which case self.Pilots won't be up to date.
+	// If we need to use self.Pilots here, do something about that.
+
 	play_perfect := (self.Config.Imperfect == false)
 
 	if play_perfect {		// Sometimes we need to turn it off anyway
