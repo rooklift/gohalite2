@@ -207,7 +207,7 @@ func (self *Overmind) ChooseThreeDocks() {
 				return self.Pilots[a].Y < self.Pilots[b].Y
 			})
 
-			d := self.Pilots[1].Dist(self.Pilots[1].Target)
+			d := self.Pilots[1].Dist(self.Pilots[1].Target)		// Note that this target is a port, not a planet.
 
 			a, _ := self.Game.GetPlanet(0)
 			b, _ := self.Game.GetPlanet(2)
