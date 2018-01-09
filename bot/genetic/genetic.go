@@ -215,12 +215,14 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							genome.score -= int(1000.0 - vert_clearance)
 						}
 
+						// Getting really near planets is like death...
+
 						for _, planet := range sim.planets {
 
 							clearance := hal.Dist(ship.x, ship.y, planet.x, planet.y) - (planet.radius + 0.5)
 
 							if clearance < 0.5 {
-								genome.score -= (10 - int(clearance * 20))		// Should be enough.
+								genome.score -= (500000 - int(clearance * 20))		// Amusing subtraction but should be effective.
 							}
 						}
 					}
@@ -233,7 +235,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 					real_enemy_ships := game.ShipsOwnedBy(enemy_pid)
 
-					// Minimise the biggest distances... (but with a small, overridable score)
+					// Minimise the biggest distances...
+					// Use a small, overridable score, unless the distance is > 40
+					// in which case use a massive all-encompassing score.
 
 					highest_enemy_clearance := -1.0
 
@@ -276,8 +280,17 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 						genome.score -= int(closest_range * 2)
 					}
 
-					genome.score -= int(highest_enemy_clearance * 9)		// Use different numbers such that this can override
-					genome.score -= int(highest_friendly_clearance * 6)		// the desire to approach the nearest enemy if need be.
+					if highest_enemy_clearance < 40 {
+						genome.score -= int(highest_enemy_clearance * 9)		// Use different numbers such that this can override...
+					} else {
+						genome.score -= int(highest_enemy_clearance * 9000)
+					}
+
+					if highest_friendly_clearance < 40 {
+						genome.score -= int(highest_friendly_clearance * 6)		// ...the desire to approach the nearest enemy if need be.
+					} else {
+						genome.score -= int(highest_friendly_clearance * 6000)
+					}
 
 					// Do the "perfect" thirteen distance trick.
 					// Only need to do all this once per ship.

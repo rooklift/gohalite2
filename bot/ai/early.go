@@ -357,7 +357,7 @@ func (self *Overmind) AvoidBad2v1() {
 	self.Pilots[0].Locked = true
 
 	for i := 1; i < len(self.Pilots); i++ {
-		self.Pilots[i].Target = self.Game.FarthestPlanet(self.Pilots[i].Ship)
+		self.Pilots[i].Target = self.Game.FarthestPlanet(all_enemies[0])
 		self.Pilots[i].Locked = true
 	}
 }
