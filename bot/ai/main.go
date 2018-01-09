@@ -22,6 +22,7 @@ const (
 // --------------------------------------------
 
 type Config struct {
+	Centre					bool
 	Conservative			bool
 	ForceRush				bool
 	NoMsg					bool

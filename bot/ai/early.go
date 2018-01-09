@@ -175,6 +175,8 @@ func (self *Overmind) ChooseThreeDocks() {
 
 	if self.Game.InitialPlayers() == 2 {
 
+		yes := false
+
 		ships_to_centre := 0
 
 		for _, pilot := range self.Pilots {
@@ -183,8 +185,42 @@ func (self *Overmind) ChooseThreeDocks() {
 			}
 		}
 
-		if ships_to_centre > 0 && ships_to_centre < 3 {
+		if ships_to_centre == 3 {					// Just to make logging consistent.
+			yes = true
+		}
+
+		if yes == false && self.Config.Centre {
+			self.Game.Log("Sending all ships to centre because of --centre flag.")
+			yes = true
+		}
+
+		if yes == false && ships_to_centre > 0 && ships_to_centre < 3 {
 			self.Game.Log("Was going to send %d ships to centre; sending all instead.", ships_to_centre)
+			yes = true
+		}
+
+		// Difficult case: maybe the centre is close enough...
+
+		if yes == false {
+
+			sort.Slice(self.Pilots, func(a, b int) bool {
+				return self.Pilots[a].Y < self.Pilots[b].Y
+			})
+
+			d := self.Pilots[1].Dist(self.Pilots[1].Target)
+
+			a, _ := self.Game.GetPlanet(0)
+			b, _ := self.Game.GetPlanet(2)
+
+			cd := hal.MinFloat(self.Pilots[1].Dist(a), self.Pilots[1].Dist(b))
+
+			if cd - d < 21 {
+				self.Game.Log("Centre planets are close enough (diff == %v), going there.", cd - d)
+				yes = true
+			}
+		}
+
+		if yes {
 			self.ChooseCentreDocks()
 		}
 	}
@@ -384,11 +420,11 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) == 1 && self.Game.InitialPlayers() > 2 {
 			play_perfect = false
 		}
-
-		if len(self.Game.MyShips()) == 1 {
+/*
+		if len(self.Game.MyShips()) == 1 {			// Why do we have this? Can't recall. Experiment without (v92).
 			play_perfect = false
 		}
-
+*/
 		for _, ship := range relevant_enemies {
 			if ship.DockedStatus != hal.UNDOCKED {
 				play_perfect = false

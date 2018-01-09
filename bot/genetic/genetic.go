@@ -145,7 +145,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 					my_sim_ship_ptrs[i].vel_y = vel_y
 
 					if my_sim_ship_ptrs[i].id <= previous_sid {
-						game.LogOnce(" >>>>>>>>>>>>>> MAJOR ERROR: my_sim_ship_ptrs not in order <<<<<<<<<<<<<<")
+						panic("EvolveGenome(): my_sim_ship_ptrs not in order")
 					}
 					previous_sid = my_sim_ship_ptrs[i].id
 				}

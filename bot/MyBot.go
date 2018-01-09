@@ -15,12 +15,13 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "91 final"
+	VERSION = "92 final"
 )
 
 func main() {
 
 	config := new(ai.Config)
+	flag.BoolVar(&config.Centre, "centre", false, "take the centre first (1v1)")
 	flag.BoolVar(&config.Conservative, "conservative", false, "no rushing")
 	flag.BoolVar(&config.ForceRush, "forcerush", false, "always rush")
 	flag.BoolVar(&config.Imperfect, "imperfect", false, "don't use \"perfect\" GA")
