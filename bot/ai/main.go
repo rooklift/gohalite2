@@ -45,6 +45,7 @@ type Overmind struct {
 	NeverGA					bool
 	FirstLaunchTurn			int					// The turn we first had a chance to undock. -1 means never.
 	AvoidingBad2v1			bool				// AvoidBad2v1() has been called.
+	RushEnemiesTouched		map[int]bool		// For deciding whether we can enter GA.
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -69,6 +70,7 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	}
 
 	ret.FirstLaunchTurn = -1
+	ret.RushEnemiesTouched = make(map[int]bool)
 
 	return ret
 }
@@ -106,8 +108,13 @@ func (self *Overmind) Step() {
 
 	self.SetCowardFlag()
 
-	if self.Game.Turn() == 0 && self.RushChoice != RUSHING {
-		self.ChooseThreeDocks()
+	if self.Game.Turn() == 0 {
+		if self.RushChoice != RUSHING {
+			self.ChooseThreeDocks()
+		} else {
+			self.TurnZeroCluster()		// For tactical reasons - helps destroy single enemy ship sent to centre before it collides with us.
+			return
+		}
 	}
 
 	if self.CowardFlag {

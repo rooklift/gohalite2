@@ -1,6 +1,11 @@
 TODO (IMPORTANT)
 
-- Leave the GA alone
+- Leave the GA alone, mostly.
+
+- Is there any reason why we use "imperfect" GA at longer distances?
+- Maybe don't use GA when rushing until all ships have been close to an enemy.
+--- Set a flag and *clear all targets* when we enter GA for the first time.
+--- Or don't lock targets at all. Won't the RushProblems() fn work?
 
 - Better bad-combat-avoidance (not based on own target??)
 - Threat detection for planets based on.. what each ship's closest interesting planet is??

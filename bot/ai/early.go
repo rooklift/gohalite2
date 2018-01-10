@@ -59,13 +59,17 @@ func (self *Overmind) MaybeEndRush() {
 
 func (self *Overmind) TurnZeroCluster() {
 
+	// The point of the cluster now is to have 2 ships close enough to obliterate a single
+	// enemy ship before it can ram us. But we like to have a spread so we can turn without
+	// interfering with each other.
+
 	if self.Game.InitialPlayers() == 4 {
 
 		switch self.Game.Pid() {
 			case 0: fallthrough
-			case 1:	self.Cluster(7, 90, 5, 100, 2, 60)
+			case 1:	self.Cluster(6, 90, 5, 110, 2, 50)
 			case 2: fallthrough
-			case 3: self.Cluster(2, 240, 5, 280, 7, 270)
+			case 3: self.Cluster(2, 230, 5, 290, 6, 270)
 		}
 
 	} else {
@@ -73,13 +77,13 @@ func (self *Overmind) TurnZeroCluster() {
 		centre_of_gravity := self.Game.AllShipsCentreOfGravity()
 
 		if centre_of_gravity.X > self.Pilots[0].X {
-			self.Cluster(7, 15, 6, 0, 7, 345)
+			self.Cluster(7, 15, 5, 0, 7, 345)
 		} else if centre_of_gravity.X < self.Pilots[0].X {
-			self.Cluster(7, 165, 6, 180, 7, 195)
+			self.Cluster(7, 165, 5, 180, 7, 195)
 		} else if centre_of_gravity.Y > self.Pilots[0].Y {
-			self.Cluster(7, 90, 5, 100, 2, 60)
+			self.Cluster(6, 90, 5, 110, 2, 50)
 		} else if centre_of_gravity.Y < self.Pilots[0].Y {
-			self.Cluster(2, 240, 5, 280, 7, 270)
+			self.Cluster(2, 230, 5, 290, 6, 270)
 		}
 	}
 }
@@ -132,6 +136,24 @@ func (self *Overmind) DetectRushFight() bool {
 
 	for _, ship := range my_ships {
 		if ship.DockedStatus != hal.UNDOCKED {
+			return false
+		}
+	}
+
+	// (v96) 3 enemy ships have been closed down at some point.
+
+	if len(self.RushEnemiesTouched) < 3 {
+
+		for _, enemy := range relevant_enemies {
+			for _, ship := range my_ships {
+				if enemy.Dist(ship) < 30 {
+					self.RushEnemiesTouched[enemy.Id] = true
+					break
+				}
+			}
+		}
+
+		if len(self.RushEnemiesTouched) < 3 {
 			return false
 		}
 	}
