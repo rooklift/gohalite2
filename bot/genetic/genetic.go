@@ -429,5 +429,6 @@ func FightRush(game *hal.Game, enemy_pid int, play_perfect bool) {
 		}
 	}
 
-	game.Log("Score: %v (iter %v). Null: %v. Orders: %v", genome.score, iterations_required, null_score, order_elements)
+	game.Log("Score: %v (iter %v, dvn: %v). Orders: %v", genome.score, iterations_required, genome.score - null_score, order_elements)
+	// dvn is difference versus null
 }
