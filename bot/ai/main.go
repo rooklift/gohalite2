@@ -45,7 +45,9 @@ type Overmind struct {
 	NeverGA					bool
 	FirstLaunchTurn			int					// The turn we first had a chance to undock. -1 means never.
 	AvoidingBad2v1			bool				// AvoidBad2v1() has been called.
+
 	RushEnemiesTouched		map[int]bool		// For deciding whether we can enter GA.
+	EverDocked				bool				// Also allows us to enter the GA.
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -78,6 +80,15 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 // --------------------------------------------
 
 func (self *Overmind) Step() {
+
+	if self.EverDocked == false {
+		for _, ship := range self.Game.MyShips() {
+			if ship.DockedStatus != hal.UNDOCKED {
+				self.EverDocked = true
+				break
+			}
+		}
+	}
 
 	if self.RushChoice == UNDECIDED {
 		self.DecideRush()

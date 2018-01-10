@@ -103,6 +103,10 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 		}
 	}
 
+	if len(mutable_ship_ordinals) == 0 {
+		return genomes[0], -1
+	}
+
 	best_score := -2147483647			// Solely used for
 	iterations_required := 0			// reporting info.
 

@@ -132,6 +132,7 @@ func (self *Overmind) DetectRushFight() bool {
 		}
 	}
 
+/*
 	// My ships all undocked
 
 	for _, ship := range my_ships {
@@ -139,6 +140,7 @@ func (self *Overmind) DetectRushFight() bool {
 			return false
 		}
 	}
+*/
 
 	// (v96) 3 enemy ships have been closed down at some point.
 
@@ -153,7 +155,7 @@ func (self *Overmind) DetectRushFight() bool {
 			}
 		}
 
-		if len(self.RushEnemiesTouched) < 3 {
+		if len(self.RushEnemiesTouched) < 3 && self.EverDocked == false {
 			return false
 		}
 	}
@@ -440,7 +442,7 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 	if play_perfect {		// Sometimes we need to turn it off anyway
 
 		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
-		my_ships := self.Game.MyShips()
+		// my_ships := self.Game.MyShips()
 
 		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) == 1 && self.Game.InitialPlayers() > 2 {
 			play_perfect = false
@@ -462,7 +464,7 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 			}
 			play_perfect = false
 		}
-
+/*
 		// All ships near centre of gravity?
 
 		centre_of_gravity := self.Game.PartialCentreOfGravity(self.Game.Pid(), self.RushEnemyID)
@@ -478,6 +480,8 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 				play_perfect = false
 			}
 		}
+*/
+
 	}
 
 	gen.FightRush(self.Game, self.RushEnemyID, play_perfect)
