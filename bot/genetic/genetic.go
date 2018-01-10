@@ -67,7 +67,7 @@ func (self *Genome) Mutate(mutable_ship_ordinals []int) {		// [0,1,2] to be able
 
 // --------------------------------------------------------------------
 
-func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid int) (*Genome, int) {
+func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid int) (*Genome, int, int) {
 
 	// We need to take a genome's average score against a variety of scenarios, one of which should be no moves from enemy.
 	// Perhaps another should be the enemy ships blinking out of existence, so we don't crash into planets.
@@ -104,11 +104,12 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 	}
 
 	if len(mutable_ship_ordinals) == 0 {
-		return genomes[0], -1
+		return genomes[0], -1, -1
 	}
 
 	best_score := -2147483647			// Solely used for
 	iterations_required := 0			// reporting info.
+	var null_score int
 
 	for n := 0; n < iterations; n++ {
 
@@ -380,6 +381,10 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 				}
 			}
 
+			if n == 0 && c == 0 {
+				null_score = genome.score		// Report the score of not moving. Relies on no mutation in n0 and non-randomised c0.
+			}
+
 			if float64(genome.score) > float64(genomes[c].score) * thresholds[c] {
 				genomes[c] = genome
 			}
@@ -396,18 +401,18 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 		if time.Now().Sub(game.ParseTime()) > 1500 * time.Millisecond {
 			game.Log("Emergency timeout in EvolveGenome() after %d iterations.", n)
-			return genomes[0], iterations_required
+			return genomes[0], iterations_required, null_score
 		}
 	}
 
-	return genomes[0], iterations_required
+	return genomes[0], iterations_required, null_score
 }
 
 func FightRush(game *hal.Game, enemy_pid int, play_perfect bool) {
 
 	game.LogOnce("Entering genetic algorithm!")
 
-	genome, iterations_required := EvolveGenome(game, 15000, play_perfect, enemy_pid)
+	genome, iterations_required, null_score := EvolveGenome(game, 15000, play_perfect, enemy_pid)
 
 	var order_elements []int
 
@@ -424,5 +429,5 @@ func FightRush(game *hal.Game, enemy_pid int, play_perfect bool) {
 		}
 	}
 
-	game.Log("Rush Evo! Score: %v (iter %5v). Orders: %v", genome.score, iterations_required, order_elements)
+	game.Log("Score: %v (iter %v). Null: %v. Orders: %v", genome.score, iterations_required, null_score, order_elements)
 }
