@@ -50,16 +50,18 @@ func (self *Genome) Init(size int, randomise bool) {
 	self.score = -2147483647
 }
 
-func (self *Genome) Mutate() {
-	i := rand.Intn(len(self.genes))
+func (self *Genome) Mutate(mutable_ship_ordinals []int) {		// [0,1,2] to be able to mutate every ship...
+
+	i := rand.Intn(len(mutable_ship_ordinals))
+
 	switch rand.Intn(3) {
 	case 0:
-		self.genes[i].speed = rand.Intn(8)
+		self.genes[mutable_ship_ordinals[i]].speed = rand.Intn(8)
 	case 1:
-		self.genes[i].angle = rand.Intn(360)
+		self.genes[mutable_ship_ordinals[i]].angle = rand.Intn(360)
 	case 2:
-		self.genes[i].speed = rand.Intn(8)
-		self.genes[i].angle = rand.Intn(360)
+		self.genes[mutable_ship_ordinals[i]].speed = rand.Intn(8)
+		self.genes[mutable_ship_ordinals[i]].angle = rand.Intn(360)
 	}
 }
 
@@ -94,6 +96,13 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 		genomes = append(genomes, g)
 	}
 
+	var mutable_ship_ordinals []int
+	for i, ship := range game.MyShips() {
+		if ship.Owner == game.Pid() && ship.DockedStatus == hal.UNDOCKED {
+			mutable_ship_ordinals = append(mutable_ship_ordinals, i)
+		}
+	}
+
 	best_score := -2147483647			// Solely used for
 	iterations_required := 0			// reporting info.
 
@@ -107,7 +116,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 			genome := genomes[c].Copy()
 
 			if n > 0 {						// Don't mutate first iteration, so we get a true score for our initial genome. Makes the results stable.
-				genome.Mutate()
+				genome.Mutate(mutable_ship_ordinals)
 			}
 
 			genome.score = 0
@@ -138,11 +147,20 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 				previous_sid := -1
 
 				for i := 0; i < len(my_sim_ship_ptrs); i++ {
-					speed := genome.genes[i].speed
-					angle := genome.genes[i].angle
-					vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
-					my_sim_ship_ptrs[i].vel_x = vel_x
-					my_sim_ship_ptrs[i].vel_y = vel_y
+
+					if my_sim_ship_ptrs[i].dockedstatus == hal.UNDOCKED {
+
+						speed := genome.genes[i].speed
+						angle := genome.genes[i].angle
+						vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
+						my_sim_ship_ptrs[i].vel_x = vel_x
+						my_sim_ship_ptrs[i].vel_y = vel_y
+
+					} else {
+
+						my_sim_ship_ptrs[i].vel_x = 0
+						my_sim_ship_ptrs[i].vel_y = 0
+					}
 
 					if my_sim_ship_ptrs[i].id <= previous_sid {
 						panic("EvolveGenome(): my_sim_ship_ptrs not in order")
@@ -392,9 +410,14 @@ func FightRush(game *hal.Game, enemy_pid int, play_perfect bool) {
 	msg := pil.MSG_SECRET_SAUCE; if play_perfect { msg = pil.MSG_PERFECT_SAUCE }
 
 	for i, ship := range game.MyShips() {									// Guaranteed sorted by ID
-		game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)
-		game.SetMessage(ship, msg)
-		order_elements = append(order_elements, genome.genes[i].speed, genome.genes[i].angle)
+		if ship.DockedStatus == hal.UNDOCKED {
+			game.Thrust(ship, genome.genes[i].speed, genome.genes[i].angle)
+			game.SetMessage(ship, msg)
+			order_elements = append(order_elements, genome.genes[i].speed, genome.genes[i].angle)
+		} else {
+			game.Undock(ship)
+			order_elements = append(order_elements, -1, -1)
+		}
 	}
 
 	game.Log("Rush Evo! Score: %v (iter %5v). Orders: %v", genome.score, iterations_required, order_elements)
