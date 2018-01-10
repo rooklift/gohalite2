@@ -46,7 +46,7 @@ func EvolveGlobal(game *hal.Game) {
 		relevant_ships = append(relevant_ships, ship)
 	}
 
-	// We keep our own ships sorted by ID so that we can cleanly refer to them by ordinal position...
+	// We keep our own ships sorted by ID, I forget if this is really needed.
 
 	sort.Slice(relevant_ships, func(a, b int) bool {
 		return relevant_ships[a].Id < relevant_ships[b].Id
@@ -62,7 +62,19 @@ func EvolveGlobal(game *hal.Game) {
 
 	// Enemies can go in whatever order...
 
-	for _, e := range relevant_enemy_map {
-		relevant_ships = append(relevant_ships, e)
+	for _, enemy := range relevant_enemy_map {
+		relevant_ships = append(relevant_ships, enemy)
 	}
+
+
+
+	// Now, call the Evolver.
+
+
+
+	// Once that's done, assign moves to the ships, BEARING IN MIND THAT THE GENOME ONLY COVERS RELEVANT SHIPS
+	// (unlike in the original GA where it covered all our ships).
+
+
+
 }
