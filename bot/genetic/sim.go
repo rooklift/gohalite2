@@ -259,14 +259,15 @@ func (self *Sim) Step() {
 	}
 }
 
-func SetupSim(game *hal.Game, enemy_pid int) *Sim {
+func SetupSim(game *hal.Game, enemy_pid int, relevant_ships []*hal.Ship) *Sim {
 
-	var relevant_ships []*hal.Ship
+	if relevant_ships == nil {
 
-	// It's important that my own ships are in order, but that's handled by a sort in comms.go
+		// It's important that my own ships are in order, but that's handled by a sort in comms.go
 
-	relevant_ships = append(relevant_ships, game.MyShips()...)
-	relevant_ships = append(relevant_ships, game.ShipsOwnedBy(enemy_pid)...)
+		relevant_ships = append(relevant_ships, game.MyShips()...)
+		relevant_ships = append(relevant_ships, game.ShipsOwnedBy(enemy_pid)...)
+	}
 
 	sim := new(Sim)
 

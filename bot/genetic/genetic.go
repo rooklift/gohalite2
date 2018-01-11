@@ -104,7 +104,7 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 	width, height := float64(game.Width()), float64(game.Height())
 
-	initial_sim := SetupSim(game, enemy_pid)
+	initial_sim := SetupSim(game, enemy_pid, nil)
 
 	sim_without_enemies := initial_sim.Copy()
 	for i := 0; i < len(sim_without_enemies.ships); i++ {
