@@ -1,5 +1,8 @@
 package genetic
 
+// The genetic algorithm code is a mess, having gained any number of kludges over the competition.
+// Ideally I would rewrite it, but it works very well so I prefer to leave it alone.
+
 import (
 	"math/rand"
 	"sort"
@@ -321,7 +324,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 					} else {
 
-						// Minimise the biggest distances...
+						// Minimise the biggest distances... this was written before
+						// the above and is crude and hacky in comparison.
+
 						// Use a small, overridable score, unless the distance is > 40
 						// in which case use a massive all-encompassing score.
 
