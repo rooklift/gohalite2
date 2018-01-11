@@ -442,16 +442,18 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 	if play_perfect {		// Sometimes we need to turn it off anyway
 
 		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+		my_ships := self.Game.MyShips()
 
 		// We are well winning but it's a 4p game and we need to end this quickly...
 
-		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) == 1 && self.Game.InitialPlayers() > 2 {
+		if len(my_ships) == 3 && len(relevant_enemies) == 1 && self.Game.InitialPlayers() > 2 {
 			play_perfect = false
 		}
 
-		// We are 3v2 or 3v1 on ships but the enemy built a ship and we're running out of time...
+		// We are 3v2 or 3v1 or 2v1 on ships but the enemy built a ship and we're running out of time.
+		// Some case not handled explicitly by the Avoid2v1() case.
 
-		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) < 3 {
+		if len(my_ships) >= 2 && len(relevant_enemies) < len(my_ships) {
 			if self.Game.GetCumulativeShipCount(self.RushEnemyID) > self.Game.GetCumulativeShipCount(self.Game.Pid()) {
 				if self.Game.Turn() > 150 {
 					play_perfect = false
