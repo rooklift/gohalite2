@@ -198,6 +198,10 @@ func (self *Overmind) RushProblems() []*Problem {
 
 func (self *Overmind) OptimisePilots() {
 
+	if self.AvoidingBad2v1 {
+		return
+	}
+
 	for n := 0; n < 5; n++ {
 
 		for i := 0; i < len(self.Pilots); i++ {
