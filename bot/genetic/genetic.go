@@ -301,19 +301,19 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							}
 						}
 
-						if dist0 < 40 {
+						if dist0 < 30 {
 							genome.score -= int(dist0 * 9)
 						} else {
 							genome.score -= int(dist0 * 9000)
 						}
 
-						if dist1 < 40 {
+						if dist1 < 30 {
 							genome.score -= int(dist1 * 9)
 						} else {
 							genome.score -= int(dist1 * 9000)
 						}
 
-						if dist2 < 40 {
+						if dist2 < 30 {
 							genome.score -= int(dist2 * 9)
 						} else {
 							genome.score -= int(dist2 * 9000)
