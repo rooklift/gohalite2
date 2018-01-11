@@ -10,7 +10,17 @@ import (
 )
 
 const CHAINS = 10
+
 var thresholds = [CHAINS]float64{1.0, 0.999, 0.995, 0.99, 0.98, 0.96, 0.93, 0.9, 0.8, 0.7}
+
+var permutations = [][]int{
+	[]int{0,1,2},
+	[]int{0,2,1},
+	[]int{1,0,2},
+	[]int{1,2,0},
+	[]int{2,0,1},
+	[]int{2,1,0},
+}
 
 // --------------------------------------------------------------------
 
@@ -202,7 +212,9 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 				sim.Step()
 
-				// Score for damage...
+				// SCORING -----------------------------------------------------------------------------------------------------------
+
+				// Damage...
 
 				for _, ship := range enemy_sim_ship_ptrs {
 					if ship.hp > 0 {
@@ -216,15 +228,30 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 					}
 				}
 
+				// Other scores only need to be run in one scenario to work...
+
 				if scenario == 2 {
 
-					// A good scenario to run our stupidity checks in.
+					// A good scenario to run our stupidity checks in. In particular, enemy docked ships exist
+					// in this scenario and our ships are flagged as stupid if they have collided with them.
 
 					for _, ship := range my_sim_ship_ptrs {
-
 						if ship.stupid_death || ship.x <= 0 || ship.x >= width || ship.y <= 0 || ship.y >= height {
 							genome.score -= 9999999
 						}
+					}
+				}
+
+				if scenario == 0 {
+
+					// A good scenario to run every other check in.
+					// Note that enemy_sim_ship_ptrs is empty here, so use real ships...
+
+					real_enemy_ships := game.ShipsOwnedBy(enemy_pid)
+
+					// EDGES OF SPACE / PLANET AVOIDANCE -----------------------------------------------------------------------------
+
+					for _, ship := range my_sim_ship_ptrs {
 
 						// Modest penalty for getting near edge of space...
 
@@ -249,74 +276,110 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							}
 						}
 					}
-				}
 
-				if scenario == 0 {
+					// DISTANCE ------------------------------------------------------------------------------------------------------
 
-					// A good scenario to run every other check in.
-					// Note that enemy_sim_ship_ptrs is empty here, so use real ships...
+					if len(real_enemy_ships) == 3 && len(my_sim_ship_ptrs) == 3 {
 
-					real_enemy_ships := game.ShipsOwnedBy(enemy_pid)
+						// Keep our ships close to theirs. In the event of a split,
+						// we must split correctly.
 
-					// Minimise the biggest distances...
-					// Use a small, overridable score, unless the distance is > 40
-					// in which case use a massive all-encompassing score.
+						dist0 := 999999.9
+						dist1 := 999999.9
+						dist2 := 999999.9
 
-					highest_enemy_clearance := -1.0
+						for _, perm := range permutations {
 
-					for _, enemy := range real_enemy_ships {
+							this_dist0 := my_sim_ship_ptrs[0].Dist(real_enemy_ships[perm[0]])
+							this_dist1 := my_sim_ship_ptrs[1].Dist(real_enemy_ships[perm[1]])
+							this_dist2 := my_sim_ship_ptrs[2].Dist(real_enemy_ships[perm[2]])
 
-						closest_range := 999999.9
+							if  (this_dist0 + this_dist1 + this_dist2)   <   (dist0 + dist1 + dist2)  {
 
-						for _, ship := range my_sim_ship_ptrs {
-							d := ship.Dist(enemy)
-							if d < closest_range {
-								closest_range = d
+								dist0, dist1, dist2 = this_dist0, this_dist1, this_dist2
+
 							}
 						}
 
-						if closest_range > highest_enemy_clearance {
-							highest_enemy_clearance = closest_range
+						if dist0 < 40 {
+							genome.score -= int(dist0 * 9)
+						} else {
+							genome.score -= int(dist0 * 9000)
 						}
-					}
 
-					highest_friendly_clearance := -1.0
+						if dist1 < 40 {
+							genome.score -= int(dist1 * 9)
+						} else {
+							genome.score -= int(dist1 * 9000)
+						}
 
-					for _, ship := range my_sim_ship_ptrs {
+						if dist2 < 40 {
+							genome.score -= int(dist2 * 9)
+						} else {
+							genome.score -= int(dist2 * 9000)
+						}
 
-						closest_range := 999999.9
+					} else {
+
+						// Minimise the biggest distances...
+						// Use a small, overridable score, unless the distance is > 40
+						// in which case use a massive all-encompassing score.
+
+						highest_enemy_clearance := -1.0
 
 						for _, enemy := range real_enemy_ships {
-							d := ship.Dist(enemy)
-							if d < closest_range {
-								closest_range = d
+
+							closest_range := 999999.9
+
+							for _, ship := range my_sim_ship_ptrs {
+								d := ship.Dist(enemy)
+								if d < closest_range {
+									closest_range = d
+								}
+							}
+
+							if closest_range > highest_enemy_clearance {
+								highest_enemy_clearance = closest_range
 							}
 						}
 
-						if closest_range > highest_friendly_clearance {
-							highest_friendly_clearance = closest_range
+						highest_friendly_clearance := -1.0
+
+						for _, ship := range my_sim_ship_ptrs {
+
+							closest_range := 999999.9
+
+							for _, enemy := range real_enemy_ships {
+								d := ship.Dist(enemy)
+								if d < closest_range {
+									closest_range = d
+								}
+							}
+
+							if closest_range > highest_friendly_clearance {
+								highest_friendly_clearance = closest_range
+							}
+
+							// While we're at it, make sure the ship wants to move nearer to some enemy.
+							// Otherwise, it might stand still if it's not affecting the clearances.
+
+							genome.score -= int(closest_range * 2)
 						}
 
-						// While we're at it, make sure the ship wants to move nearer to some enemy.
-						// Otherwise, it might stand still if it's not affecting the clearances.
+						if highest_enemy_clearance < 40 {
+							genome.score -= int(highest_enemy_clearance * 9)		// Use different numbers such that this can override...
+						} else {
+							genome.score -= int(highest_enemy_clearance * 9000)
+						}
 
-						genome.score -= int(closest_range * 2)
+						if highest_friendly_clearance < 40 {
+							genome.score -= int(highest_friendly_clearance * 6)		// ...the desire to approach the nearest enemy if need be.
+						} else {
+							genome.score -= int(highest_friendly_clearance * 6000)
+						}
 					}
 
-					if highest_enemy_clearance < 40 {
-						genome.score -= int(highest_enemy_clearance * 9)		// Use different numbers such that this can override...
-					} else {
-						genome.score -= int(highest_enemy_clearance * 9000)
-					}
-
-					if highest_friendly_clearance < 40 {
-						genome.score -= int(highest_friendly_clearance * 6)		// ...the desire to approach the nearest enemy if need be.
-					} else {
-						genome.score -= int(highest_friendly_clearance * 6000)
-					}
-
-					// Do the "perfect" thirteen distance trick.
-					// Only need to do all this once per ship.
+					// PERFECT THIRTEEN RANGE TRICK ----------------------------------------------------------------------------------
 
 					var good_thirteens = make(map[int]int)
 
