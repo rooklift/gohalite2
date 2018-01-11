@@ -12,17 +12,34 @@ import (
 	pil "../pilot"			// Just for message constants
 )
 
-const CHAINS = 10
+const (
+	CHAINS = 10
+	PANIC_RANGE = 30		// How far the enemy can get before we worry
+)
 
 var thresholds = [CHAINS]float64{1.0, 0.999, 0.995, 0.99, 0.98, 0.96, 0.93, 0.9, 0.8, 0.7}
 
-var permutations = [][]int{
+var chase_permutations_3v3 = [][]int{
 	[]int{0,1,2},
 	[]int{0,2,1},
 	[]int{1,0,2},
 	[]int{1,2,0},
 	[]int{2,0,1},
 	[]int{2,1,0},
+}
+
+var chase_permutations_3v2 = [][]int{
+	[]int{0,0,1},
+	[]int{0,1,0},
+	[]int{1,0,0},
+	[]int{1,1,0},
+	[]int{1,0,1},
+	[]int{0,1,1},
+}
+
+var chase_permutations_2v2 = [][]int{
+	[]int{0,1},
+	[]int{1,0},
 }
 
 // --------------------------------------------------------------------
@@ -282,14 +299,21 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 
 					// DISTANCE ------------------------------------------------------------------------------------------------------
 
-					if len(real_enemy_ships) == 3 && len(my_sim_ship_ptrs) == 3 {
+					// Keep close to enemy. Deal with split enemies. The important cases are 3v3, 3v2, and 2v2.
+					// I tried writing general stuff but it was simpler just to handle the individual cases.
 
-						// Keep our ships close to theirs. In the event of a split,
-						// we must split correctly.
+					if len(my_sim_ship_ptrs) == 3 && len(real_enemy_ships) >= 2 {
+
+						// Handles both 3v2 and 3v3.
 
 						dist0 := 999999.9
 						dist1 := 999999.9
 						dist2 := 999999.9
+
+						permutations := chase_permutations_3v2;
+						if len(real_enemy_ships) > 2 {
+							permutations = chase_permutations_3v3;
+						}
 
 						for _, perm := range permutations {
 
@@ -304,28 +328,56 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 							}
 						}
 
-						if dist0 < 30 {
+						if dist0 < PANIC_RANGE {
 							genome.score -= int(dist0 * 9)
 						} else {
 							genome.score -= int(dist0 * 9000)
 						}
 
-						if dist1 < 30 {
+						if dist1 < PANIC_RANGE {
 							genome.score -= int(dist1 * 9)
 						} else {
 							genome.score -= int(dist1 * 9000)
 						}
 
-						if dist2 < 30 {
+						if dist2 < PANIC_RANGE {
 							genome.score -= int(dist2 * 9)
 						} else {
 							genome.score -= int(dist2 * 9000)
 						}
 
+					} else if len(my_sim_ship_ptrs) == 2 && len(real_enemy_ships) == 2 {
+
+						dist0 := 999999.9
+						dist1 := 999999.9
+
+						for _, perm := range chase_permutations_2v2 {
+
+							this_dist0 := my_sim_ship_ptrs[0].Dist(real_enemy_ships[perm[0]])
+							this_dist1 := my_sim_ship_ptrs[1].Dist(real_enemy_ships[perm[1]])
+
+							if  (this_dist0 + this_dist1)   <   (dist0 + dist1)  {
+
+								dist0, dist1 = this_dist0, this_dist1
+
+							}
+						}
+
+						if dist0 < PANIC_RANGE {
+							genome.score -= int(dist0 * 9)
+						} else {
+							genome.score -= int(dist0 * 9000)
+						}
+
+						if dist1 < PANIC_RANGE {
+							genome.score -= int(dist1 * 9)
+						} else {
+							genome.score -= int(dist1 * 9000)
+						}
+
 					} else {
 
-						// Minimise the biggest distances... this was written before
-						// the above and is crude and hacky in comparison.
+						// Minimise the biggest distances in other cases...
 
 						// Use a small, overridable score, unless the distance is > 40
 						// in which case use a massive all-encompassing score.
