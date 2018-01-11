@@ -442,21 +442,32 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 	if play_perfect {		// Sometimes we need to turn it off anyway
 
 		relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
-		// my_ships := self.Game.MyShips()
+
+		// We are well winning but it's a 4p game and we need to end this quickly...
 
 		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) == 1 && self.Game.InitialPlayers() > 2 {
 			play_perfect = false
 		}
-/*
-		if len(self.Game.MyShips()) == 1 {			// Why do we have this? Can't recall. Experiment without (v92).
-			play_perfect = false
+
+		// We are 3v2 or 3v1 on ships but the enemy built a ship and we're running out of time...
+
+		if len(self.Game.MyShips()) == 3 && len(relevant_enemies) < 3 {
+			if self.Game.GetCumulativeShipCount(self.RushEnemyID) > self.Game.GetCumulativeShipCount(self.Game.Pid()) {
+				if self.Game.Turn() > 150 {
+					play_perfect = false
+				}
+			}
 		}
-*/
+
+		// The enemy has some docked ships, gotta be more aggro...
+
 		for _, ship := range relevant_enemies {
 			if ship.DockedStatus != hal.UNDOCKED {
 				play_perfect = false
 			}
 		}
+
+		// Nothing's happened for a while...
 
 		if self.Game.RunOfSames() > 10 && rand.Intn(5) == 0 {
 			if play_perfect {
@@ -464,24 +475,6 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 			}
 			play_perfect = false
 		}
-/*
-		// All ships near centre of gravity?
-
-		centre_of_gravity := self.Game.PartialCentreOfGravity(self.Game.Pid(), self.RushEnemyID)
-
-		for _, ship := range relevant_enemies {
-			if ship.Dist(centre_of_gravity) > 50 {		// Not clear what this should be. Experiment with high.
-				play_perfect = false
-			}
-		}
-
-		for _, ship := range my_ships {
-			if ship.Dist(centre_of_gravity) > 50 {
-				play_perfect = false
-			}
-		}
-*/
-
 	}
 
 	gen.FightRush(self.Game, self.RushEnemyID, play_perfect)

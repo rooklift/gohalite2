@@ -279,10 +279,10 @@ func EvolveGenome(game *hal.Game, iterations int, play_perfect bool, enemy_pid i
 						vert_clearance := hal.MinFloat(ship.y, height - ship.y)
 
 						if horiz_clearance < 20 {
-							genome.score -= int(1000.0 - horiz_clearance)
+							genome.score -= int(1000.0 - horiz_clearance * 20)		// Needs to be able to override get-close-to-ship reward.
 						}
 						if vert_clearance < 20 {
-							genome.score -= int(1000.0 - vert_clearance)
+							genome.score -= int(1000.0 - vert_clearance * 20)
 						}
 
 						// Getting really near planets is like death...

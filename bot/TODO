@@ -1,7 +1,7 @@
 TODO (IMPORTANT)
 
 - Whole board GA? Relevant ships are: any of my ships within 20 of an enemy, those same enemies, and any ship within 8 of my mutable ships (set these to non-mutable).
-- We should switch to imperfect GA when we are 3v2 up but losing on tiebreaker, maybe if turn > 150.
+
 
 
 VAGUE IDEAS

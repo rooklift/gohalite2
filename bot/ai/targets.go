@@ -219,24 +219,7 @@ func (self *Overmind) OptimisePilots() {
 				if pilot_b.DockedStatus != hal.UNDOCKED {
 					continue
 				}
-/*
-				// RUSH: allow pilots to swap only if targets are both ships,
-				// and only if it doesn't change the tactical situation re: shots to kill.
 
-				if self.RushChoice == RUSHING {
-
-					if pilot_a.Target.Type() != hal.SHIP || pilot_b.Target.Type() != hal.SHIP {
-						continue
-					}
-
-					target_a := pilot_a.Target.(*hal.Ship)
-					target_b := pilot_b.Target.(*hal.Ship)
-
-					if (target_a.ShotsToKill() != target_b.ShotsToKill()) && (pilot_a.ShotsToKill() != pilot_b.ShotsToKill()) {
-						continue
-					}
-				}
-*/
 				// Dist or ApproachDist won't matter here as long as it's consistent.
 				// Either way the comparison will come out the same.
 
