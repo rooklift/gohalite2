@@ -26,6 +26,9 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 	self.iterations_required = 0
 	best_score := -2147483647
 
+	genome_backup := new(Genome)
+	genome_backup.Init(self.genome_length, false)
+
 	for n := 0; n < iterations; n++ {
 
 		// We run various chains of evolution with different "heats" (i.e. how willing we are to accept bad mutations)
@@ -33,7 +36,12 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 		for c := 0; c < len(self.genomes); c++ {
 
-			genome := self.genomes[c].Copy()
+			genome := self.genomes[c]
+
+			genome_backup.score = genome.score
+			for i := 0; i < len(genome.genes); i++ {
+				*genome_backup.genes[i] = *genome.genes[i]
+			}
 
 			if n > 0 {						// Don't mutate first iteration, so we get a true score for our initial genome. Makes the results stable.
 				genome.Mutate()
@@ -368,8 +376,14 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 				self.null_score = genome.score		// Record the score of not moving. Relies on no mutation in n0 and non-randomised c0.
 			}
 
-			if float64(genome.score) > float64(self.genomes[c].score) * thresholds[c] {
-				self.genomes[c] = genome
+			if float64(genome.score) <= float64(genome_backup.score) * thresholds[c] {
+
+				// Reset the genome to how it was.
+
+				genome.score = genome_backup.score
+				for i := 0; i < len(genome.genes); i++ {
+					*genome.genes[i] = *genome_backup.genes[i]
+				}
 			}
 		}
 
@@ -409,16 +423,19 @@ func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
 		}
 	}
 
+	start_time := time.Now()
+
 	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, enemy_ships, 10)
 	evolver.RunRushFight(15000, play_perfect)
 
 	msg := pil.MSG_SECRET_SAUCE; if play_perfect { msg = pil.MSG_PERFECT_SAUCE }
 	evolver.ExecuteGenome(msg)
 
-	game.Log("Score: %v (iter %v, dvn: %v)",
+	game.Log("Score: %v (iter %v, dvn: %v, t: %v)",
 		evolver.genomes[0].score,
 		evolver.iterations_required,
 		evolver.genomes[0].score - evolver.null_score,
+		time.Now().Sub(start_time),
 	)
 
 	for _, ship := range game.MyShips() {

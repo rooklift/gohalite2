@@ -2,7 +2,7 @@ TODO (IMPORTANT)
 
 - Whole board GA? Relevant ships are: any of my ships within 20 of an enemy, those same enemies, and any ship within 8 of my mutable ships (set these to non-mutable).
 
-- Ensure SetupSim includes planets that are a bit further away from a ship (since we need to avoid getting near them).
+- The decision to switch into rush needs to use enemy ships centre of gravity? Not general centre of gravity?
 
 VAGUE IDEAS
 
