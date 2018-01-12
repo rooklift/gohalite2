@@ -26,6 +26,9 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 	self.iterations_required = 0
 	best_score := -2147483647
 
+	// We used to make a copy of each genome every time we modified it; but now we save and rollback,
+	// which is faster. Here's the storage space to do that with:
+
 	genome_backup := new(Genome)
 	genome_backup.Init(self.genome_length, false)
 
