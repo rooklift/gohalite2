@@ -2,9 +2,9 @@ import json, random, subprocess
 
 processes = [
 	"bot.exe",
-	".\\otherbots\\v97\\mybot.exe",
-	".\\otherbots\\v97\\mybot.exe",
-	".\\otherbots\\v97\\mybot.exe",
+	".\\otherbots\\v102\\mybot.exe",
+	".\\otherbots\\v102\\mybot.exe",
+	".\\otherbots\\v102\\mybot.exe",
 ]
 
 FORCED_WIDTH = None

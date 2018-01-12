@@ -77,10 +77,10 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 	for n := 0; n < iterations; n++ {
 
-		// We run various chains of evolution with different "heats" (i.e. how willing we are to accept bad mutations)
-		// in the "metropolis coupling" fashion.
-
 		for c := 0; c < len(self.genomes); c++ {
+
+			// We run various chains of evolution with different "heats" (i.e. how willing we are to accept bad mutations)
+			// in the "metropolis coupling" fashion.
 
 			genome := self.genomes[c]
 

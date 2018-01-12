@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"sort"
 
-	gen "../genetic"
+	// gen "../genetic"
 	hal "../core"
 	pil "../pilot"
 )
@@ -148,10 +148,9 @@ func (self *Overmind) Step() {
 
 	self.NormalStep()
 
-	gen.EvolveGlobal(self.Game)						// Will take our moves and improve them. Maybe.
-
-	// FIXME: we will have assumed our out-of-range ships weren't going to move. Check for
-	// collisions due to this false assumption...
+	// gen.EvolveGlobal(self.Game)					// Will take our moves and improve them. Maybe.
+	// FIXME: we will have assumed our out-of-range ships weren't going to move. Check for collisions
+	// due to this false assumption...
 
 	self.DebugNavStack()
 	self.DebugInhibition()
