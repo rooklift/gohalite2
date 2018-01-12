@@ -1,11 +1,11 @@
 package genetic
 
 import (
-	"math/rand"
 	"sort"
 	"time"
 
 	hal "../core"
+	pil "../pilot"
 )
 
 
@@ -65,23 +65,26 @@ func NewEvolver(game *hal.Game, mutable_ships, immutable_ships, enemy_ships []*h
 }
 
 
-func (self *Evolver) Mutate(genome *Genome) {
+func (self *Evolver) ExecuteGenome(msg int) {
 
-	i := rand.Intn(len(genome.genes))
+	for i, gene := range self.genomes[0].genes {
 
-	switch rand.Intn(3) {
-	case 0:
-		genome.genes[i].speed = rand.Intn(8)
-	case 1:
-		genome.genes[i].angle = rand.Intn(360)
-	case 2:
-		genome.genes[i].speed = rand.Intn(8)
-		genome.genes[i].angle = rand.Intn(360)
+		sid := self.baseSim.ships[i].id
+
+		real_ship, _ := self.game.GetShip(sid)
+
+		if real_ship.DockedStatus == hal.UNDOCKED {
+			self.game.Thrust(real_ship, gene.speed, gene.angle)
+		}
 	}
 }
 
 
 func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
+
+	const (
+		PANIC_RANGE = 30		// How far the enemy can get before we worry
+	)
 
 	width, height := float64(self.game.Width()), float64(self.game.Height())
 	pid := self.game.Pid()
@@ -105,7 +108,7 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 			genome := self.genomes[c].Copy()
 
 			if n > 0 {						// Don't mutate first iteration, so we get a true score for our initial genome. Makes the results stable.
-				self.Mutate(genome)
+				genome.Mutate()
 			}
 
 			genome.score = 0
@@ -439,8 +442,6 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 			}
 		}
 
-		self.game.Log("speed %v angle %v", self.genomes[0].genes[0].speed, self.genomes[0].genes[0].angle)
-
 		sort.SliceStable(self.genomes, func(a, b int) bool {
 			return self.genomes[a].score > self.genomes[b].score		// Note the reversed sort, high scores come first.
 		})
@@ -453,22 +454,6 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 		if time.Now().Sub(self.game.ParseTime()) > 1500 * time.Millisecond {
 			self.game.Log("Emergency timeout in RunRushFight() after %d iterations.", n)
 			return
-		}
-	}
-}
-
-
-func (self *Evolver) ExecuteGenome() {
-
-	for i, gene := range self.genomes[0].genes {
-
-		sid := self.baseSim.ships[i].id
-
-		real_ship, _ := self.game.GetShip(sid)
-
-		if real_ship.DockedStatus == hal.UNDOCKED {
-			self.game.Thrust(real_ship, gene.speed, gene.angle)
-			self.game.Log("t %v %v %v", real_ship.Id, gene.speed, gene.angle)
 		}
 	}
 }
@@ -494,11 +479,17 @@ func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
 		}
 	}
 
-	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, enemy_ships, 10)			// FIXME
-	evolver.RunRushFight(100, play_perfect)
-	evolver.ExecuteGenome()
+	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, enemy_ships, 10)
+	evolver.RunRushFight(15000, play_perfect)
 
-	game.Log("%v %v", evolver.null_score, evolver.iterations_required)
+	msg := pil.MSG_SECRET_SAUCE; if play_perfect { msg = pil.MSG_PERFECT_SAUCE }
+	evolver.ExecuteGenome(msg)
+
+	game.Log("Score: %v (iter %v, dvn: %v).",
+		evolver.genomes[0].score,
+		evolver.iterations_required,
+		evolver.genomes[0].score - evolver.null_score,
+	)
 
 	for _, ship := range game.MyShips() {
 		if ship.DockedStatus != hal.UNDOCKED {
