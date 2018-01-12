@@ -8,6 +8,49 @@ import (
 	pil "../pilot"
 )
 
+func EvolveRush(game *hal.Game, enemy_pid int, play_perfect bool) {
+
+	game.LogOnce("Entering EvolveRush() genetic algorithm!")
+
+	var my_mutable_ships []*hal.Ship
+	var my_immutable_ships []*hal.Ship
+	var enemy_ships []*hal.Ship
+
+	for _, ship := range game.AllShips() {
+		if ship.Owner == game.Pid() {
+			if ship.DockedStatus == hal.UNDOCKED {
+				my_mutable_ships = append(my_mutable_ships, ship)
+			} else {
+				my_immutable_ships = append(my_immutable_ships, ship)
+			}
+		} else if ship.Owner == enemy_pid {
+			enemy_ships = append(enemy_ships, ship)
+		}
+	}
+
+	start_time := time.Now()
+
+	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, enemy_ships, 10)
+	evolver.RunRushFight(15000, play_perfect)
+
+	msg := pil.MSG_SECRET_SAUCE; if play_perfect { msg = pil.MSG_PERFECT_SAUCE }
+	evolver.ExecuteGenome(msg)
+
+	game.Log("Score: %v (i: %v, dvn: %v, cs: %v, t: %v)",
+		evolver.genomes[0].score,
+		evolver.iterations_required,
+		evolver.genomes[0].score - evolver.null_score,
+		evolver.cold_swaps,
+		time.Now().Sub(start_time).Truncate(1 * time.Millisecond),
+	)
+
+	for _, ship := range game.MyShips() {
+		if ship.DockedStatus != hal.UNDOCKED {
+			game.Undock(ship)
+		}
+	}
+}
+
 func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 	const (
@@ -410,49 +453,6 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 		if time.Now().Sub(self.game.ParseTime()) > 1500 * time.Millisecond {
 			self.game.Log("Emergency timeout in RunRushFight() after %d iterations.", n)
 			return
-		}
-	}
-}
-
-func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
-
-	game.LogOnce("Entering FightRush2() genetic algorithm!")
-
-	var my_mutable_ships []*hal.Ship
-	var my_immutable_ships []*hal.Ship
-	var enemy_ships []*hal.Ship
-
-	for _, ship := range game.AllShips() {
-		if ship.Owner == game.Pid() {
-			if ship.DockedStatus == hal.UNDOCKED {
-				my_mutable_ships = append(my_mutable_ships, ship)
-			} else {
-				my_immutable_ships = append(my_immutable_ships, ship)
-			}
-		} else if ship.Owner == enemy_pid {
-			enemy_ships = append(enemy_ships, ship)
-		}
-	}
-
-	start_time := time.Now()
-
-	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, enemy_ships, 10)
-	evolver.RunRushFight(15000, play_perfect)
-
-	msg := pil.MSG_SECRET_SAUCE; if play_perfect { msg = pil.MSG_PERFECT_SAUCE }
-	evolver.ExecuteGenome(msg)
-
-	game.Log("Score: %v (i: %v, dvn: %v, cs: %v, t: %v)",
-		evolver.genomes[0].score,
-		evolver.iterations_required,
-		evolver.genomes[0].score - evolver.null_score,
-		evolver.cold_swaps,
-		time.Now().Sub(start_time).Truncate(1 * time.Millisecond),
-	)
-
-	for _, ship := range game.MyShips() {
-		if ship.DockedStatus != hal.UNDOCKED {
-			game.Undock(ship)
 		}
 	}
 }
