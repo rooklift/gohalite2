@@ -356,7 +356,7 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 					// PERFECT THIRTEEN RANGE TRICK ----------------------------------------------------------------------------------
 
-					var good_thirteens = make(map[int]int)
+					var good_thirteens = make(map[int][]*SimShip)						// Enemy ship ID --> my ships hitting it
 
 					for _, ship := range my_mutable_simships {
 
@@ -389,7 +389,7 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 							if len(thirteens) == 1 && ship.fires_at_time_0 == false {
 								genome.score += 100000
 								enemy_ship_id := thirteens[0]
-								good_thirteens[enemy_ship_id] += 1
+								good_thirteens[enemy_ship_id] = append(good_thirteens[enemy_ship_id], ship)
 							}
 
 							ideal_thirteens := 1
@@ -411,10 +411,30 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 						}
 					}
 
-					// Modest bonus for coordinated thirteens (should be enough)
+					for _, hitters := range good_thirteens {
 
-					for _, hits := range good_thirteens {
-						genome.score += (hits - 1) * 15000
+						genome.score += (len(hitters) - 1) * 15000		// Modest bonus for coordinated thirteens (should be enough)
+
+						if len(hitters) == 2 {
+
+							d := hal.Dist(hitters[0].x, hitters[0].y, hitters[1].x, hitters[1].y)
+
+							if d > 3 {
+								genome.score -= int(d - 2)				// Tiniest penalty for hitters being far apart
+							}
+
+						} else if len(hitters) == 3 {
+
+							d1 := hal.Dist(hitters[0].x, hitters[0].y, hitters[1].x, hitters[1].y)
+							d2 := hal.Dist(hitters[0].x, hitters[0].y, hitters[2].x, hitters[2].y)
+							d3 := hal.Dist(hitters[1].x, hitters[1].y, hitters[2].x, hitters[2].y)
+
+							d := hal.MaxFloatVariadic(d1, d2, d3)
+
+							if d > 4 {
+								genome.score -= int(d - 3)				// Tiniest penalty for hitters being far apart
+							}
+						}
 					}
 				}
 

@@ -121,6 +121,16 @@ func MinFloat(a, b float64) float64 {
 	return b
 }
 
+func MaxFloatVariadic(nums ...float64) float64 {
+	best := nums[0]
+	for _, num := range nums[1:] {
+		if num > best {
+			best = num
+		}
+	}
+	return best
+}
+
 func Round(n float64) int {
 	return int(math.Floor(n + 0.5))
 }
