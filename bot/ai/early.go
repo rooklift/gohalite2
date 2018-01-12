@@ -479,5 +479,5 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 		}
 	}
 
-	gen.FightRush(self.Game, self.RushEnemyID, play_perfect)
+	gen.FightRush2(self.Game, self.RushEnemyID, play_perfect)
 }

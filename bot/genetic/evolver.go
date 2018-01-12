@@ -65,18 +65,18 @@ func NewEvolver(game *hal.Game, mutable_ships, immutable_ships, enemy_ships []*h
 }
 
 
-func (self *Evolver) Mutate(chain int) {
+func (self *Evolver) Mutate(genome *Genome) {
 
-	i := rand.Intn(len(self.genomes[chain].genes))
+	i := rand.Intn(len(genome.genes))
 
 	switch rand.Intn(3) {
 	case 0:
-		self.genomes[chain].genes[i].speed = rand.Intn(8)
+		genome.genes[i].speed = rand.Intn(8)
 	case 1:
-		self.genomes[chain].genes[i].angle = rand.Intn(360)
+		genome.genes[i].angle = rand.Intn(360)
 	case 2:
-		self.genomes[chain].genes[i].speed = rand.Intn(8)
-		self.genomes[chain].genes[i].angle = rand.Intn(360)
+		genome.genes[i].speed = rand.Intn(8)
+		genome.genes[i].angle = rand.Intn(360)
 	}
 }
 
@@ -88,12 +88,11 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 	var real_enemy_ships []*hal.Ship
 	for i := self.first_enemy_index; i < len(self.baseSim.ships); i++ {
-		real_es, _ := self.game.GetShip(self.baseSim.ships[i].id)
-		real_enemy_ships = append(real_enemy_ships, real_es)
+		real_enemy_ship, _ := self.game.GetShip(self.baseSim.ships[i].id)
+		real_enemy_ships = append(real_enemy_ships, real_enemy_ship)
 	}
 
 	self.iterations_required = 0
-
 	best_score := -2147483647
 
 	for n := 0; n < iterations; n++ {
@@ -106,7 +105,7 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 			genome := self.genomes[c].Copy()
 
 			if n > 0 {						// Don't mutate first iteration, so we get a true score for our initial genome. Makes the results stable.
-				self.Mutate(c)
+				self.Mutate(genome)
 			}
 
 			genome.score = 0
@@ -428,6 +427,7 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 						genome.score += (hits - 1) * 15000
 					}
 				}
+
 			}
 
 			if n == 0 && c == 0 {
@@ -439,12 +439,15 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 			}
 		}
 
+		self.game.Log("speed %v angle %v", self.genomes[0].genes[0].speed, self.genomes[0].genes[0].angle)
+
 		sort.SliceStable(self.genomes, func(a, b int) bool {
 			return self.genomes[a].score > self.genomes[b].score		// Note the reversed sort, high scores come first.
 		})
 
 		if self.genomes[0].score > best_score {
 			self.iterations_required = n								// info only.
+			best_score = self.genomes[0].score
 		}
 
 		if time.Now().Sub(self.game.ParseTime()) > 1500 * time.Millisecond {
@@ -465,6 +468,7 @@ func (self *Evolver) ExecuteGenome() {
 
 		if real_ship.DockedStatus == hal.UNDOCKED {
 			self.game.Thrust(real_ship, gene.speed, gene.angle)
+			self.game.Log("t %v %v %v", real_ship.Id, gene.speed, gene.angle)
 		}
 	}
 }
@@ -490,9 +494,11 @@ func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
 		}
 	}
 
-	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, enemy_ships, 10)
-	evolver.RunRushFight(15000, play_perfect)
+	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, enemy_ships, 10)			// FIXME
+	evolver.RunRushFight(100, play_perfect)
 	evolver.ExecuteGenome()
+
+	game.Log("%v %v", evolver.null_score, evolver.iterations_required)
 
 	for _, ship := range game.MyShips() {
 		if ship.DockedStatus != hal.UNDOCKED {
