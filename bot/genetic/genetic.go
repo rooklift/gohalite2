@@ -102,7 +102,7 @@ type Evolver struct {
 	genome_length			int
 	baseSim					*Sim
 	baseSimSansEnemies		*Sim
-	first_enemy_index		int
+	first_enemy_index		int			// Doesn't mean we have enemies.
 
 	iterations_required		int
 	null_score				int
