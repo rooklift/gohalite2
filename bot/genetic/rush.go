@@ -8,81 +8,6 @@ import (
 	pil "../pilot"
 )
 
-
-type Evolver struct {
-
-	// Note that we keep our sim's ships in order: mutable friendly, immutable friendly, enemy.
-	// The sim itself doens't know or care, but we do.
-
-	game					*hal.Game
-	genomes					[]*Genome
-	genome_length			int
-	baseSim					*Sim
-	baseSimSansEnemies		*Sim
-	first_enemy_index		int
-
-	iterations_required		int
-	null_score				int
-
-}
-
-
-func NewEvolver(game *hal.Game, mutable_ships, immutable_ships, enemy_ships []*hal.Ship, mc_chains int) *Evolver {
-
-	ret := new(Evolver)
-
-	ret.game = game
-
-	for n := 0; n < mc_chains; n++ {
-		ret.genomes = append(ret.genomes, new(Genome))
-		if n == 0 {
-			ret.genomes[n].Init(len(mutable_ships), false)
-		} else {
-			ret.genomes[n].Init(len(mutable_ships), true)
-		}
-	}
-
-	ret.genome_length = len(mutable_ships)
-
-	// We ensure our mutable ships are at the start of the baseSim's ships slice...
-
-	var relevant_ships []*hal.Ship
-	relevant_ships = append(relevant_ships, mutable_ships...)
-	relevant_ships = append(relevant_ships, immutable_ships...)
-	ret.first_enemy_index = len(relevant_ships)
-	relevant_ships = append(relevant_ships, enemy_ships...)
-
-	ret.baseSim = SetupSim(game, relevant_ships)
-
-	sim_without_enemies := ret.baseSim.Copy()
-	for i := 0; i < len(sim_without_enemies.ships); i++ {
-		if sim_without_enemies.ships[i].owner != game.Pid() {
-			sim_without_enemies.ships = append(sim_without_enemies.ships[:i], sim_without_enemies.ships[i+1:]...)
-			i--
-		}
-	}
-
-	ret.baseSimSansEnemies = sim_without_enemies
-
-	return ret
-}
-
-
-func (self *Evolver) ExecuteGenome(msg int) {
-
-	for i, gene := range self.genomes[0].genes {
-
-		sid := self.baseSim.ships[i].id
-
-		real_ship, _ := self.game.GetShip(sid)
-
-		if real_ship.DockedStatus == hal.UNDOCKED {
-			self.game.Thrust(real_ship, gene.speed, gene.angle)
-		}
-	}
-}
-
-
 func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 	const (
@@ -460,7 +385,6 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 		}
 	}
 }
-
 
 func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
 

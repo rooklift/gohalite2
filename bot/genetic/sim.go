@@ -267,7 +267,7 @@ func SetupSim(game *hal.Game, relevant_ships []*hal.Ship) *Sim {
 
 		for _, ship := range relevant_ships {
 
-			if planet.Dist(ship) < planet.Radius + 8 {		// Only include relevant planets.
+			if planet.Dist(ship) < planet.Radius + 8.5 {		// Only include relevant planets. Some fudge so we can see them at distance.
 
 				sim.planets = append(sim.planets, &SimPlanet{
 					SimEntity{

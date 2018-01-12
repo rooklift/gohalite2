@@ -2,6 +2,8 @@ package genetic
 
 import (
 	"math/rand"
+
+	hal "../core"
 )
 
 var thresholds = [10]float64{1.0, 0.999, 0.995, 0.99, 0.98, 0.96, 0.93, 0.9, 0.8, 0.7}
@@ -35,6 +37,8 @@ type Gene struct {			// A gene is an instruction to a ship.
 	speed		int
 	angle		int
 }
+
+// --------------------------------------------------------------------
 
 type Genome struct {
 	genes		[]*Gene
@@ -79,5 +83,79 @@ func (self *Genome) Mutate() {
 	case 2:
 		self.genes[i].speed = rand.Intn(8)
 		self.genes[i].angle = rand.Intn(360)
+	}
+}
+
+// --------------------------------------------------------------------
+
+type Evolver struct {
+
+	// Note that we keep our sim's ships in order: mutable friendly, immutable friendly, enemy.
+	// The sim itself doens't know or care, but we do.
+
+	game					*hal.Game
+	genomes					[]*Genome
+	genome_length			int
+	baseSim					*Sim
+	baseSimSansEnemies		*Sim
+	first_enemy_index		int
+
+	iterations_required		int
+	null_score				int
+
+}
+
+func NewEvolver(game *hal.Game, mutable_ships, immutable_ships, enemy_ships []*hal.Ship, mc_chains int) *Evolver {
+
+	ret := new(Evolver)
+
+	ret.game = game
+
+	for n := 0; n < mc_chains; n++ {
+		ret.genomes = append(ret.genomes, new(Genome))
+		if n == 0 {
+			ret.genomes[n].Init(len(mutable_ships), false)
+		} else {
+			ret.genomes[n].Init(len(mutable_ships), true)
+		}
+	}
+
+	ret.genome_length = len(mutable_ships)
+
+	// We ensure our mutable ships are at the start of the baseSim's ships slice...
+
+	var relevant_ships []*hal.Ship
+	relevant_ships = append(relevant_ships, mutable_ships...)
+	relevant_ships = append(relevant_ships, immutable_ships...)
+	ret.first_enemy_index = len(relevant_ships)
+	relevant_ships = append(relevant_ships, enemy_ships...)
+
+	ret.baseSim = SetupSim(game, relevant_ships)
+
+	sim_without_enemies := ret.baseSim.Copy()
+	for i := 0; i < len(sim_without_enemies.ships); i++ {
+		if sim_without_enemies.ships[i].owner != game.Pid() {
+			sim_without_enemies.ships = append(sim_without_enemies.ships[:i], sim_without_enemies.ships[i+1:]...)
+			i--
+		}
+	}
+
+	ret.baseSimSansEnemies = sim_without_enemies
+
+	return ret
+}
+
+func (self *Evolver) ExecuteGenome(msg int) {
+
+	for i, gene := range self.genomes[0].genes {
+
+		sid := self.baseSim.ships[i].id
+
+		real_ship, _ := self.game.GetShip(sid)
+
+		if real_ship.DockedStatus == hal.UNDOCKED {
+			self.game.Thrust(real_ship, gene.speed, gene.angle)
+			self.game.SetMessage(real_ship, msg)
+		}
 	}
 }

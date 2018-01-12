@@ -63,5 +63,11 @@ func EvolveGlobal(game *hal.Game) {
 		return my_mutable_ships[a].Id < my_mutable_ships[b].Id
 	})
 
-	/* evolver := */ NewEvolver(game, my_mutable_ships, my_immutable_ships, relevant_enemy_ships, 1)
+	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, relevant_enemy_ships, 1)
+	evolver.RunGlobalFight()
+	evolver.ExecuteGenome(-1)
+}
+
+func (self *Evolver) RunGlobalFight() {
+	return
 }
