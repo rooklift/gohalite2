@@ -133,8 +133,15 @@ func (self *Pilot) ProtectShip(other_ship *hal.Ship, avoid_list []hal.Entity) {
 }
 
 func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
+
+	approach_dist := self.EnemyApproachDist
+
+	if enemy_ship.DockedStatus != hal.UNDOCKED {		// FIXME: does nothing about the fact that the ship already wanted to flee, probably.
+		approach_dist = 0
+	}
+
 	side := self.DecideSideFor(enemy_ship)
-	speed, degrees, err := self.GetApproach(enemy_ship, self.EnemyApproachDist, avoid_list, side)
+	speed, degrees, err := self.GetApproach(enemy_ship, approach_dist, avoid_list, side)
 	if err != nil {
 		self.Message = MSG_RECURSION
 	} else {

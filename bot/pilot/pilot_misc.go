@@ -23,6 +23,8 @@ type Pilot struct {
 	Inhibition			float64
 	Locked				bool						// Whether Target can change. Use super-sparingly.
 	DangerShips			int							// Enemy ships that could potentially hit us this turn.
+
+	NavTarget			hal.Entity					// FIXME : are we even using this??
 }
 
 func NewPilot(sid int, game *hal.Game) *Pilot {
@@ -71,6 +73,7 @@ func (self *Pilot) ResetAndUpdate() bool {				// Return true if we still exist.
 	self.ResetPlan()
 
 	self.NavStack = nil
+	self.NavTarget = nil
 	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 	self.Inhibition = 0

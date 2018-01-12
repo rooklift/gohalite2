@@ -1,8 +1,8 @@
 package ai
 
 import (
-	"math/rand"
-	"sort"
+	// "math/rand"
+	// "sort"
 
 	// gen "../genetic"
 	hal "../core"
@@ -163,7 +163,8 @@ func (self *Overmind) NormalStep() {
 	self.ChooseTargets()
 	self.OptimisePilots()
 	self.SetInhibition()							// We might use target info for this in future, so put it here.
-	self.ExecuteMoves()
+	// self.ExecuteMoves()
+	self.ExecuteMoves2()		// EXPERIMENT / FIXME
 
 	if self.RushChoice == RUSHING && self.AvoidingBad2v1 == false {
 		self.UndockAll()
@@ -205,6 +206,8 @@ func (self *Overmind) ClearAllTargets() {
 
 // --------------------------------------------
 
+/*
+
 func (self *Overmind) ExecuteMoves() {
 
 	sort.Slice(self.Pilots, func(a, b int) bool {
@@ -230,7 +233,7 @@ func (self *Overmind) ExecuteMoves() {
 	// Setup data structures...
 
 	var mobile_pilots []*pil.Pilot
-	var frozen_pilots []*pil.Pilot				// Note that this doesn't include docked / docking / undocking ships.
+	var frozen_pilots []*pil.Pilot				// Note that this doesn't include (already) docking / docked / undocking ships.
 
 	for _, pilot := range self.Pilots {
 		if pilot.DockedStatus == hal.UNDOCKED && pilot.Doomed == false {
@@ -320,6 +323,8 @@ func (self *Overmind) ExecuteMoves() {
 		pilot.ExecutePlan()
 	}
 }
+
+*/
 
 // --------------------------------------------
 
