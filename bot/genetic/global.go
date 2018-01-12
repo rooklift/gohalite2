@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	hal "../core"
+	pil "../pilot"
 )
 
 func EvolveGlobal(game *hal.Game) {
@@ -19,10 +20,12 @@ func EvolveGlobal(game *hal.Game) {
 
 	for _, ship := range my_ships {
 		if ship.DockedStatus == hal.UNDOCKED {
-			for _, enemy := range enemy_ships {
-				if ship.Dist(enemy) < 20 {
-					my_mutable_ship_map[ship.Id] = ship
-					relevant_enemy_map[enemy.Id] = enemy
+			if hal.GetOrderType(game.CurrentOrder(ship)) == "t" || hal.GetOrderType(game.CurrentOrder(ship)) == "" {
+				for _, enemy := range enemy_ships {
+					if ship.Dist(enemy) < 20 {
+						my_mutable_ship_map[ship.Id] = ship
+						relevant_enemy_map[enemy.Id] = enemy
+					}
 				}
 			}
 		}
@@ -79,8 +82,18 @@ func EvolveGlobal(game *hal.Game) {
 	// Set up and run evolver...
 
 	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, relevant_enemy_ships, 1)
+
+	for i, gene := range evolver.genomes[0].genes {
+		ship := my_mutable_ships[i]
+		planned_speed, planned_angle := hal.CourseFromString(game.CurrentOrder(ship))
+		gene.speed = planned_speed
+		gene.angle = planned_angle
+	}
+
 	evolver.RunGlobalFight()
-	evolver.ExecuteGenome(-1)
+	evolver.ExecuteGenome(pil.MSG_GLOBAL_SAUCE)
+
+	game.Log("EvolveGlobal() lens: %v, %v, %v", len(my_mutable_ships), len(my_immutable_ships), len(relevant_enemy_ships))
 }
 
 func (self *Evolver) RunGlobalFight() {
