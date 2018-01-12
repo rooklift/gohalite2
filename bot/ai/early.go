@@ -132,17 +132,8 @@ func (self *Overmind) DetectRushFight() bool {
 		}
 	}
 
-/*
-	// My ships all undocked
-
-	for _, ship := range my_ships {
-		if ship.DockedStatus != hal.UNDOCKED {
-			return false
-		}
-	}
-*/
-
-	// (v96) 3 enemy ships have been closed down at some point.
+	// (v96) 3 enemy ships have been closed down at some point,
+	// or we ever docked (i.e. we are BEING rushed).
 
 	if len(self.RushEnemiesTouched) < 3 {
 
