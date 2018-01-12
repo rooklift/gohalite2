@@ -387,9 +387,15 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 			}
 		}
 
+		score_0 := self.genomes[0].score
+
 		sort.SliceStable(self.genomes, func(a, b int) bool {
 			return self.genomes[a].score > self.genomes[b].score		// Note the reversed sort, high scores come first.
 		})
+
+		if self.genomes[0].score > score_0 {
+			self.cold_swaps++
+		}
 
 		if self.genomes[0].score > best_score {
 			self.iterations_required = n								// info only.
@@ -431,10 +437,11 @@ func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
 	msg := pil.MSG_SECRET_SAUCE; if play_perfect { msg = pil.MSG_PERFECT_SAUCE }
 	evolver.ExecuteGenome(msg)
 
-	game.Log("Score: %v (iter %v, dvn: %v, t: %v)",
+	game.Log("Score: %v (i: %v, dvn: %v, cs: %v, t: %v)",
 		evolver.genomes[0].score,
 		evolver.iterations_required,
 		evolver.genomes[0].score - evolver.null_score,
+		evolver.cold_swaps,
 		time.Now().Sub(start_time),
 	)
 

@@ -106,6 +106,7 @@ type Evolver struct {
 
 	iterations_required		int
 	null_score				int
+	cold_swaps				int
 
 }
 
