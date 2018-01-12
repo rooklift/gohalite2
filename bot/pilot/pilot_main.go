@@ -144,8 +144,6 @@ func (self *Pilot) EngageShipApproach(enemy_ship *hal.Ship, avoid_list []hal.Ent
 
 func (self *Pilot) EngageShipFlee(enemy_ship *hal.Ship, avoid_list []hal.Entity) {
 
-	// EXPERIMENT (v90): ignore our target and retreat from the closest enemy instead.
-
 	angle := self.Angle(self.ClosestEnemy) + 180
 
 	x2, y2 := hal.Projection(self.ClosestEnemy.X, self.ClosestEnemy.Y, 14, angle)	// 13 + 1 which is fudged below (IIRC)

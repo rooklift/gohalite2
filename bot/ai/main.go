@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"sort"
 
-	// gen "../genetic"
 	hal "../core"
 	pil "../pilot"
 )
@@ -57,10 +56,9 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	ret.Config = config
 
 	if game.InitialPlayers() == 2 {
-		game.SetThreatRange(20)					// This value seems to be surprisingly fine-tuned
+		game.SetThreatRange(20)					// This value seems to be surprisingly fine-tuned.
 	} else {
-		//game.SetThreatRange(10)
-		game.SetThreatRange(20)					// EXPERIMENT
+		game.SetThreatRange(20)					// This used to be 10, but 20 seems better in 4p as well.
 	}
 
 	ret.FindRushEnemy()
@@ -148,10 +146,9 @@ func (self *Overmind) Step() {
 
 	self.NormalStep()
 
-	// gen.EvolveGlobal(self.Game)					// Will take our moves and improve them. Maybe.
-	// FIXME: we will have assumed our out-of-range ships weren't going to move. Check for collisions
-	// due to this false assumption...
-
+	// Failed (?) experiment...
+	// gen.EvolveGlobal(self.Game)		// FIXME: we will have assumed our out-of-range ships weren't going
+										// to move. Check for collisions due to this false assumption...
 	self.DebugNavStack()
 	self.DebugInhibition()
 	self.DebugOrders()

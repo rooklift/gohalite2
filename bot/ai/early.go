@@ -151,8 +151,6 @@ func (self *Overmind) DetectRushFight() bool {
 		}
 	}
 
-	// Experimentally, removed distance checks. What happens?
-
 	return true
 }
 
