@@ -1,7 +1,12 @@
 TODO (IMPORTANT)
 
-- Whole board GA? Relevant ships are: any of my ships within 20 of an enemy, those same enemies, and any ship within 8 of my mutable ships (set these to non-mutable).
+- *** Try collision avoidance by angle instead of slowdown. ***
 
+
+- Use inhibition to decide how close to get to docked enemy ships.
+
+
+- Whole board GA? Relevant ships are: any of my ships within 20 of an enemy, those same enemies, and any ship within 8 of my mutable ships (set these to non-mutable).
 - The decision to switch into rush needs to use enemy ships centre of gravity? Not general centre of gravity?
 
 VAGUE IDEAS
