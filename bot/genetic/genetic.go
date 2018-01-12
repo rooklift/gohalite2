@@ -95,14 +95,14 @@ func (self *Genome) Mutate() {
 type Evolver struct {
 
 	// Note that we keep our sim's ships in order: mutable friendly, immutable friendly, enemy.
-	// The sim itself doens't know or care, but we do.
+	// The sim itself doesn't know or care, but we do.
 
 	game					*hal.Game
 	genomes					[]*Genome
 	genome_length			int
 	baseSim					*Sim
 	baseSimSansEnemies		*Sim
-	first_enemy_index		int			// Doesn't mean we have enemies.
+	first_enemy_index		int			// Doesn't mean we have enemies. Equal to number of friendlies (mutable or not) in the sim.
 
 	iterations_required		int
 	null_score				int

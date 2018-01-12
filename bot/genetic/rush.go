@@ -65,6 +65,8 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 						sim.ships[i].vel_x = vel_x
 						sim.ships[i].vel_y = vel_y
 
+					} else {
+						panic("RunRushFight(): got docked ship where mutable ship should be")
 					}
 				}
 
