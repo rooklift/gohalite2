@@ -358,9 +358,9 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 					var good_thirteens = make(map[int][]*SimShip)						// Enemy ship ID --> my ships hitting it
 
-					for _, ship := range my_mutable_simships {
+					if play_perfect {
 
-						if play_perfect {
+						for _, ship := range my_mutable_simships {
 
 							// In "perfect" mode we give huge bonuses to moves that can only ever be hit by 1 enemy;
 							// which means being < 13 away from the *starting* location of 1 enemy.
