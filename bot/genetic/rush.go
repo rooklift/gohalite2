@@ -83,9 +83,8 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 								panic("RunRushFight(): got enemy ship in scenario 0")
 
 							case 1:
-								real_ship, _ := self.game.GetShip(sim.ships[i].id)
-								sim.ships[i].vel_x = real_ship.Dx
-								sim.ships[i].vel_y = real_ship.Dy
+								sim.ships[i].vel_x = sim.ships[i].real_ship.Dx
+								sim.ships[i].vel_y = sim.ships[i].real_ship.Dy
 
 							case 2:
 								// Scenario 2 is the enemy ships making no move

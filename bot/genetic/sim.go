@@ -61,6 +61,7 @@ type SimShip struct {
 	id				int
 	stupid_death	bool				// Crude hack (v73) since we want to avoid this at all costs.
 	fires_at_time_0	bool				// Whether the real ship cannot fire again and so we shouldn't go for "perfect" range.
+	real_ship		*hal.Ship
 }
 
 func (self *SimShip) Dist(e hal.Entity) float64 {
@@ -297,6 +298,7 @@ func SetupSim(game *hal.Game, relevant_ships []*hal.Ship) *Sim {
 			owner: ship.Owner,
 			id: ship.Id,
 			fires_at_time_0: ship.Firing,
+			real_ship: ship,
 		})
 	}
 
