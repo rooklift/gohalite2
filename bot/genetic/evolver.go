@@ -11,6 +11,9 @@ import (
 
 type Evolver struct {
 
+	// Note that we keep our sim's ships in order: mutable friendly, immutable friendly, enemy.
+	// The sim itself doens't know or care, but we do.
+
 	game					*hal.Game
 	genomes					[]*Genome
 	genome_length			int
@@ -49,7 +52,7 @@ func NewEvolver(game *hal.Game, mutable_ships, immutable_ships, enemy_ships []*h
 	ret.first_enemy_index = len(relevant_ships)
 	relevant_ships = append(relevant_ships, enemy_ships...)
 
-	ret.baseSim = SetupSim(game, -1, relevant_ships)
+	ret.baseSim = SetupSim(game, relevant_ships)
 
 	sim_without_enemies := ret.baseSim.Copy()
 	for i := 0; i < len(sim_without_enemies.ships); i++ {
