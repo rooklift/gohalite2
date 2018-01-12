@@ -110,10 +110,12 @@ func (self *Overmind) Step() {
 	self.ResetPilots()
 
 	if self.FirstLaunchTurn == self.Game.Turn() && self.AvoidingBad2v1 == false {	// We have a docked ship for the first time. Emergency undock?
-		if self.Config.Conservative == false && self.LateRushDetector() {
-			self.Game.Log("Checking for late rush detection.")
-			self.RushChoice = RUSHING
-			self.ClearAllTargets()
+		if self.Config.Conservative == false {
+			self.Game.Log("Running late rush detector...")
+			if self.LateRushDetector() {
+				self.RushChoice = RUSHING
+				self.ClearAllTargets()
+			}
 		}
 	}
 
