@@ -15,6 +15,8 @@ func EvolveGlobal(game *hal.Game) {
 	my_ships := game.MyShips()
 	enemy_ships := game.EnemyShips()
 
+	// Make maps of my ships that are near enemies, and vice versa...
+
 	for _, ship := range my_ships {
 		if ship.DockedStatus == hal.UNDOCKED {
 			for _, enemy := range enemy_ships {
@@ -30,6 +32,8 @@ func EvolveGlobal(game *hal.Game) {
 		return
 	}
 
+	// Make map of my ships that aren't near enemies, but which we could collide into...
+
 	for _, ship := range my_ships {
 		if my_mutable_ship_map[ship.Id] == nil {
 			for _, other := range my_mutable_ship_map {
@@ -39,6 +43,8 @@ func EvolveGlobal(game *hal.Game) {
 			}
 		}
 	}
+
+	// Convert maps to slices...
 
 	var my_mutable_ships []*hal.Ship
 	var my_immutable_ships []*hal.Ship
@@ -56,12 +62,21 @@ func EvolveGlobal(game *hal.Game) {
 		relevant_enemy_ships = append(relevant_enemy_ships, enemy)
 	}
 
-	// We keep our own mutable ships sorted by ID, I forget if this is really needed.
-	// May help with determinism.
+	// Sort everything by ID for determinism purposes. (Since we iterated over a map.)
 
 	sort.Slice(my_mutable_ships, func(a, b int) bool {
 		return my_mutable_ships[a].Id < my_mutable_ships[b].Id
 	})
+
+	sort.Slice(my_immutable_ships, func(a, b int) bool {
+		return my_immutable_ships[a].Id < my_immutable_ships[b].Id
+	})
+
+	sort.Slice(relevant_enemy_ships, func(a, b int) bool {
+		return relevant_enemy_ships[a].Id < relevant_enemy_ships[b].Id
+	})
+
+	// Set up and run evolver...
 
 	evolver := NewEvolver(game, my_mutable_ships, my_immutable_ships, relevant_enemy_ships, 1)
 	evolver.RunGlobalFight()

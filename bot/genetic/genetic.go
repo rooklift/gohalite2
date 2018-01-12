@@ -73,6 +73,10 @@ func (self *Genome) Init(size int, randomise bool) {
 
 func (self *Genome) Mutate() {
 
+	if len(self.genes) == 0 {
+		return
+	}
+
 	i := rand.Intn(len(self.genes))
 
 	switch rand.Intn(3) {
