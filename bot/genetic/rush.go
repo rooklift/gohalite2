@@ -18,8 +18,8 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 	pid := self.game.Pid()
 
 	var real_enemy_ships []*hal.Ship
-	for i := self.first_enemy_index; i < len(self.baseSim.ships); i++ {
-		real_enemy_ship, _ := self.game.GetShip(self.baseSim.ships[i].id)
+	for i := self.first_enemy_index; i < len(self.sim.ships); i++ {
+		real_enemy_ship, _ := self.game.GetShip(self.sim.ships[i].id)
 		real_enemy_ships = append(real_enemy_ships, real_enemy_ship)
 	}
 
@@ -59,9 +59,9 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 				var sim *Sim
 
 				if scenario == 0 {						// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
-					sim = self.baseSimSansEnemies
+					sim = self.sim_without_enemies
 				} else {
-					sim = self.baseSim
+					sim = self.sim
 				}
 
 				sim.Reset()								// We used to make a copy of the sim, but that was slower. Now just reset every time.
@@ -74,9 +74,11 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 						speed := genome.genes[i].speed
 						angle := genome.genes[i].angle
+
 						vel_x, vel_y := hal.Projection(0, 0, float64(speed), angle)
-						sim.ships[i].vel_x = vel_x
-						sim.ships[i].vel_y = vel_y
+
+						sim.ships[i].vel_x = vel_x						// Relying on our mutable
+						sim.ships[i].vel_y = vel_y						// ships being stored first.
 
 					} else {
 						panic("RunRushFight(): got docked ship where mutable ship should be")

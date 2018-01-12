@@ -100,8 +100,8 @@ type Evolver struct {
 	game					*hal.Game
 	genomes					[]*Genome
 	genome_length			int
-	baseSim					*Sim
-	baseSimSansEnemies		*Sim
+	sim						*Sim
+	sim_without_enemies		*Sim
 	first_enemy_index		int			// Doesn't mean we have enemies. Equal to number of friendlies (mutable or not) in the sim.
 
 	iterations_required		int
@@ -135,17 +135,15 @@ func NewEvolver(game *hal.Game, my_mutable_ships, my_immutable_ships, enemy_ship
 	ret.first_enemy_index = len(relevant_ships)
 	relevant_ships = append(relevant_ships, enemy_ships...)
 
-	ret.baseSim = SetupSim(game, relevant_ships)
+	ret.sim = SetupSim(game, relevant_ships)
 
-	sim_without_enemies := ret.baseSim.Copy()
-	for i := 0; i < len(sim_without_enemies.ships); i++ {
-		if sim_without_enemies.ships[i].owner != game.Pid() {
-			sim_without_enemies.ships = append(sim_without_enemies.ships[:i], sim_without_enemies.ships[i+1:]...)
+	ret.sim_without_enemies = ret.sim.Copy()
+	for i := 0; i < len(ret.sim_without_enemies.ships); i++ {
+		if ret.sim_without_enemies.ships[i].owner != game.Pid() {
+			ret.sim_without_enemies.ships = append(ret.sim_without_enemies.ships[:i], ret.sim_without_enemies.ships[i+1:]...)
 			i--
 		}
 	}
-
-	ret.baseSimSansEnemies = sim_without_enemies
 
 	return ret
 }
@@ -154,7 +152,7 @@ func (self *Evolver) ExecuteGenome(msg int) {
 
 	for i, gene := range self.genomes[0].genes {
 
-		real_ship := self.baseSim.ships[i].real_ship
+		real_ship := self.sim.ships[i].real_ship			// Relying on our mutable ships being stored first.
 
 		if real_ship.DockedStatus == hal.UNDOCKED {
 			self.game.Thrust(real_ship, gene.speed, gene.angle)
