@@ -153,9 +153,7 @@ func (self *Evolver) ExecuteGenome(msg int) {
 
 	for i, gene := range self.genomes[0].genes {
 
-		sid := self.baseSim.ships[i].id
-
-		real_ship, _ := self.game.GetShip(sid)
+		real_ship := self.baseSim.ships[i].real_ship
 
 		if real_ship.DockedStatus == hal.UNDOCKED {
 			self.game.Thrust(real_ship, gene.speed, gene.angle)
