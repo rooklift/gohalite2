@@ -109,7 +109,7 @@ type Evolver struct {
 
 }
 
-func NewEvolver(game *hal.Game, mutable_ships, immutable_ships, enemy_ships []*hal.Ship, mc_chains int) *Evolver {
+func NewEvolver(game *hal.Game, my_mutable_ships, my_immutable_ships, enemy_ships []*hal.Ship, mc_chains int) *Evolver {
 
 	ret := new(Evolver)
 
@@ -118,19 +118,19 @@ func NewEvolver(game *hal.Game, mutable_ships, immutable_ships, enemy_ships []*h
 	for n := 0; n < mc_chains; n++ {
 		ret.genomes = append(ret.genomes, new(Genome))
 		if n == 0 {
-			ret.genomes[n].Init(len(mutable_ships), false)
+			ret.genomes[n].Init(len(my_mutable_ships), false)
 		} else {
-			ret.genomes[n].Init(len(mutable_ships), true)
+			ret.genomes[n].Init(len(my_mutable_ships), true)
 		}
 	}
 
-	ret.genome_length = len(mutable_ships)
+	ret.genome_length = len(my_mutable_ships)
 
 	// We ensure our mutable ships are at the start of the baseSim's ships slice...
 
 	var relevant_ships []*hal.Ship
-	relevant_ships = append(relevant_ships, mutable_ships...)
-	relevant_ships = append(relevant_ships, immutable_ships...)
+	relevant_ships = append(relevant_ships, my_mutable_ships...)
+	relevant_ships = append(relevant_ships, my_immutable_ships...)
 	ret.first_enemy_index = len(relevant_ships)
 	relevant_ships = append(relevant_ships, enemy_ships...)
 
