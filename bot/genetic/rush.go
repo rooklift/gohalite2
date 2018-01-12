@@ -445,7 +445,7 @@ func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
 		evolver.iterations_required,
 		evolver.genomes[0].score - evolver.null_score,
 		evolver.cold_swaps,
-		time.Now().Sub(start_time),
+		time.Now().Sub(start_time).Truncate(1 * time.Millisecond),
 	)
 
 	for _, ship := range game.MyShips() {
