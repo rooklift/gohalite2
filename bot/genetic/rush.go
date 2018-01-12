@@ -47,11 +47,13 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 
 				var sim *Sim
 
-				if scenario == 0 {								// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
-					sim = self.baseSimSansEnemies.Copy()
+				if scenario == 0 {						// Scenario 0 is the enemy ships not existing at at all (so we don't hit planets, etc)
+					sim = self.baseSimSansEnemies
 				} else {
-					sim = self.baseSim.Copy()
+					sim = self.baseSim
 				}
+
+				sim.Reset()								// We used to make a copy of the sim, but that was slower. Now just reset every time.
 
 				my_mutable_simships := sim.ships[0:self.genome_length]
 
@@ -413,7 +415,7 @@ func FightRush2(game *hal.Game, enemy_pid int, play_perfect bool) {
 	msg := pil.MSG_SECRET_SAUCE; if play_perfect { msg = pil.MSG_PERFECT_SAUCE }
 	evolver.ExecuteGenome(msg)
 
-	game.Log("Score: %v (iter %v, dvn: %v).",
+	game.Log("Score: %v (iter %v, dvn: %v)",
 		evolver.genomes[0].score,
 		evolver.iterations_required,
 		evolver.genomes[0].score - evolver.null_score,

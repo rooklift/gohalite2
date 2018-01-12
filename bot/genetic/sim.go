@@ -38,6 +38,34 @@ func (self *Sim) Copy() *Sim {
 	return ret
 }
 
+func (self *Sim) Reset() {
+
+	for _, ship := range self.ships {
+
+		real_ship := ship.real_ship
+
+		ship.x = real_ship.X
+		ship.y = real_ship.Y
+		ship.vel_x = 0
+		ship.vel_y = 0
+
+		ship.ship_state = ALIVE
+		ship.weapon_state = READY
+		ship.hp = real_ship.HP
+
+		ship.actual_targets = nil
+		ship.stupid_death = false
+
+		// There don't get changed during the sim so aren't needed.
+		// Instead they are set once at SetupSim().
+
+		// ship.id = real_ship.Id
+		// ship.owner = real_ship.Owner
+		// ship.dockedstatus = real_ship.DockedStatus
+		// ship.fires_at_time_0 = real_ship.Firing
+	}
+}
+
 type SimEntity struct {
 	x				float64
 	y				float64
@@ -54,11 +82,11 @@ type SimShip struct {
 	SimEntity
 	ship_state		ShipState
 	weapon_state	WeaponState
-	actual_targets	[]*SimShip			// Who we actually, really, definitely shoot at.
 	dockedstatus	hal.DockedStatus
 	owner			int
 	hp				int
 	id				int
+	actual_targets	[]*SimShip			// Who we actually, really, definitely shoot at.
 	stupid_death	bool				// Crude hack (v73) since we want to avoid this at all costs.
 	fires_at_time_0	bool				// Whether the real ship cannot fire again and so we shouldn't go for "perfect" range.
 	real_ship		*hal.Ship
