@@ -1,13 +1,10 @@
 TODO (IMPORTANT)
 
-- *** Try collision avoidance by angle instead of slowdown. ***
-
-
+- Try collision avoidance by angle instead of slowdown.
 - Use inhibition to decide how close to get to docked enemy ships.
-
-
-- Whole board GA? Relevant ships are: any of my ships within 20 of an enemy, those same enemies, and any ship within 8 of my mutable ships (set these to non-mutable).
+- Whole board GA?
 - The decision to switch into rush needs to use enemy ships centre of gravity? Not general centre of gravity?
+- Don't dock if incoming rush.
 
 VAGUE IDEAS
 
@@ -15,13 +12,9 @@ VAGUE IDEAS
 - Threat detection for planets based on.. what each ship's closest interesting planet is??
 - Psyho Strategy: target docked ships only, falling back if needed.
 
-
-
 TODO (SOMEWHAT)
 
 -
-
-
 
 OTHER
 
