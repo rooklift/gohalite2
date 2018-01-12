@@ -384,13 +384,16 @@ func (self *Overmind) LateRushDetector() bool {
 	// Called on the first turn when we can undock.
 
 	relevant_enemies := self.Game.ShipsOwnedBy(self.RushEnemyID)
+	my_centre_of_gravity := self.Game.MyShipsCentreOfGravity()
 
 	dangerous := 0
 
 	for _, enemy := range relevant_enemies {
 		if enemy.DockedStatus == hal.UNDOCKED {
 			if enemy.VagueDirection() == self.MyRushSide {
-				dangerous++
+				if enemy.Dist(my_centre_of_gravity) < 90 {
+					dangerous++
+				}
 			}
 		}
 	}

@@ -189,6 +189,10 @@ func (self *Game) PartialCentreOfGravity(player_ids ...int) *Point {
 	return self.CentreOfGravity(ships)
 }
 
+func (self *Game) MyShipsCentreOfGravity() *Point {
+	return self.PartialCentreOfGravity(self.pid)
+}
+
 func (self *Game) DesiredSpots(planet *Planet) int {
 
 	// If we don't own it, we want all its spots...
