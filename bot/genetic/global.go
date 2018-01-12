@@ -23,8 +23,12 @@ func EvolveGlobal(game *hal.Game) {
 			if hal.GetOrderType(game.CurrentOrder(ship)) == "t" || hal.GetOrderType(game.CurrentOrder(ship)) == "" {
 				for _, enemy := range enemy_ships {
 					if ship.Dist(enemy) < 20 {
-						my_mutable_ship_map[ship.Id] = ship
 						relevant_enemy_map[enemy.Id] = enemy
+						if ship.Doomed == false {
+							my_mutable_ship_map[ship.Id] = ship
+						} else {
+							my_immutable_ship_map[ship.Id] = ship
+						}
 					}
 				}
 			}
