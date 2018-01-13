@@ -1,10 +1,10 @@
 TODO (IMPORTANT)
 
-- Try collision avoidance by angle instead of slowdown.
+- Try the 13 dist method in global GA.
 - Use inhibition to decide how close to get to docked enemy ships.
-- Whole board GA?
 - The decision to switch into rush needs to use enemy ships centre of gravity? Not general centre of gravity?
 - Don't dock if incoming rush.
+- Try collision avoidance by angle instead of slowdown.
 
 VAGUE IDEAS
 
