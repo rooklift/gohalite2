@@ -10,11 +10,8 @@ import (
 
 type NavStacker interface {
 	AddToNavStack(format_string string, args ...interface{})
+	GetGame() *hal.Game
 }
-
-type NullNavStacker struct {}
-
-func (self *NullNavStacker) AddToNavStack() {}
 
 // ------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -83,7 +80,7 @@ func GetCourseRecursive(ship *hal.Ship, target hal.Entity, avoid_list []hal.Enti
 
 	c, ok := FirstCollision(ship, distance, degrees, avoid_list)
 
-	if ok == false {		// There is no collision
+	if ok == false || ship.Dist(c) > 100 {								// There is no collision... or it's miles away (fixes replay 7710319)
 		speed := hal.Min(hal.Round(distance), hal.MAX_SPEED)
 		ns.AddToNavStack("GetCourseRecursive(): succeeded with %v %v", speed, degrees)
 		return speed, degrees, nil
@@ -112,7 +109,7 @@ func GetCourseRecursive(ship *hal.Ship, target hal.Entity, avoid_list []hal.Enti
 	waypointx, waypointy := hal.Projection(c.GetX(), c.GetY(), c.GetRadius() + DODGE_MARGIN, waypoint_angle)
 	p := &hal.Point{waypointx, waypointy}
 
-	ns.AddToNavStack("GetCourseRecursive(): collision: %v; recursing with %v", c, p)
+	ns.AddToNavStack("GetCourseRecursive(): angle: %v; collision: %v; recursing with %v", degrees, c, p)
 	return GetCourseRecursive(ship, p, avoid_list, depth - 1, side, ns)
 }
 

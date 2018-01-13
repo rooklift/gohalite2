@@ -37,6 +37,10 @@ func NewPilot(sid int, game *hal.Game) *Pilot {
 	return ret
 }
 
+func (self *Pilot) GetGame() *hal.Game {
+	return self.Game
+}
+
 func (self *Pilot) AddToNavStack(format_string string, args ...interface{}) {
 	s := fmt.Sprintf(format_string, args...)
 	self.NavStack = append(self.NavStack, s)
