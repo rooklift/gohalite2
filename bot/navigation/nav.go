@@ -13,6 +13,8 @@ type NavStacker interface {
 	GetGame() *hal.Game
 }
 
+var Ignore_Collision_Dist float64 = 999		// Default means no collision ignored when pathing. But reduced by bot (100 default in bot).
+
 // ------------------------------------------------------------------------------------------------------------------------------------------
 
 func CheckEntityCollision(ship *hal.Ship, distance float64, degrees int, other hal.Entity) bool {		// Would we hit some specific entity?
@@ -80,7 +82,7 @@ func GetCourseRecursive(ship *hal.Ship, target hal.Entity, avoid_list []hal.Enti
 
 	c, ok := FirstCollision(ship, distance, degrees, avoid_list)
 
-	if ok == false || ship.Dist(c) > 100 {								// There is no collision... or it's miles away (fixes replay 7710319)
+	if ok == false || ship.ApproachDist(c) > Ignore_Collision_Dist {			// There is no collision... or it's miles away (fixes replay 7710319)
 		speed := hal.Min(hal.Round(distance), hal.MAX_SPEED)
 		ns.AddToNavStack("GetCourseRecursive(): succeeded with %v %v", speed, degrees)
 		return speed, degrees, nil

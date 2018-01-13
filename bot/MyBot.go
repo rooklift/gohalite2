@@ -11,6 +11,7 @@ import (
 
 	ai "./ai"
 	hal "./core"
+	nav "./navigation"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 func main() {
 
 	config := new(ai.Config)
+
 	flag.BoolVar(&config.Centre, "centre", false, "take the centre first (1v1)")
 	flag.BoolVar(&config.Conservative, "conservative", false, "no rushing")
 	flag.BoolVar(&config.ForceRush, "forcerush", false, "always rush")
@@ -29,7 +31,11 @@ func main() {
 	flag.BoolVar(&config.Profile, "profile", false, "run Golang CPU profile")
 	flag.BoolVar(&config.Split, "split", false, "split ships at start")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
+
+	flag.Float64Var(&nav.Ignore_Collision_Dist, "icd", 100, "ignore collision distance (nav)")
+
 	flag.IntVar(&config.TestGA, "testga", -1, "test GA on thus turn")
+
 	flag.Parse()
 
 	game := hal.NewGame()
@@ -86,7 +92,7 @@ func main() {
 		game.Parse()
 
 		if config.Timeseed == false {
-			rand.Seed(int64(game.Turn()))					// + game.Width() + game.Pid()))
+			rand.Seed(int64(game.Turn() + game.Width() + game.Pid()))
 		}
 
 		if config.TestGA > -1 {								// No moves except on test turn...
