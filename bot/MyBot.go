@@ -86,7 +86,7 @@ func main() {
 		game.Parse()
 
 		if config.Timeseed == false {
-			rand.Seed(int64(game.Turn() + game.Width() + game.Pid()))
+			rand.Seed(int64(game.Turn()))					// + game.Width() + game.Pid()))
 		}
 
 		if config.TestGA > -1 {								// No moves except on test turn...
