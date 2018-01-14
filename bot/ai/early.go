@@ -217,12 +217,14 @@ func (self *Overmind) SetNonIntersectingDockPaths(docks []*hal.Port) {
 
 func (self *Overmind) MakeDefaultDockChoice() {
 
+	my_cog := self.Game.MyShipsCentreOfGravity()
+
 	// Sort all planets by distance to our fleet...
 
 	all_planets := self.Game.AllPlanets()
 
 	sort.Slice(all_planets, func(a, b int) bool {
-		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
+		return my_cog.ApproachDist(all_planets[a]) < my_cog.ApproachDist(all_planets[b])
 	})
 
 	closest_three := all_planets[:3]
@@ -233,9 +235,9 @@ func (self *Overmind) MakeDefaultDockChoice() {
 
 	for _, planet := range closest_three {
 		if self.Config.Split {
-			docks = append(docks, hal.OpeningDockHelper(2, planet, self.Pilots[0].Ship)...)
+			docks = append(docks, hal.OpeningDockHelper(2, planet, my_cog)...)
 		} else {
-			docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
+			docks = append(docks, hal.OpeningDockHelper(3, planet, my_cog)...)
 		}
 	}
 
@@ -302,6 +304,8 @@ func (self *Overmind) ConsiderCentreDocks() {
 
 func (self *Overmind) ChooseCentreDocks() {
 
+	my_cog := self.Game.MyShipsCentreOfGravity()
+
 	var centre_planets []*hal.Planet
 
 	for n := 0; n < 4; n++ {
@@ -312,13 +316,13 @@ func (self *Overmind) ChooseCentreDocks() {
 	}
 
 	sort.Slice(centre_planets, func(a, b int) bool {
-		return self.Pilots[0].Dist(centre_planets[a]) < self.Pilots[0].Dist(centre_planets[b])
+		return my_cog.Dist(centre_planets[a]) < my_cog.Dist(centre_planets[b])
 	})
 
 	var docks []*hal.Port
 
 	for _, planet := range centre_planets {
-		docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
+		docks = append(docks, hal.OpeningDockHelper(3, planet, my_cog)...)
 	}
 
 	if len(docks) < 3 {
@@ -338,7 +342,7 @@ func (self *Overmind) MakeSafeDockChoice() {
 	all_planets := self.Game.AllPlanets()
 
 	sort.Slice(all_planets, func(a, b int) bool {
-		return all_planets[a].ApproachDist(my_cog) < all_planets[b].ApproachDist(my_cog)
+		return my_cog.ApproachDist(all_planets[a]) < my_cog.ApproachDist(all_planets[b])
 	})
 
 	closest_three := all_planets[:3]
@@ -358,7 +362,7 @@ func (self *Overmind) MakeSafeDockChoice() {
 	// Re-sort the surviving planets by distance to me...
 
 	sort.Slice(closest_three, func(a, b int) bool {
-		return closest_three[a].ApproachDist(my_cog) < closest_three[b].ApproachDist(my_cog)
+		return my_cog.ApproachDist(closest_three[a]) < my_cog.ApproachDist(closest_three[a])
 	})
 
 	// Get docks...

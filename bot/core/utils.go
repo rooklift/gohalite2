@@ -187,7 +187,7 @@ func HashFromString(datastring string) string {
 	return fmt.Sprintf("%x", sum)
 }
 
-func OpeningDockHelper(max int, p *Planet, mid_ship *Ship) []*Port {
+func OpeningDockHelper(max int, p *Planet, mid_ship Entity) []*Port {
 
 	// Return up to 3 points for a ship and its nearby allies to dock at.
 	// Won't return more than the planet has docks.
