@@ -165,7 +165,8 @@ func (self *Overmind) ChooseThreeDocks() {
 		if self.Config.Unsafe {
 			self.MakeDefaultDockChoice()
 		} else {
-			self.MakeSafeDockChoice()
+			self.MakeDefaultDockChoice()
+			// self.MakeSafeDockChoice()
 		}
 	}
 
@@ -332,6 +333,7 @@ func (self *Overmind) ChooseCentreDocks() {
 	self.SetNonIntersectingDockPaths(docks[:3])
 }
 
+/*
 func (self *Overmind) MakeSafeDockChoice() {
 
 	my_cog := self.Game.MyShipsCentreOfGravity()
@@ -384,6 +386,8 @@ func (self *Overmind) MakeSafeDockChoice() {
 
 	self.SetNonIntersectingDockPaths(docks[:3])
 }
+
+*/
 
 func (self *Overmind) CanAvoidBad2v1() bool {
 
