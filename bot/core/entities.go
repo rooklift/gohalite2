@@ -27,8 +27,8 @@ func EntitiesDist(a, b Entity) float64 {
 	return Dist(a.GetX(), a.GetY(), b.GetX(), b.GetY())
 }
 
-func EntitiesApproachDist(a, b Entity) float64 {
-	return (EntitiesDist(a, b) - b.GetRadius()) - a.GetRadius()
+func EntitiesApproachDist(a, b Entity) float64 {					// Centre to edge dist. Don't change now...
+	return EntitiesDist(a, b) - b.GetRadius()
 }
 
 func EntitiesCollide(a, b Entity) bool {
