@@ -162,7 +162,11 @@ func (self *Overmind) ChooseThreeDocks() {
 	}
 
 	if self.Game.InitialPlayers() == 4 {
-		self.MakeSafeDockChoice()
+		if self.Config.Unsafe {
+			self.MakeDefaultDockChoice()
+		} else {
+			self.MakeSafeDockChoice()
+		}
 	}
 
 	for _, pilot := range self.Pilots {
@@ -326,19 +330,20 @@ func (self *Overmind) ChooseCentreDocks() {
 
 func (self *Overmind) MakeSafeDockChoice() {
 
-	// Find closest three planets...
+	my_cog := self.Game.MyShipsCentreOfGravity()
+	enemy_cog := self.Game.PartialCentreOfGravity(self.RushEnemyID)
+
+	// Find three planets closest to me...
 
 	all_planets := self.Game.AllPlanets()
 
 	sort.Slice(all_planets, func(a, b int) bool {
-		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
+		return all_planets[a].ApproachDist(my_cog) < all_planets[b].ApproachDist(my_cog)
 	})
 
 	closest_three := all_planets[:3]
 
 	// Sort by range to enemy...
-
-	enemy_cog := self.Game.PartialCentreOfGravity(self.RushEnemyID)
 
 	sort.Slice(closest_three, func(a, b int) bool {
 		return closest_three[a].Dist(enemy_cog) < closest_three[b].Dist(enemy_cog)		// ApproachDist not so relevant here
@@ -346,10 +351,15 @@ func (self *Overmind) MakeSafeDockChoice() {
 
 	// Discard planet closest to enemy if we can't reach it in time...
 
-	if closest_three[0].Dist(enemy_cog) - closest_three[0].Dist(self.Game.MyShipsCentreOfGravity()) < 70 {
+	if closest_three[0].Dist(enemy_cog) - closest_three[0].Dist(my_cog) < 70 {
 		closest_three = closest_three[1:]		// Now it's closest two, but whatever.
-		self.Game.Log("MakeSafeDockChoice(): discarded closest planet.")
 	}
+
+	// Re-sort the surviving planets by distance to me...
+
+	sort.Slice(closest_three, func(a, b int) bool {
+		return closest_three[a].ApproachDist(my_cog) < closest_three[b].ApproachDist(my_cog)
+	})
 
 	// Get docks...
 

@@ -31,6 +31,7 @@ type Config struct {
 	Profile					bool
 	Split					bool
 	Timeseed				bool
+	Unsafe					bool
 
 	TestGA					int
 }
