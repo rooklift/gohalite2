@@ -40,7 +40,7 @@ func (self *Overmind) DecideRush() {
 	centre_of_gravity := self.Game.AllShipsCentreOfGravity()
 
 	sort.Slice(my_ships, func(a, b int) bool {
-		return my_ships[b].Dist(centre_of_gravity) < my_ships[b].Dist(centre_of_gravity)
+		return my_ships[a].Dist(centre_of_gravity) < my_ships[b].Dist(centre_of_gravity)
 	})
 
 	if my_ships[0].Dist(centre_of_gravity) < 45 && my_ships[1].Dist(centre_of_gravity) < 48 && my_ships[2].Dist(centre_of_gravity) < 51 {
@@ -356,13 +356,14 @@ func (self *Overmind) MakeSafeDockChoice() {
 	// Discard planet closest to enemy if we can't reach it in time...
 
 	if closest_three[0].Dist(enemy_cog) - closest_three[0].Dist(my_cog) < 70 {
+		self.Game.Log("Discarding planet %v", closest_three[0].Id)
 		closest_three = closest_three[1:]		// Now it's closest two, but whatever.
 	}
 
 	// Re-sort the surviving planets by distance to me...
 
 	sort.Slice(closest_three, func(a, b int) bool {
-		return my_cog.ApproachDist(closest_three[a]) < my_cog.ApproachDist(closest_three[a])
+		return my_cog.ApproachDist(closest_three[a]) < my_cog.ApproachDist(closest_three[b])
 	})
 
 	// Get docks...
