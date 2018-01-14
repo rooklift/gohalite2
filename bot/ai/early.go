@@ -156,86 +156,13 @@ func (self *Overmind) DetectRushFight() bool {
 
 func (self *Overmind) ChooseThreeDocks() {
 
-	// Sort all planets by distance to our fleet...
-
-	all_planets := self.Game.AllPlanets()
-
-	sort.Slice(all_planets, func(a, b int) bool {
-		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
-	})
-
-	closest_three := all_planets[:3]
-
-	// Get docks...
-
-	var docks []*hal.Port
-
-	for _, planet := range closest_three {
-		if self.Config.Split {
-			docks = append(docks, hal.OpeningDockHelper(2, planet, self.Pilots[0].Ship)...)
-		} else {
-			docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
-		}
-	}
-
-	if len(docks) < 3 {
-		return
-	}
-
-	self.SetNonIntersectingDockPaths(docks[:3])
-
-	// As a special case, never send less than 3 ships to the central planets in 2 player games...
-
 	if self.Game.InitialPlayers() == 2 {
+		self.MakeDefaultDockChoice()
+		self.ConsiderCentreDocks()
+	}
 
-		yes := false
-
-		ships_to_centre := 0
-
-		for _, pilot := range self.Pilots {
-			if pilot.Target.GetId() < 4 {			// Centre planets have ID < 4, unless the engine changes.
-				ships_to_centre++
-			}
-		}
-
-		if ships_to_centre == 3 {					// Just to make logging consistent.
-			yes = true
-		}
-
-		if yes == false && self.Config.Centre {
-			self.Game.Log("Sending all ships to centre because of --centre flag.")
-			yes = true
-		}
-
-		if yes == false && ships_to_centre > 0 && ships_to_centre < 3 {
-			self.Game.Log("Was going to send %d ships to centre; sending all instead.", ships_to_centre)
-			yes = true
-		}
-
-		// Difficult case: maybe the centre is close enough...
-
-		if yes == false {
-
-			sort.Slice(self.Pilots, func(a, b int) bool {
-				return self.Pilots[a].Y < self.Pilots[b].Y
-			})
-
-			d := self.Pilots[1].Dist(self.Pilots[1].Target)		// Note that this target is a port, not a planet.
-
-			a, _ := self.Game.GetPlanet(0)
-			b, _ := self.Game.GetPlanet(2)
-
-			cd := hal.MinFloat(self.Pilots[1].Dist(a), self.Pilots[1].Dist(b))
-
-			if cd - d < 21 {
-				self.Game.Log("Centre planets are close enough (diff == %v), going there.", cd - d)
-				yes = true
-			}
-		}
-
-		if yes {
-			self.ChooseCentreDocks()
-		}
+	if self.Game.InitialPlayers() == 4 {
+		self.MakeSafeDockChoice()
 	}
 
 	for _, pilot := range self.Pilots {
@@ -284,6 +211,91 @@ func (self *Overmind) SetNonIntersectingDockPaths(docks []*hal.Port) {
 	}
 }
 
+func (self *Overmind) MakeDefaultDockChoice() {
+
+	// Sort all planets by distance to our fleet...
+
+	all_planets := self.Game.AllPlanets()
+
+	sort.Slice(all_planets, func(a, b int) bool {
+		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
+	})
+
+	closest_three := all_planets[:3]
+
+	// Get docks...
+
+	var docks []*hal.Port
+
+	for _, planet := range closest_three {
+		if self.Config.Split {
+			docks = append(docks, hal.OpeningDockHelper(2, planet, self.Pilots[0].Ship)...)
+		} else {
+			docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
+		}
+	}
+
+	if len(docks) < 3 {
+		return
+	}
+
+	self.SetNonIntersectingDockPaths(docks[:3])
+}
+
+func (self *Overmind) ConsiderCentreDocks() {
+
+	// We've already chosen our default docks. Should we, instead, send all our ships to the centre?
+
+	yes := false
+
+	ships_to_centre := 0
+
+	for _, pilot := range self.Pilots {
+		if pilot.Target.GetId() < 4 {			// Centre planets have ID < 4, unless the engine changes.
+			ships_to_centre++
+		}
+	}
+
+	if ships_to_centre == 3 {					// Just to make logging consistent.
+		yes = true
+	}
+
+	if yes == false && self.Config.Centre {
+		self.Game.Log("Sending all ships to centre because of --centre flag.")
+		yes = true
+	}
+
+	if yes == false && ships_to_centre > 0 && ships_to_centre < 3 {
+		self.Game.Log("Was going to send %d ships to centre; sending all instead.", ships_to_centre)
+		yes = true
+	}
+
+	// Difficult case: maybe the centre is close enough...
+
+	if yes == false {
+
+		sort.Slice(self.Pilots, func(a, b int) bool {
+			return self.Pilots[a].Y < self.Pilots[b].Y
+		})
+
+		d := self.Pilots[1].Dist(self.Pilots[1].Target)		// Note that this target is a port, not a planet.
+
+		a, _ := self.Game.GetPlanet(0)
+		b, _ := self.Game.GetPlanet(2)
+
+		cd := hal.MinFloat(self.Pilots[1].Dist(a), self.Pilots[1].Dist(b))
+
+		if cd - d < 21 {
+			self.Game.Log("Centre planets are close enough (diff == %v), going there.", cd - d)
+			yes = true
+		}
+	}
+
+	if yes {
+		self.ChooseCentreDocks()
+	}
+}
+
 func (self *Overmind) ChooseCentreDocks() {
 
 	var centre_planets []*hal.Planet
@@ -303,6 +315,52 @@ func (self *Overmind) ChooseCentreDocks() {
 
 	for _, planet := range centre_planets {
 		docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
+	}
+
+	if len(docks) < 3 {
+		return
+	}
+
+	self.SetNonIntersectingDockPaths(docks[:3])
+}
+
+func (self *Overmind) MakeSafeDockChoice() {
+
+	// Find closest three planets...
+
+	all_planets := self.Game.AllPlanets()
+
+	sort.Slice(all_planets, func(a, b int) bool {
+		return all_planets[a].ApproachDist(self.Pilots[0]) < all_planets[b].ApproachDist(self.Pilots[0])
+	})
+
+	closest_three := all_planets[:3]
+
+	// Sort by range to enemy...
+
+	enemy_cog := self.Game.PartialCentreOfGravity(self.RushEnemyID)
+
+	sort.Slice(closest_three, func(a, b int) bool {
+		return closest_three[a].Dist(enemy_cog) < closest_three[b].Dist(enemy_cog)		// ApproachDist not so relevant here
+	})
+
+	// Discard planet closest to enemy if we can't reach it in time...
+
+	if closest_three[0].Dist(enemy_cog) - closest_three[0].Dist(self.Game.MyShipsCentreOfGravity()) < 70 {
+		closest_three = closest_three[1:]		// Now it's closest two, but whatever.
+		self.Game.Log("MakeSafeDockChoice(): discarded closest planet.")
+	}
+
+	// Get docks...
+
+	var docks []*hal.Port
+
+	for _, planet := range closest_three {
+		if self.Config.Split {
+			docks = append(docks, hal.OpeningDockHelper(2, planet, self.Pilots[0].Ship)...)
+		} else {
+			docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
+		}
 	}
 
 	if len(docks) < 3 {

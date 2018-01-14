@@ -16,7 +16,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "104 final"
+	VERSION = "105 dev"
 )
 
 func main() {
@@ -25,6 +25,7 @@ func main() {
 
 	flag.BoolVar(&config.Centre, "centre", false, "take the centre first (1v1)")
 	flag.BoolVar(&config.Conservative, "conservative", false, "no rushing")
+	flag.BoolVar(&config.DockOnly, "dockonly", false, "make initial dockings and stop")
 	flag.BoolVar(&config.ForceRush, "forcerush", false, "always rush")
 	flag.BoolVar(&config.Imperfect, "imperfect", false, "don't use \"perfect\" GA")
 	flag.BoolVar(&config.NoMsg, "nomsg", false, "no angle messages")

@@ -133,6 +133,10 @@ func (self *Pilot) ClosestPlanet() *hal.Planet {
 	return self.Game.ClosestPlanet(self)
 }
 
+func (self *Pilot) TargetDist() float64 {
+	return self.Dist(self.Target)
+}
+
 // -------------------------------------------------------------------
 
 func (self *Pilot) PlanThrust(speed, degrees int) {

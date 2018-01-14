@@ -24,6 +24,7 @@ const (
 type Config struct {
 	Centre					bool
 	Conservative			bool
+	DockOnly				bool
 	ForceRush				bool
 	NoMsg					bool
 	Imperfect				bool
@@ -157,7 +158,9 @@ func (self *Overmind) Step() {
 
 func (self *Overmind) NormalStep() {
 
-	self.ChooseTargets()
+	if self.Config.DockOnly == false {
+		self.ChooseTargets()
+	}
 	self.OptimisePilots()
 	self.SetInhibition()							// We might use target info for this in future, so put it here.
 	self.ExecuteMoves()
