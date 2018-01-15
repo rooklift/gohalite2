@@ -37,14 +37,14 @@ func RunOpeningSim(game *hal.Game, initial []int) int {			// Arguments are plane
 		})
 	}
 
-	my_cog := game.MyCentreOfGravity()
+	my_cog := game.MyShipsCentreOfGravity()
 
 	for _, plid := range initial {
 		for _, planet := range planets {
 			if planet.id == plid {
 				d := hal.Dist(my_cog.X, my_cog.Y, planet.x, planet.y)
-				eta := d / 7 + 6
-				planet.ships = append(planet.ships, eta)
+				eta := d / 7 + 5
+				planet.ships = append(planet.ships, int(eta))
 				break
 			}
 		}
@@ -92,7 +92,7 @@ func RunOpeningSim(game *hal.Game, initial []int) int {			// Arguments are plane
 				if best_target == nil {
 					return timer
 				} else {
-					eta := int(best_dist / 7 + 6)
+					eta := int(best_dist / 7 + 5)
 					best_target.ships = append(best_target.ships, eta)
 				}
 			}
