@@ -6,6 +6,11 @@ TODO (IMPORTANT)
 - Don't dock if incoming rush.
 - Try collision avoidance by angle instead of slowdown.
 
+- ewirkerman: "I tell them to retreat to someone who's safer than he is, and if they're safe, then advance, roughly speaking"
+--- Try this:
+----- Non-fleeing ships move first.
+----- After that, fleeing ships go to their nearest non-fleeing ship, if possible.
+
 VAGUE IDEAS
 
 - Better bad-combat-avoidance (not based on own target??)
