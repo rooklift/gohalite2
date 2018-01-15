@@ -1,10 +1,10 @@
 import json, random, subprocess
 
 processes = [
-	"bot.exe -dockonly",
-	"bot.exe -unsafe -dockonly",
-	"bot.exe -unsafe -dockonly",
-	"bot.exe -unsafe -dockonly",
+	"bot.exe",
+	".\\otherbots\\v105\\mybot.exe",
+	".\\otherbots\\v105\\mybot.exe",
+	".\\otherbots\\v105\\mybot.exe",
 ]
 
 FORCED_WIDTH = None
@@ -21,7 +21,7 @@ print("{} --- {} --- {} --- {}".format(processes[0], processes[1], processes[2],
 
 while 1:
 
-	# random.shuffle(positions)
+	random.shuffle(positions)
 
 	if (not FORCED_WIDTH) or (not FORCED_HEIGHT):
 		base_size = random.choice(map_sizes)

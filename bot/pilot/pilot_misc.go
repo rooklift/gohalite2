@@ -23,6 +23,7 @@ type Pilot struct {
 	Inhibition			float64
 	Locked				bool						// Whether Target can change. Use super-sparingly.
 	DangerShips			int							// Enemy ships that could potentially hit us this turn.
+	Fleeing				bool
 }
 
 func NewPilot(sid int, game *hal.Game) *Pilot {
@@ -62,6 +63,7 @@ func (self *Pilot) ResetPlan() {
 	self.Plan = ""
 	self.HasExecuted = false
 	self.Game.RawOrder(self.Id, "")
+	self.Fleeing = false
 }
 
 func (self *Pilot) ResetAndUpdate() bool {				// Return true if we still exist.

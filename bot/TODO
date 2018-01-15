@@ -11,6 +11,11 @@ TODO (IMPORTANT)
 ----- Non-fleeing ships move first.
 ----- After that, fleeing ships go to their nearest non-fleeing ship, if possible.
 
+
+- Or maybe:
+--- Fleeing ships get a single attempt to retreat.
+--- If blocked, they get frozen and all other ships nav around them.
+
 VAGUE IDEAS
 
 - Better bad-combat-avoidance (not based on own target??)

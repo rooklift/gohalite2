@@ -156,6 +156,8 @@ func (self *Pilot) EngageShipFlee(enemy_ship *hal.Ship, avoid_list []hal.Entity)
 	} else {
 		self.PlanThrust(speed, degrees)
 	}
+
+	self.Fleeing = true
 }
 
 func (self *Pilot) PlanetApproachForDock(planet *hal.Planet, avoid_list []hal.Entity) {

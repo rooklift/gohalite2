@@ -239,14 +239,12 @@ func (self *Overmind) ExecuteMoves() {
 		}
 	}
 
-	// As a special case (relevant for 1v1 rushes) sort 3 ships by distance to centre...
+	// As a special case sort rush ships by distance to enemy c.o.g...
 
-	if len(mobile_pilots) <= 3 {
-
-		centre_of_gravity := self.Game.AllShipsCentreOfGravity()
-
+	if self.RushChoice == RUSHING {
+		enemy_cog := self.Game.PartialCentreOfGravity(self.RushEnemyID)
 		sort.Slice(mobile_pilots, func(a, b int) bool {
-			return mobile_pilots[a].Dist(centre_of_gravity) < mobile_pilots[b].Dist(centre_of_gravity)
+			return mobile_pilots[a].Dist(enemy_cog) < mobile_pilots[b].Dist(enemy_cog)
 		})
 	}
 
