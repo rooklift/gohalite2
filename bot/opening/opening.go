@@ -4,9 +4,9 @@ import (
 	hal "../core"
 )
 
-// Here we simulate various openings and decide where to send our ships on turn zero.
-// There's no reason why we can't do a full resolution sim that's perfect in every way,
-// but I can't be bothered. This is a crude approximation.
+// Here we simulate what happens when we send our initial ships some way on turn zero.
+// There's no reason why we can't do a full resolution sim that's perfect, but I can't
+// be bothered. This is a crude approximation.
 
 type OS_Planet struct {
 	x				float64
@@ -57,6 +57,7 @@ func RunOpeningSim(game *hal.Game, initial []int) int {			// Arguments are plane
 	for {
 
 		timer++
+		total_docked := 0
 
 		for _, planet := range planets {
 
@@ -66,6 +67,7 @@ func RunOpeningSim(game *hal.Game, initial []int) int {			// Arguments are plane
 				}
 				if eta == 0 {
 					planet.production += 6
+					total_docked++
 				}
 			}
 
@@ -96,6 +98,10 @@ func RunOpeningSim(game *hal.Game, initial []int) int {			// Arguments are plane
 					best_target.ships = append(best_target.ships, eta)
 				}
 			}
+		}
+
+		if total_docked > 6 {
+			return timer
 		}
 	}
 }
