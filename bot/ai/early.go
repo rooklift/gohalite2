@@ -530,7 +530,7 @@ func (self *Overmind) EnterGeneticAlgorithm() {
 		// The enemy has some docked ships, gotta be more aggro...
 
 		for _, ship := range relevant_enemies {
-			if ship.DockedStatus != hal.UNDOCKED {
+			if ship.DockedStatus != hal.UNDOCKED && ship.DockedStatus != hal.UNDOCKING {
 				play_perfect = false
 			}
 		}
