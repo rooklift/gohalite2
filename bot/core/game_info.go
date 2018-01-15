@@ -290,3 +290,25 @@ func (self *Game) NearestEdge(ship *Ship) (e Edge, dist float64, point *Point) {
 
 	return e, dist, point
 }
+
+func (self *Game) ClosestCentrePlanets(x, y float64) []*Planet {
+
+	var centre_planets []*Planet
+
+	for n := 0; n < 4; n++ {
+		planet, ok := self.GetPlanet(n)
+		if ok {
+			centre_planets = append(centre_planets, planet)
+		}
+	}
+
+	if len(centre_planets) < 2 {
+		return centre_planets
+	}
+
+	sort.Slice(centre_planets, func(a, b int) bool {
+		return Dist(x, y, centre_planets[a].X, centre_planets[a].Y) < Dist(x, y, centre_planets[b].X, centre_planets[b].Y)
+	})
+
+	return centre_planets[0:2]
+}
