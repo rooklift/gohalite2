@@ -42,6 +42,7 @@ type Game struct {
 	dockMap						map[int][]*Ship		// Planet ID --> Ship slice
 	shipMap						map[int]*Ship		// Ship ID --> Ship
 	playershipMap				map[int][]*Ship		// Player ID --> Ship slice
+	playerplanetMap				map[int][]*Planet	// Player ID --> Planet slice
 	cumulativeShips				map[int]int			// Player ID --> Count
 	lastownerMap				map[int]int			// Planet ID --> Last owner (check OK for never owned)
 

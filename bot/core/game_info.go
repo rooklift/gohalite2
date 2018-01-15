@@ -65,6 +65,22 @@ func (self *Game) WeHaveDockedShips() bool {
 
 // ----------------------------------------------
 
+func (self *Game) PlanetsOwnedBy(pid int) []*Planet {
+	ret := make([]*Planet, len(self.playerplanetMap[pid]))
+	copy(ret, self.playerplanetMap[pid])
+	return ret
+}
+
+func (self *Game) MyPlanets() []*Planet {
+	return self.PlanetsOwnedBy(self.pid)
+}
+
+func (self *Game) CountMyPlanets() int {
+	return len(self.playerplanetMap[self.pid])
+}
+
+// ----------------------------------------------
+
 func (self *Game) CountMyShips() int {
 	return len(self.playershipMap[self.pid])
 }

@@ -125,6 +125,7 @@ func (self *Game) Parse() {
 	self.planetMap = make(map[int]*Planet)
 	self.dockMap = make(map[int][]*Ship)
 	self.playershipMap = make(map[int][]*Ship)
+	self.playerplanetMap = make(map[int][]*Planet)
 
 	// Player parsing.............................................................................
 
@@ -279,6 +280,13 @@ func (self *Game) Parse() {
 		})
 
 		self.planetMap[plid] = planet
+		self.playerplanetMap[planet.Owner] = append(self.playerplanetMap[planet.Owner], planet)		// This is fine if Owner == -1
+	}
+
+	for pid, _ := range self.playerplanetMap {
+		sort.Slice(self.playerplanetMap[pid], func(a, b int) bool {
+			return self.playerplanetMap[pid][a].Id < self.playerplanetMap[pid][b].Id
+		})
 	}
 
 	// Query responses (see info.go)... while these could be done interleaved with the above, they are separated for clarity.
