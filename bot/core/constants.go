@@ -25,6 +25,7 @@ const (
 	PLANET
 	POINT
 	PORT
+	CIRCLE
 	NOTHING
 )
 
