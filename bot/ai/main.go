@@ -163,7 +163,7 @@ func (self *Overmind) NormalStep() {
 		self.ChooseTargets()
 	}
 	self.OptimisePilots()
-	self.SetInhibition()							// We might use target info for this in future, so put it here.
+	self.DetectDanger()					// We might use target info for this in future, so put it here.
 	self.ExecuteMoves()
 
 	if self.RushChoice == RUSHING && self.AvoidingBad2v1 == false {
@@ -322,12 +322,12 @@ func (self *Overmind) ExecuteMoves() {
 
 // --------------------------------------------
 
-func (self *Overmind) SetInhibition() {
+func (self *Overmind) DetectDanger() {
 
 	all_ships := self.Game.AllShips()
 
 	for _, pilot := range self.Pilots {
-		pilot.SetInhibition(all_ships)
+		pilot.DetectDanger(all_ships)
 	}
 }
 

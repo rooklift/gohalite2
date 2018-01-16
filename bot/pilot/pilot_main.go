@@ -85,7 +85,7 @@ func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity, ign
 		return
 	}
 
-	if self.Firing && self.DangerShips > 0 {
+	if self.Firing && len(self.DangerShips) > 0 {
 		self.EngageShipFlee(other_ship, avoid_list)
 		return
 	}
@@ -97,7 +97,7 @@ func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity, ign
 
 		// Special case if the enemy ship is docked and there are no dangerous ships nearby...
 
-		if other_ship.DockedStatus != hal.UNDOCKED && self.DangerShips == 0 {
+		if other_ship.DockedStatus != hal.UNDOCKED && len(self.DangerShips) == 0 {
 			self.EngageShipApproach(other_ship, avoid_list)
 			self.Log("Safe to ignore Inhibition and approach docked ship.")
 			return
@@ -106,7 +106,7 @@ func (self *Pilot) EngageShip(other_ship *hal.Ship, avoid_list []hal.Entity, ign
 		// Special case if the enemy ship is alone and we can kill it safely...
 		// FIXME: this isn't actually correct, an enemy docked ship could absorb some damage intended for our real target...
 
-		if other_ship.DockedStatus == hal.UNDOCKED && self.DangerShips == 1 && other_ship.ShotsToKill() == 1 && self.ShotsToKill() > 1 {
+		if other_ship.DockedStatus == hal.UNDOCKED && len(self.DangerShips) == 1 && other_ship.ShotsToKill() == 1 && self.ShotsToKill() > 1 {
 			self.EngageShipApproach(other_ship, avoid_list)
 			self.Log("Safe to ignore Inhibition and go for the kill.")
 			return
@@ -176,10 +176,10 @@ func (self *Pilot) PlanetApproachForDock(planet *hal.Planet, avoid_list []hal.En
 	}
 }
 
-func (self *Pilot) SetInhibition(all_ships []*hal.Ship) {
+func (self *Pilot) DetectDanger(all_ships []*hal.Ship) {
 
 	self.Inhibition = 0
-	self.DangerShips = 0
+	self.DangerShips = nil
 
 	for _, ship := range all_ships {
 
@@ -197,7 +197,7 @@ func (self *Pilot) SetInhibition(all_ships []*hal.Ship) {
 
 		if dist < 20 {
 			if ship.Owner != self.Owner && ship.DockedStatus == hal.UNDOCKED {
-				self.DangerShips++
+				self.DangerShips = append(self.DangerShips, ship)
 			}
 		}
 

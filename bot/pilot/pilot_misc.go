@@ -22,7 +22,7 @@ type Pilot struct {
 	NavStack			[]string
 	Inhibition			float64
 	Locked				bool						// Whether Target can change. Use super-sparingly.
-	DangerShips			int							// Enemy ships that could potentially hit us this turn.
+	DangerShips			[]*hal.Ship					// Enemy ships that could potentially shoot us this turn.
 	Fleeing				bool
 }
 
@@ -80,7 +80,7 @@ func (self *Pilot) ResetAndUpdate() bool {				// Return true if we still exist.
 	self.Message = -1
 	self.EnemyApproachDist = DEFAULT_ENEMY_SHIP_APPROACH_DIST
 	self.Inhibition = 0
-	self.DangerShips = 0
+	self.DangerShips = nil
 
 	// Delete our target if appropriate...
 
