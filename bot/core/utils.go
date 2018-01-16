@@ -39,6 +39,17 @@ func IntersectSegmentCircle(startx, starty, endx, endy, circlex, circley, radius
 	// Based on the Python version, I have no idea how this works.
 	// "Mathematics not Zathras skill"
 
+	// As a special case which I might be interested in, if the start point is inside the circle,
+	// we just care about whether the end point is or isn't...
+
+	if Dist(startx, starty, circlex, circley) <= radius {
+		if Dist(endx, endy, circlex, circley) <= radius {			// We "collide"
+			return true
+		} else {													// Call this a non-collision
+			return false
+		}
+	}
+
 	dx := endx - startx
 	dy := endy - starty
 
