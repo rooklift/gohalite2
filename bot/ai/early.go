@@ -6,7 +6,6 @@ import (
 
 	gen "../genetic"
 	hal "../core"
-	open "../opening"
 )
 
 func (self *Overmind) DecideRush() {
@@ -286,33 +285,16 @@ func (self *Overmind) ConsiderCentreDocks() {
 			return self.Pilots[a].Y < self.Pilots[b].Y
 		})
 
-		var target_ids []int
+		d := self.Pilots[1].Dist(self.Pilots[1].Target)		// Note that this target is a port, not a planet.
 
-		for _, pilot := range self.Pilots {
-			target_ids = append(target_ids, pilot.Target.GetId())
-		}
+		a, _ := self.Game.GetPlanet(0)
+		b, _ := self.Game.GetPlanet(2)
 
-		standard_time := open.RunOpeningSim(self.Game, target_ids)
+		cd := hal.MinFloat(self.Pilots[1].Dist(a), self.Pilots[1].Dist(b))
 
-		centre_targets := self.Game.ClosestCentrePlanets(self.Pilots[1].X, self.Pilots[1].Y)
-
-		target_ids = nil
-		target_ids = append(target_ids, centre_targets[0].GetId())
-		target_ids = append(target_ids, centre_targets[0].GetId())
-
-		if centre_targets[0].DockingSpots > 2 {
-			target_ids = append(target_ids, centre_targets[0].GetId())
-		} else {
-			target_ids = append(target_ids, centre_targets[1].GetId())
-		}
-
-		centre_time := open.RunOpeningSim(self.Game, target_ids)
-
-		if centre_time < standard_time {
-			self.Game.Log("Opening Sim says close enough (%v vs %v), going centre.", centre_time, standard_time)
+		if cd - d < 21 {
+			self.Game.Log("Centre planets are close enough (diff == %v), going there.", cd - d)
 			yes = true
-		} else {
-			self.Game.Log("Opening Sim says NOT close enough (%v vs %v), NOT going centre.", centre_time, standard_time)
 		}
 	}
 

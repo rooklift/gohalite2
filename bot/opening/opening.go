@@ -1,5 +1,7 @@
 package opening
 
+/*
+
 import (
 	hal "../core"
 )
@@ -105,3 +107,5 @@ func RunOpeningSim(game *hal.Game, initial []int) int {			// Arguments are plane
 		}
 	}
 }
+
+*/
