@@ -31,7 +31,6 @@ type Config struct {
 	Profile					bool
 	Split					bool
 	Timeseed				bool
-	Unsafe					bool
 
 	TestGA					int
 }
@@ -74,6 +73,10 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 
 	ret.FirstLaunchTurn = -1
 	ret.RushEnemiesTouched = make(map[int]bool)
+
+	// ------------------------------------------- TURNING OFF RUSH FOR v110 - RE-ENABLE BEFORE FINALS! ------------------------------------- <<<<<
+
+	ret.RushChoice = NOT_RUSHING				// So we only counter by undocking.
 
 	return ret
 }
@@ -137,7 +140,6 @@ func (self *Overmind) Step() {
 	}
 
 	if self.NeverGA == false && self.RushChoice == RUSHING && self.DetectRushFight() {
-
 		if self.CanAvoidBad2v1() {
 			self.AvoidBad2v1()
 		} else {

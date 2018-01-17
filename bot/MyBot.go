@@ -16,7 +16,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "109 final"
+	VERSION = "110 final"
 )
 
 func main() {
@@ -32,7 +32,6 @@ func main() {
 	flag.BoolVar(&config.Profile, "profile", false, "run Golang CPU profile")
 	flag.BoolVar(&config.Split, "split", false, "split ships at start")
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
-	flag.BoolVar(&config.Unsafe, "unsafe", false, "use unsafe docks in 4 player")
 
 	flag.Float64Var(&nav.Ignore_Collision_Dist, "icd", 100, "ignore collision distance (nav)")
 

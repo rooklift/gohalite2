@@ -162,12 +162,7 @@ func (self *Overmind) ChooseThreeDocks() {
 	}
 
 	if self.Game.InitialPlayers() == 4 {
-		if self.Config.Unsafe {
-			self.MakeDefaultDockChoice()
-		} else {
-			self.MakeDefaultDockChoice()
-			// self.MakeSafeDockChoice()
-		}
+		self.MakeDefaultDockChoice()
 	}
 
 	for _, pilot := range self.Pilots {
