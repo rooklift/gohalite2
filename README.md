@@ -1,5 +1,7 @@
 My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
 
+This bot has no strategy and only pathetic tactics. What it does have is [a rather strong rush module](https://github.com/fohristiwhirl/halite2_rush_theory). Details about the rushing is covered in that document. Other notes are here.
+
 # Initial Stateful Algorithm (before v45)
 
 The algorithm I used until v45 was fairly simple in principle...
@@ -34,21 +36,6 @@ Collision avoidance is fairly straightforward. Each ship starts off with its act
   - Repeat this whole loop several times.
 * After a number of loops, if a ship still isn't moving, try reducing its speed.
 
-# 1v1 Genetic Algorithm + Metropolis Coupling
-
-In 2-player games it's sometimes sensible to rush the enemy, ignoring planets and going straight at 'em. In this case, when the ships are close to the enemy, the bot uses a genetic algorithm to find which moves are best, i.e. we generate a random "genome" (list of moves) and then do the following:
-
-* Mutate the genome randomly, giving us a new list of moves.
-* Simulate the result, and score it according to some "fitness" function.
-* If the new genome is good, keep it, otherwise discard.
-* Repeat.
-
-When I constructed this, I wasn't sure exactly what fitness function I would end up using. But I wanted to avoid local optima. To avoid these, I run multiple chains of evolution at once, with different "heats". Hot chains are allowed to accept bad mutations (the hotter the chain, the looser its standards are). Between iterations, the chains are sorted so that the colder chains have the better genomes. In this way, the cold chains can be pulled out of local optima. I believe this whole process is called "Metropolis Coupling".
-
-In the end, the fitness function was mostly about moving my ships so that they are all < 13 range of exactly one enemy; so that only that one ship can get near us. If it happens to move at speed 7 towards us, it will be < 6 range, i.e. weapons range, and in that case it'll take damage from 2 or 3 of our ships, while it will be the sole attacker for its side.
-
-The whole thing is probably overkill given how I ended up using it.
-
 # Global Strategy - Conceptual Breakthroughs
 
 Some key conceptual breakthroughs that seemed to improve the bot were:
@@ -69,12 +56,6 @@ Some key conceptual breakthroughs that seemed to improve the bot were:
 
 * Attacks right at the start of the turn are very predictable (only unexpected docking commands can mess this up). One can thus determine which ships will "certainly" die, and pretend they're not there. Using this information wisely is the hard part. At the very least, one can use it for navigation; i.e. skipping unneeded collision avoidance. One might also use it for strategic decisions, but this is harder.
 
-* One should avoid unwise fights. Starting at v62 (but with a big number fix at v64), I use sum-of-distances-squared to decide whether each ship is "inhibited" or not; i.e. whether it has more enemies than friends nearby. If so, it flees.
+* One should avoid unwise fights. Starting at v62 (but with a big fix at v64), I use sum-of-distances-squared to decide whether each ship is "inhibited" or not; i.e. whether it has more enemies than friends nearby. If so, it flees.
 
 * Fleeing to a distance based on nearest enemy location helps with emergent clustering (v90).
-
-# My Big Secret
-
-I don't think many people realised this: the first thing that happens in a turn is every ship's DockedStatus is progressed. That means that, if you see a ship that is about to finish docking, you can issue an undock command and it will work. And if you see a ship that is about to finish undocking, you can issue a thrust command and it will work.
-
-This little piece of info saves me 2 turns when defending rushes.
