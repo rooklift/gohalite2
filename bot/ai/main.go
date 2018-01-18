@@ -3,7 +3,7 @@ package ai
 import (
 	"math/rand"
 	"sort"
-	// "time"
+	"time"
 
 	hal "../core"
 	pil "../pilot"
@@ -75,14 +75,12 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	ret.FirstLaunchTurn = -1
 	ret.RushEnemiesTouched = make(map[int]bool)
 
-/*
 	// Turn off rushing before finals?
 
 	if time.Now().Before(time.Date(2018, time.January, 23, 5, 0, 0, 0, time.UTC)) {
 		ret.Game.Log("Rushing disabled before finals.")
 		ret.RushChoice = NOT_RUSHING
 	}
-*/
 
 	return ret
 }
