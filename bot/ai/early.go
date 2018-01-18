@@ -135,18 +135,21 @@ func (self *Overmind) DetectRushFight() bool {
 	// (v96) 3 enemy ships have been closed down at some point,
 	// or we ever docked (i.e. we are BEING rushed).
 
-	if len(self.RushEnemiesTouched) < 3 {
+	// (v112) 1 enemy ship has been closed down at some point,
+	// or we ever docked (i.e. we are BEING rushed).
+
+	if len(self.RushEnemiesTouched) < 1 {											// < 3
 
 		for _, enemy := range relevant_enemies {
 			for _, ship := range my_ships {
-				if enemy.Dist(ship) < 30 {
+				if enemy.Dist(ship) < 20 {											// < 30
 					self.RushEnemiesTouched[enemy.Id] = true
 					break
 				}
 			}
 		}
 
-		if len(self.RushEnemiesTouched) < 3 && self.EverDocked == false {
+		if len(self.RushEnemiesTouched) < 1 && self.EverDocked == false {			// < 3
 			return false
 		}
 	}
@@ -158,7 +161,9 @@ func (self *Overmind) ChooseThreeDocks() {
 
 	if self.Game.InitialPlayers() == 2 {
 		self.MakeDefaultDockChoice()
-		self.ConsiderCentreDocks()
+		if self.Config.Split == false {
+			self.ConsiderCentreDocks()
+		}
 	}
 
 	if self.Game.InitialPlayers() == 4 {
