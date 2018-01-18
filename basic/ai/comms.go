@@ -173,6 +173,9 @@ func (self *Game) Parse() {
 				ship.Birth = Max(0, self.turn)						// Turn can be -1 in init stage.
 			}
 
+			ship.Target = &Nothing{}
+			ship.Validated = false
+
 			self.shipMap[sid] = ship
 			self.playershipMap[pid] = append(self.playershipMap[pid], ship)
 		}
