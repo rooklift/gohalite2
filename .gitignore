@@ -12,3 +12,5 @@ open_profile.bat
 *.c
 offbots/DanielVF_v5/*
 *.jar
+*.bat
+*.py
