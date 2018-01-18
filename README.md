@@ -2,6 +2,8 @@ My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
 
 This bot has no strategy and only pathetic tactics. What it does have is [a rather strong rush module](https://github.com/fohristiwhirl/halite2_rush_theory). Details about the rushing is covered in that document. Other notes are here.
 
+A simple version of the bot, lacking various features, is in `/basic`. It may be easier to understand.
+
 # Initial Stateful Algorithm (before v45)
 
 The algorithm I used until v45 was fairly simple in principle...
