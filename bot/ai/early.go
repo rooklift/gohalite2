@@ -333,67 +333,9 @@ func (self *Overmind) ChooseCentreDocks() {
 	self.SetNonIntersectingDockPaths(docks[:3])
 }
 
-/*
-func (self *Overmind) MakeSafeDockChoice() {
-
-	my_cog := self.Game.MyShipsCentreOfGravity()
-	enemy_cog := self.Game.PartialCentreOfGravity(self.RushEnemyID)
-
-	// Find three planets closest to me...
-
-	all_planets := self.Game.AllPlanets()
-
-	sort.Slice(all_planets, func(a, b int) bool {
-		return my_cog.ApproachDist(all_planets[a]) < my_cog.ApproachDist(all_planets[b])
-	})
-
-	closest_three := all_planets[:3]
-
-	// Sort by range to enemy...
-
-	sort.Slice(closest_three, func(a, b int) bool {
-		return closest_three[a].Dist(enemy_cog) < closest_three[b].Dist(enemy_cog)		// ApproachDist not so relevant here
-	})
-
-	// Discard planet closest to enemy if we can't reach it in time...
-
-	if closest_three[0].Dist(enemy_cog) - closest_three[0].Dist(my_cog) < 70 {
-		self.Game.Log("Discarding planet %v", closest_three[0].Id)
-		closest_three = closest_three[1:]		// Now it's closest two, but whatever.
-	}
-
-	// Re-sort the surviving planets by distance to me...
-
-	sort.Slice(closest_three, func(a, b int) bool {
-		return my_cog.ApproachDist(closest_three[a]) < my_cog.ApproachDist(closest_three[b])
-	})
-
-	// Get docks...
-
-	var docks []*hal.Port
-
-	for _, planet := range closest_three {
-		if self.Config.Split {
-			docks = append(docks, hal.OpeningDockHelper(2, planet, self.Pilots[0].Ship)...)
-		} else {
-			docks = append(docks, hal.OpeningDockHelper(3, planet, self.Pilots[0].Ship)...)
-		}
-	}
-
-	if len(docks) < 3 {
-		return
-	}
-
-	self.SetNonIntersectingDockPaths(docks[:3])
-}
-
-*/
-
 func (self *Overmind) CanAvoidBad2v1() bool {
 
 	// Called when DetectRushFight() has already returned true, i.e. we want to enter the genetic algorithm.
-	// FIXME? Was written assuming we only enter GA in 2p.
-
 	// There is a special case that loses occasional games if we don't handle it... basically, if we are
 	// 2v1 up but the opponent ever produced a ship, we can't just chase him forever.
 

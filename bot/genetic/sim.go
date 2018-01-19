@@ -56,7 +56,7 @@ func (self *Sim) Reset() {
 		ship.actual_targets = nil
 		ship.stupid_death = false
 
-		// There don't get changed during the sim so aren't needed.
+		// These don't get changed during the sim so aren't needed.
 		// Instead they are set once at SetupSim().
 
 		// ship.id = real_ship.Id

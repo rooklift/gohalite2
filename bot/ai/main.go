@@ -57,11 +57,7 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	ret.Game = game
 	ret.Config = config
 
-	if game.InitialPlayers() == 2 {
-		game.SetThreatRange(20)					// This value seems to be surprisingly fine-tuned.
-	} else {
-		game.SetThreatRange(20)					// This used to be 10, but 20 seems better in 4p as well.
-	}
+	game.SetThreatRange(20)						// This value seems to be surprisingly fine-tuned.
 
 	ret.FindRushEnemy()
 
@@ -156,9 +152,6 @@ func (self *Overmind) Step() {
 
 	self.NormalStep()
 
-	// Failed (?) experiment...
-	// gen.EvolveGlobal(self.Game)		// FIXME: we will have assumed our out-of-range ships weren't going
-										// to move. Check for collisions due to this false assumption...
 	self.DebugNavStack()
 	self.DebugInhibition()
 	self.DebugOrders()

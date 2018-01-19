@@ -83,7 +83,7 @@ func (self *Overmind) AllProblems() []*Problem {
 			problem := &Problem{		// Note that we may end up targetting it as a planet's secondary target.
 				Entity: ship,
 				Value: 1.0,
-				Need: 1,								// Consider making this 2.
+				Need: 1,
 				Message: pil.MSG_ASSASSINATE,
 			}
 			all_problems = append(all_problems, problem)
