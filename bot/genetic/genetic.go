@@ -6,39 +6,10 @@ import (
 	hal "../core"
 )
 
-var thresholds = [10]float64{1.0, 0.999, 0.995, 0.99, 0.98, 0.96, 0.93, 0.9, 0.8, 0.7}
-
-var chase_permutations_3v3 = [][]int{
-	[]int{0,1,2},
-	[]int{0,2,1},
-	[]int{1,0,2},
-	[]int{1,2,0},
-	[]int{2,0,1},
-	[]int{2,1,0},
-}
-
-var chase_permutations_3v2 = [][]int{
-	[]int{0,0,1},
-	[]int{0,1,0},
-	[]int{1,0,0},
-	[]int{1,1,0},
-	[]int{1,0,1},
-	[]int{0,1,1},
-}
-
-var chase_permutations_2v2 = [][]int{
-	[]int{0,1},
-	[]int{1,0},
-}
-
-// --------------------------------------------------------------------
-
 type Gene struct {			// A gene is an instruction to a ship.
 	speed		int
 	angle		int
 }
-
-// --------------------------------------------------------------------
 
 type Genome struct {
 	genes		[]*Gene
