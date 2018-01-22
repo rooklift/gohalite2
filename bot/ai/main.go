@@ -340,7 +340,7 @@ func (self *Overmind) DebugInhibition() {
 	if self.Game.Turn() == DEBUG_TURN {
 		for _, pilot := range self.Pilots {
 			if pilot.Id == DEBUG_SHIP_ID {
-				pilot.Log("Inhibition: %f; DangerShips: %d", pilot.Inhibition, pilot.DangerShips)
+				pilot.Log("Inhibition: %f; DangerShips: %d", pilot.Inhibition, len(pilot.DangerShips))
 				break
 			}
 		}
