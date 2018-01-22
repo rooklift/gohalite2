@@ -1,4 +1,4 @@
-My bot in Go for the [Halite 2](https://halite.io/) (2017) programming contest.
+My bot in Go for the [Halite 2](https://halite.io/) (2017-2018) programming contest.
 
 This bot has no strategy and only pathetic tactics. What it does have is [a rather strong rush module](https://github.com/fohristiwhirl/halite2_rush_theory). Details about the rushing is covered in that document. Other notes are here.
 
