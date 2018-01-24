@@ -234,38 +234,3 @@ func (self *Overmind) OptimisePilots() {
 		}
 	}
 }
-
-func (self *Overmind) StrategicCentre() *hal.Point {
-
-	// Find strategic centre, which is the average location of all docking spots we own (not planets).
-	// Or if we own zero planets, it's our ships' centre of gravity instead.
-
-	// Unclear if this is any use.
-
-	var my_planets []*hal.Planet
-
-	for _, planet := range self.Game.AllPlanets() {
-		if planet.Owner == self.Game.Pid() {
-			my_planets = append(my_planets, planet)
-		}
-	}
-
-	total_docks := 0
-	avg_x := 0.0
-	avg_y := 0.0
-
-	for _, planet := range my_planets {
-		total_docks += planet.DockingSpots
-		avg_x += planet.X * float64(planet.DockingSpots)
-		avg_y += planet.Y * float64(planet.DockingSpots)
-	}
-
-	if total_docks == 0 {
-		return self.Game.PartialCentreOfGravity(self.Game.Pid())
-	}
-
-	avg_x /= float64(total_docks)
-	avg_y /= float64(total_docks)
-
-	return &hal.Point{avg_x, avg_y}
-}
