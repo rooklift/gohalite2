@@ -245,9 +245,9 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 					// Keep close to enemy. Deal with split enemies. The important cases are 3v3, 3v2, and 2v2.
 					// I tried writing general stuff but it was simpler just to handle the individual cases.
 
-					// Note: since any particular move can only reduce the bad score by ~63000, it's not actually enough to override
-					// the thirteens code below. In practice, this doesn't seem to be an issue in chasing splits correctly, I think
-					// because it's usually the case that one ship can't get a thirteen and so goes hunting for the rogue ship instead?
+					// Note: in typical situations a move can only reduce the bad score by ~63000, i.e. not actually enough to override
+					// the thirteens code below. HOWEVER - the exception is if the differences between options straddle the PANIC_RANGE,
+					// in which case the score difference can be ~270000. In practice, this seems to work well enough.
 
 					if len(genome.genes) == 3 && len(real_enemy_ships) >= 2 {
 
