@@ -323,7 +323,7 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 							genome.score -= int(dist1 * 9000)
 						}
 
-					} else {
+					} else if len(genome.genes) > 0 {
 
 						// Minimise the biggest distances in other cases...
 
@@ -467,7 +467,6 @@ func (self *Evolver) RunRushFight(iterations int, play_perfect bool) {
 						}
 					}
 				}
-
 			}
 
 			if n == 0 && c == 0 {
